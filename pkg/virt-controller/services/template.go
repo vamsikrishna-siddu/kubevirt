@@ -133,6 +133,7 @@ type TemplateService interface {
 	GetLauncherImage() string
 	IsPPC64() bool
 	IsARM64() bool
+	IsS390X() bool
 }
 
 type templateService struct {
@@ -281,6 +282,10 @@ func (t *templateService) IsPPC64() bool {
 
 func (t *templateService) IsARM64() bool {
 	return t.clusterConfig.GetClusterCPUArch() == "arm64"
+}
+
+func (t *templateService) IsS390X() bool {
+	return t.clusterConfig.GetClusterCPUArch() == "s390x"
 }
 
 func generateQemuTimeoutWithJitter(qemuTimeoutBaseSeconds int) string {
