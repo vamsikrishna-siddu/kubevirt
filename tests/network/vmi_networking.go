@@ -795,6 +795,10 @@ var _ = SIGDescribe("[rfe_id:694][crit:medium][vendor:cnv-qe@redhat.com][level:c
 				// Docker network subnet cidr definition:
 				// https://github.com/kubevirt/project-infra/blob/master/github/ci/shared-deployments/files/docker-daemon-mirror.conf#L5
 				ipv6Address := "fd10:0:2::2"
+				// Use a different ipv6 address on s390x
+				if checks.IsS390X(testsuite.Arch) {
+					ipv6Address = "fd10:0:2::2"
+				}
 				if flags.IPV6ConnectivityCheckAddress != "" {
 					ipv6Address = flags.IPV6ConnectivityCheckAddress
 				}
