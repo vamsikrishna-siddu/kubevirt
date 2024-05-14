@@ -30,7 +30,7 @@ var KubeVirtUtilityVersionTag = ""
 var KubeVirtVersionTag = "latest"
 var KubeVirtVersionTagAlt = ""
 var KubeVirtUtilityRepoPrefix = ""
-var KubeVirtRepoPrefix = "quay.io/kubevirt"
+var KubeVirtRepoPrefix = "icr.io/kubevirt"
 var ImagePrefixAlt = ""
 var ContainerizedDataImporterNamespace = "cdi"
 var KubeVirtKubectlPath = ""
@@ -47,7 +47,7 @@ var ConfigFile = ""
 var SkipShasumCheck bool
 var SkipDualStackTests bool
 var IPV4ConnectivityCheckAddress = ""
-var IPV6ConnectivityCheckAddress = ""
+var IPV6ConnectivityCheckAddress = "fd10:0:2::2"
 var ConnectivityCheckDNS = ""
 var ArtifactsDir string
 var OperatorManifestPath string
