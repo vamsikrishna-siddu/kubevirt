@@ -17,5 +17,5 @@
 # Copyright 2021 Red Hat, Inc.
 #
 
-KUBEVIRT_DEPLOY_CDI=${KUBEVIRT_DEPLOY_CDI:-true}
+KUBEVIRT_DEPLOY_CDI=${KUBEVIRT_DEPLOY_CDI:-false}
 source ./cluster-up/up.sh

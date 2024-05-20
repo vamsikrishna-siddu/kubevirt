@@ -33,7 +33,6 @@ default_targets="
     virt-exportproxy
     conformance
     libguestfs-tools
-    pr-helper
     example-hook-sidecar
     example-disk-mutation-hook-sidecar
     example-cloudinit-hook-sidecar
@@ -46,9 +45,7 @@ default_targets="
     alpine-with-test-tooling-container-disk
     fedora-realtime-container-disk
     disks-images-provider
-    nfs-server
     vm-killer
-    winrmcli
     sidecar-shim
     network-slirp-binding
     network-passt-binding
