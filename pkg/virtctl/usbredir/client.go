@@ -1,5 +1,3 @@
-//go:build !s390x
-
 /*
  * This file is part of the KubeVirt project
  *
