@@ -137,7 +137,7 @@ func cirrosMemory() string {
 	if checks.IsARM64(testsuite.Arch) {
 		return "256Mi"
 	}
-	return "128Mi"
+	return "256Mi"
 }
 
 // AddEphemeralDisk

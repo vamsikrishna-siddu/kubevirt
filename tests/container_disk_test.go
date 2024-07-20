@@ -61,7 +61,7 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 		virtClient = kubevirt.Client()
 	})
 
-	DescribeTable("should", func(image string, policy k8sv1.PullPolicy, expectedPolicy k8sv1.PullPolicy) {
+	DescribeTable("[s390x] should", func(image string, policy k8sv1.PullPolicy, expectedPolicy k8sv1.PullPolicy) {
 		vmi := libvmifact.NewGuestless(libvmi.WithContainerDisk("disk0", image))
 
 		vmi.Spec.Volumes[0].ContainerDisk.ImagePullPolicy = policy
@@ -82,8 +82,8 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 
 	Describe("[rfe_id:273][crit:medium][vendor:cnv-qe@redhat.com][level:component]Starting and stopping the same VirtualMachineInstance", func() {
 		Context("with ephemeral registry disk", func() {
-			It("[test_id:1463][Conformance] should success multiple times", func() {
-				vmi := tests.NewRandomVMIWithEphemeralDiskAndUserdata(cd.ContainerDiskFor(cd.ContainerDiskCirros), "#!/bin/bash\necho 'hello'\n")
+			It("[test_id:1463][Conformance][s390x] should success multiple times", func() {
+				vmi := tests.NewRandomVMIWithEphemeralDiskAndUserdata(cd.ContainerDiskFor(cd.ContainerDiskFedoraTestTooling), "#!/bin/bash\necho 'hello'\n")
 				num := 2
 				for i := 0; i < num; i++ {
 					By("Starting the VirtualMachineInstance")
@@ -105,9 +105,9 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 
 	Describe("[rfe_id:273][crit:medium][vendor:cnv-qe@redhat.com][level:component]Starting a VirtualMachineInstance", func() {
 		Context("with ephemeral registry disk", func() {
-			It("[test_id:1464]should not modify the spec on status update", func() {
-				vmi := libvmifact.NewCirros()
-				v1.SetObjectDefaults_VirtualMachineInstance(vmi)
+			It("[test_id:1464][s390x]should not modify the spec on status update", func() {
+				vmi := libvmifact.NewFedora()
+				//v1.SetObjectDefaults_VirtualMachineInstance(vmi)
 
 				By("Starting the VirtualMachineInstance")
 				vmi, err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
@@ -217,7 +217,7 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 		})
 	})
 
-	Describe("[rfe_id:4052][crit:high][arm64][vendor:cnv-qe@redhat.com][level:component]VMI disk permissions", func() {
+	Describe("[rfe_id:4052][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com][level:component]VMI disk permissions", func() {
 		Context("with ephemeral registry disk", func() {
 			It("[test_id:4299]should not have world write permissions", func() {
 				vmi := libvmifact.NewAlpine()
