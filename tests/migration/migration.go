@@ -203,7 +203,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 			const labelKey = "subdomain"
 			const labelValue = "mysub"
 
-			vmi := libvmifact.NewCirros(
+			vmi := libvmifact.NewAlpine(
 				withHostnameAndSubdomain(hostname, subdomain),
 				libvmi.WithLabel(labelKey, labelValue),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
@@ -212,7 +212,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 			vmi = tests.RunVMIAndExpectLaunch(vmi, 240)
 
 			By("Starting hello world in the VM")
-			vmnetserver.StartTCPServer(vmi, port, console.LoginToCirros)
+			vmnetserver.StartTCPServer(vmi, port, console.LoginToAlpine)
 
 			By("Exposing headless service matching subdomain")
 			service := service.BuildHeadlessSpec(subdomain, port, port, labelKey, labelValue)
@@ -1093,12 +1093,12 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 
 			It("[test_id:3240]should be successfully with a cloud init", func() {
 				// Start the VirtualMachineInstance with the PVC attached
-				vmi := newVMIWithDataVolumeForMigration(cd.ContainerDiskCirros, k8sv1.ReadWriteMany, sc, libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()))
-				vmi.Spec.Hostname = fmt.Sprintf("%s", cd.ContainerDiskCirros)
+				vmi := newVMIWithDataVolumeForMigration(cd.ContainerDiskAlpine, k8sv1.ReadWriteMany, sc, libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()))
+				vmi.Spec.Hostname = fmt.Sprintf("%s", cd.ContainerDiskAlpine)
 				vmi = tests.RunVMIAndExpectLaunch(vmi, 180)
 
 				By("Checking that the VirtualMachineInstance console has expected output")
-				Expect(console.LoginToCirros(vmi)).To(Succeed())
+				Expect(console.LoginToAlpine(vmi)).To(Succeed())
 
 				By("Checking that MigrationMethod is set to BlockMigration")
 				Expect(vmi.Status.MigrationMethod).To(Equal(v1.BlockMigration))
@@ -2461,7 +2461,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 			const numberOfMigrationThreads uint = 4
 
 			newVmi := func() *v1.VirtualMachineInstance {
-				return libvmifact.NewCirros(
+				return libvmifact.NewAlpine(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 				)
@@ -3204,7 +3204,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 		}
 
 		It("should add eviction-in-progress annotation to source virt-launcher pod", func() {
-			vmi = libvmifact.NewCirros(
+			vmi = libvmifact.NewAlpine(
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			)
@@ -3224,7 +3224,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 
 		Context("when evacuating fails", func() {
 			BeforeEach(func() {
-				vmi = libvmifact.NewCirros(
+				vmi = libvmifact.NewAlpine(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					libvmi.WithAnnotation(v1.FuncTestForceLauncherMigrationFailureAnnotation, ""),
@@ -3315,7 +3315,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 	Context("ResourceQuota rejection", func() {
 		It("Should contain condition when migrating with quota that doesn't have resources for both source and target", func() {
 			vmiRequest := resource.MustParse("200Mi")
-			vmi := libvmifact.NewCirros(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithResourceMemory(vmiRequest.String()),

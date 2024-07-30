@@ -450,7 +450,7 @@ var _ = SIGDescribe("Hotplug", func() {
 	}
 
 	createAndStartWFFCStorageHotplugVM := func() *v1.VirtualMachine {
-		vm, err := virtClient.VirtualMachine(testsuite.GetTestNamespace(nil)).Create(context.Background(), libvmi.NewVirtualMachine(libvmifact.NewCirros(), libvmi.WithRunStrategy(v1.RunStrategyAlways)), metav1.CreateOptions{})
+		vm, err := virtClient.VirtualMachine(testsuite.GetTestNamespace(nil)).Create(context.Background(), libvmi.NewVirtualMachine(libvmifact.NewAlpine(), libvmi.WithRunStrategy(v1.RunStrategyAlways)), metav1.CreateOptions{})
 		Expect(err).ToNot(HaveOccurred())
 		Eventually(matcher.ThisVM(vm)).WithTimeout(300 * time.Second).WithPolling(time.Second).Should(matcher.BeReady())
 		return vm
@@ -489,7 +489,7 @@ var _ = SIGDescribe("Hotplug", func() {
 
 	getVmiConsoleAndLogin := func(vmi *v1.VirtualMachineInstance) {
 		By("Obtaining the serial console")
-		Expect(console.LoginToCirros(vmi)).To(Succeed())
+		Expect(console.LoginToAlpine(vmi)).To(Succeed())
 	}
 
 	createDataVolumeAndWaitForImport := func(sc string, volumeMode k8sv1.PersistentVolumeMode) *cdiv1.DataVolume {
@@ -554,7 +554,7 @@ var _ = SIGDescribe("Hotplug", func() {
 		)
 		BeforeEach(func() {
 			By("Creating VirtualMachine")
-			vm, err = virtClient.VirtualMachine(testsuite.GetTestNamespace(nil)).Create(context.Background(), libvmi.NewVirtualMachine(libvmifact.NewCirros()), metav1.CreateOptions{})
+			vm, err = virtClient.VirtualMachine(testsuite.GetTestNamespace(nil)).Create(context.Background(), libvmi.NewVirtualMachine(libvmifact.NewAlpine()), metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 		})
 
@@ -595,12 +595,18 @@ var _ = SIGDescribe("Hotplug", func() {
 			}
 
 			dv := libdv.NewDataVolume(
-				libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros), cdiv1.RegistryPullNode),
+				libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine), cdiv1.RegistryPullNode),
 				libdv.WithPVC(
 					libdv.PVCWithStorageClass(sc),
+<<<<<<< HEAD
 					libdv.PVCWithVolumeSize(cd.ContainerDiskSizeBySourceURL(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros))),
 					libdv.PVCWithAccessMode(k8sv1.ReadWriteMany),
 					libdv.PVCWithVolumeMode(k8sv1.PersistentVolumeBlock),
+=======
+					libdv.PVCWithVolumeSize(cd.ContainerDiskSizeBySourceURL(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine))),
+					libdv.PVCWithAccessMode(corev1.ReadWriteMany),
+					libdv.PVCWithVolumeMode(corev1.PersistentVolumeBlock),
+>>>>>>> 223423f153 (replace cirros with alpine.)
 				),
 			)
 			dv, err = virtClient.CdiClient().CdiV1beta1().DataVolumes(testsuite.GetTestNamespace(nil)).Create(context.Background(), dv, metav1.CreateOptions{})
@@ -799,7 +805,7 @@ var _ = SIGDescribe("Hotplug", func() {
 				if node != "" {
 					opts = append(opts, libvmi.WithNodeSelectorFor(&k8sv1.Node{ObjectMeta: metav1.ObjectMeta{Name: node}}))
 				}
-				vmi := libvmifact.NewCirros(opts...)
+				vmi := libvmifact.NewAlpine(opts...)
 
 				vm, err = virtClient.VirtualMachine(testsuite.GetTestNamespace(vmi)).Create(context.Background(), libvmi.NewVirtualMachine(vmi, libvmi.WithRunStrategy(v1.RunStrategyAlways)), metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
@@ -1141,14 +1147,14 @@ var _ = SIGDescribe("Hotplug", func() {
 			)
 
 			containerDiskVMIFunc := func() *v1.VirtualMachineInstance {
-				return libvmifact.NewCirros(
+				return libvmifact.NewAlpine(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 				)
 			}
 			persistentDiskVMIFunc := func() *v1.VirtualMachineInstance {
 				dataVolume := libdv.NewDataVolume(
-					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 					libdv.WithPVC(
 						libdv.PVCWithStorageClass(sc),
 						libdv.PVCWithVolumeSize(cd.CirrosVolumeSize),
@@ -1284,7 +1290,7 @@ var _ = SIGDescribe("Hotplug", func() {
 				}
 
 				var err error
-				url := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)
+				url := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)
 
 				storageClass, foundSC := libstorage.GetRWOFileSystemStorageClass()
 				if !foundSC {
@@ -1401,7 +1407,7 @@ var _ = SIGDescribe("Hotplug", func() {
 					libdv.WithForceBindAnnotation(),
 				)
 			}
-			vmi := libvmifact.NewCirros()
+			vmi := libvmifact.NewAlpine()
 			vm := libvmi.NewVirtualMachine(vmi, libvmi.WithRunStrategy(v1.RunStrategyAlways))
 			vm, err = virtClient.VirtualMachine(testsuite.GetTestNamespace(vm)).Create(context.Background(), vm, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
@@ -1453,7 +1459,7 @@ var _ = SIGDescribe("Hotplug", func() {
 		)
 
 		createVMWithRatio := func(memRatio, cpuRatio float64) *v1.VirtualMachine {
-			vm := libvmi.NewVirtualMachine(libvmifact.NewCirros(), libvmi.WithRunStrategy(v1.RunStrategyAlways))
+			vm := libvmi.NewVirtualMachine(libvmifact.NewAlpine(), libvmi.WithRunStrategy(v1.RunStrategyAlways))
 
 			memLimit := int64(1024 * 1024 * 128) //128Mi
 			memRequest := int64(math.Ceil(float64(memLimit) / memRatio))
@@ -1723,7 +1729,7 @@ var _ = SIGDescribe("Hotplug", func() {
 			if pvNode != "" {
 				opts = append(opts, libvmi.WithNodeSelectorFor(&k8sv1.Node{ObjectMeta: metav1.ObjectMeta{Name: pvNode}}))
 			}
-			vmi := libvmifact.NewCirros(opts...)
+			vmi := libvmifact.NewAlpine(opts...)
 
 			vm, err = virtClient.VirtualMachine(testsuite.GetTestNamespace(vmi)).Create(context.Background(), libvmi.NewVirtualMachine(vmi, libvmi.WithRunStrategy(v1.RunStrategyAlways)), metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
@@ -1768,7 +1774,7 @@ var _ = SIGDescribe("Hotplug", func() {
 		)
 
 		BeforeEach(func() {
-			vmi := libvmifact.NewCirros()
+			vmi := libvmifact.NewAlpine()
 			policy := v1.IOThreadsPolicyShared
 			vmi.Spec.Domain.IOThreadsPolicy = &policy
 			vm, err = virtClient.VirtualMachine(testsuite.GetTestNamespace(vmi)).Create(context.Background(), libvmi.NewVirtualMachine(vmi, libvmi.WithRunStrategy(v1.RunStrategyAlways)), metav1.CreateOptions{})
@@ -1822,7 +1828,7 @@ var _ = SIGDescribe("Hotplug", func() {
 
 		BeforeEach(func() {
 			libstorage.CreateAllSeparateDeviceHostPathPvs(tests.CustomHostPath, testsuite.GetTestNamespace(nil))
-			vm, err = virtClient.VirtualMachine(testsuite.GetTestNamespace(nil)).Create(context.Background(), libvmi.NewVirtualMachine(libvmifact.NewCirros(), libvmi.WithRunStrategy(v1.RunStrategyAlways)), metav1.CreateOptions{})
+			vm, err = virtClient.VirtualMachine(testsuite.GetTestNamespace(nil)).Create(context.Background(), libvmi.NewVirtualMachine(libvmifact.NewAlpine(), libvmi.WithRunStrategy(v1.RunStrategyAlways)), metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 			Eventually(matcher.ThisVM(vm)).WithTimeout(300 * time.Second).WithPolling(time.Second).Should(matcher.BeReady())
 		})
@@ -1897,7 +1903,7 @@ var _ = SIGDescribe("Hotplug", func() {
 
 		It("on an offline VM", func() {
 			By("Creating VirtualMachine")
-			vm, err = virtClient.VirtualMachine(testsuite.NamespaceTestDefault).Create(context.Background(), libvmi.NewVirtualMachine(libvmifact.NewCirros()), metav1.CreateOptions{})
+			vm, err = virtClient.VirtualMachine(util.NamespaceTestDefault).Create(context.Background(), libvmi.NewVirtualMachine(libvmifact.NewAlpine()), metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 			By("Adding test volumes")
 			pv2, pvc2, err := tests.CreatePVandPVCwithSCSIDisk(nodeName, device, testsuite.NamespaceTestDefault, "scsi-disks-test2", "scsipv2", "scsipvc2")
@@ -1926,7 +1932,7 @@ var _ = SIGDescribe("Hotplug", func() {
 		})
 
 		It("on an online VM", func() {
-			vmi := libvmifact.NewCirros(libvmi.WithNodeSelectorFor(&k8sv1.Node{
+			vmi := libvmifact.NewAlpine(libvmi.WithNodeSelectorFor(&corev1.Node{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: nodeName,
 				},

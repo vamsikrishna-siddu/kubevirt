@@ -75,7 +75,7 @@ var _ = SIGDescribe("Port-forward", func() {
 			}
 
 			vmi := createCirrosVMIWithPortsAndBlockUntilReady(virtClient, vmiDeclaredPorts)
-			vmnetserver.StartHTTPServerWithSourceIP(vmi, vmiHttpServerPort, getMasqueradeInternalAddress(ipFamily), console.LoginToCirros)
+			vmnetserver.StartHTTPServerWithSourceIP(vmi, vmiHttpServerPort, getMasqueradeInternalAddress(ipFamily), console.LoginToAlpine)
 
 			localPort = 1500 + GinkgoParallelProcess()
 			vmiPod, err := libpod.GetPodByVirtualMachineInstance(vmi, vmi.Namespace)
@@ -166,14 +166,14 @@ func killPortForwardCommand(portForwardCmd *exec.Cmd) error {
 }
 
 func createCirrosVMIWithPortsAndBlockUntilReady(virtClient kubecli.KubevirtClient, ports []v1.Port) *v1.VirtualMachineInstance {
-	vmi := libvmifact.NewCirros(
+	vmi := libvmifact.NewAlpine(
 		libvmi.WithNetwork(v1.DefaultPodNetwork()),
 		libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding(ports...)),
 	)
 
 	vmi, err := virtClient.VirtualMachineInstance(testsuite.NamespaceTestDefault).Create(context.Background(), vmi, metav1.CreateOptions{})
 	Expect(err).ToNot(HaveOccurred())
-	vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+	vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToAlpine)
 
 	return vmi
 }

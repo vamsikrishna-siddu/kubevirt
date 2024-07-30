@@ -152,7 +152,7 @@ var _ = SIGDescribe("[Serial]Volumes update with migration", Serial, func() {
 			sc, exist := libstorage.GetRWOFileSystemStorageClass()
 			Expect(exist).To(BeTrue())
 			dv := libdv.NewDataVolume(
-				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 				libdv.WithPVC(libdv.PVCWithStorageClass(sc),
 					libdv.PVCWithVolumeSize(size),
 				),
@@ -300,7 +300,7 @@ var _ = SIGDescribe("[Serial]Volumes update with migration", Serial, func() {
 			srcPVC := "src-" + rand.String(5)
 			libstorage.CreateFSPVC(srcPVC, ns, size, nil)
 			libstorage.CreateFSPVC(destPVC, ns, size, nil)
-			vmi := libvmifact.NewCirros(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(ns),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(virtv1.DefaultPodNetwork()),

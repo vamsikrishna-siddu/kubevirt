@@ -81,7 +81,7 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 	Describe("[rfe_id:273][crit:medium][vendor:cnv-qe@redhat.com][level:component]Starting and stopping the same VirtualMachineInstance", func() {
 		Context("with ephemeral registry disk", func() {
 			It("[test_id:1463][Conformance] should success multiple times", func() {
-				vmi := libvmifact.NewCirros()
+				vmi := libvmifact.NewAlpine()
 				for range 2 {
 					By("Starting the VirtualMachineInstance")
 					obj, err := virtClient.RestClient().Post().Resource("virtualmachineinstances").Namespace(testsuite.GetTestNamespace(vmi)).Body(vmi).Do(context.Background()).Get()
@@ -103,7 +103,7 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 	Describe("[rfe_id:273][crit:medium][vendor:cnv-qe@redhat.com][level:component]Starting a VirtualMachineInstance", func() {
 		Context("with ephemeral registry disk", func() {
 			It("[test_id:1464]should not modify the spec on status update", func() {
-				vmi := libvmifact.NewCirros()
+				vmi := libvmifact.NewAlpine()
 				v1.SetObjectDefaults_VirtualMachineInstance(vmi)
 
 				By("Starting the VirtualMachineInstance")
@@ -127,7 +127,7 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 				Expect(err).ToNot(HaveOccurred())
 
 				By("Starting the VirtualMachineInstance")
-				vmi := libvmifact.NewCirros()
+				vmi := libvmifact.NewAlpine()
 				_, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
 				By("Checking that the VMI failed")
@@ -153,7 +153,7 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 				for i := 0; i < count; i++ {
 					// Provide 1Mi of memory to prevent VMIs from actually booting.
 					// We only care about the volume containers inside the virt-launcher Pod.
-					vmi := libvmifact.NewCirros(libvmi.WithResourceMemory("1Mi"))
+					vmi := libvmifact.NewAlpine(libvmi.WithResourceMemory("1Mi"))
 					vmi, err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
 					Expect(err).ToNot(HaveOccurred())
 					vmis = append(vmis, vmi)
@@ -184,7 +184,7 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 					libvmi.WithResourceMemory(minimalVMIRequiredMemory),
 					libvmi.WithContainerDisk(
 						"disk0",
-						cd.ContainerDiskFor(cd.ContainerDiskCirrosCustomLocation),
+						cd.ContainerDiskFor(cd.ContainerDiskAlpineCustomLocation),
 					),
 					withVolumePath(volName, customPath),
 					libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()),

@@ -121,8 +121,8 @@ var _ = SIGDescribe("[rfe_id:694][crit:medium][vendor:cnv-qe@redhat.com][level:c
 		})
 		Context("with a test outbound VMI", func() {
 			BeforeEach(func() {
-				inboundVMI = libvmifact.NewCirros()
-				outboundVMI = libvmifact.NewCirros()
+				inboundVMI = libvmifact.NewAlpine()
+				outboundVMI = libvmifact.NewAlpine()
 				inboundVMIWithPodNetworkSet = vmiWithPodNetworkSet()
 				inboundVMIWithCustomMacAddress = vmiWithCustomMacAddress("de:ad:00:00:be:af")
 
@@ -165,7 +165,7 @@ var _ = SIGDescribe("[rfe_id:694][crit:medium][vendor:cnv-qe@redhat.com][level:c
 				expectedMtuString := fmt.Sprintf("mtu %d", mtu)
 
 				By("checking eth0 MTU inside the VirtualMachineInstance")
-				Expect(console.LoginToCirros(outboundVMI)).To(Succeed())
+				Expect(console.LoginToAlpine(outboundVMI)).To(Succeed())
 
 				addrShow := "ip address show eth0\n"
 				Expect(console.SafeExpectBatch(outboundVMI, []expect.Batcher{
@@ -209,11 +209,11 @@ var _ = SIGDescribe("[rfe_id:694][crit:medium][vendor:cnv-qe@redhat.com][level:c
 					namespace = testsuite.NamespacePrivileged
 				}
 
-				inboundVMI = libvmifact.NewCirros()
+				inboundVMI = libvmifact.NewAlpine()
 				inboundVMI, err = virtClient.VirtualMachineInstance(namespace).Create(context.Background(), inboundVMI, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
-				inboundVMI = libwait.WaitUntilVMIReady(inboundVMI, console.LoginToCirros)
-				vmnetserver.StartTCPServer(inboundVMI, testPort, console.LoginToCirros)
+				inboundVMI = libwait.WaitUntilVMIReady(inboundVMI, console.LoginToAlpine)
+				vmnetserver.StartTCPServer(inboundVMI, testPort, console.LoginToAlpine)
 
 				ip := inboundVMI.Status.Interfaces[0].IP
 
@@ -255,16 +255,16 @@ var _ = SIGDescribe("[rfe_id:694][crit:medium][vendor:cnv-qe@redhat.com][level:c
 		Context("VirtualMachineInstance with default interface model", func() {
 			BeforeEach(func() {
 				libnet.SkipWhenClusterNotSupportIpv4()
-				inboundVMI = libvmifact.NewCirros()
-				outboundVMI = libvmifact.NewCirros()
+				inboundVMI = libvmifact.NewAlpine()
+				outboundVMI = libvmifact.NewAlpine()
 
 				inboundVMI, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), inboundVMI, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
 				outboundVMI, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), outboundVMI, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
 
-				inboundVMI = libwait.WaitUntilVMIReady(inboundVMI, console.LoginToCirros)
-				outboundVMI = libwait.WaitUntilVMIReady(outboundVMI, console.LoginToCirros)
+				inboundVMI = libwait.WaitUntilVMIReady(inboundVMI, console.LoginToAlpine)
+				outboundVMI = libwait.WaitUntilVMIReady(outboundVMI, console.LoginToAlpine)
 			})
 
 			// Unless an explicit interface model is specified, the default interface model is virtio.
@@ -329,14 +329,14 @@ var _ = SIGDescribe("[rfe_id:694][crit:medium][vendor:cnv-qe@redhat.com][level:c
 			By(checkingEth0MACAddr)
 			masqIface := libvmi.InterfaceDeviceWithMasqueradeBinding()
 			masqIface.MacAddress = "BE-AF-00-00-DE-AD"
-			beafdeadVMI := libvmifact.NewCirros(
+			beafdeadVMI := libvmifact.NewAlpine(
 				libvmi.WithInterface(masqIface),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			)
 			beafdeadVMI, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), beafdeadVMI, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 
-			libwait.WaitUntilVMIReady(beafdeadVMI, console.LoginToCirros)
+			libwait.WaitUntilVMIReady(beafdeadVMI, console.LoginToAlpine)
 			checkMacAddress(beafdeadVMI, "be:af:00:00:de:ad")
 		})
 	})
@@ -512,7 +512,7 @@ var _ = SIGDescribe("[rfe_id:694][crit:medium][vendor:cnv-qe@redhat.com][level:c
 	Context("VirtualMachineInstance with custom dns", func() {
 		It("[test_id:1779]should have custom resolv.conf", func() {
 			libnet.SkipWhenClusterNotSupportIpv4()
-			dnsVMI := libvmifact.NewCirros()
+			dnsVMI := libvmifact.NewAlpine()
 
 			dnsVMI.Spec.DNSPolicy = "None"
 
@@ -526,7 +526,7 @@ var _ = SIGDescribe("[rfe_id:694][crit:medium][vendor:cnv-qe@redhat.com][level:c
 			}
 			dnsVMI, err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(dnsVMI)).Create(context.Background(), dnsVMI, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
-			dnsVMI = libwait.WaitUntilVMIReady(dnsVMI, console.LoginToCirros)
+			dnsVMI = libwait.WaitUntilVMIReady(dnsVMI, console.LoginToAlpine)
 			err = console.SafeExpectBatch(dnsVMI, []expect.Batcher{
 				&expect.BSnd{S: "\n"},
 				&expect.BExp{R: console.PromptExpression},
@@ -557,7 +557,7 @@ var _ = SIGDescribe("[rfe_id:694][crit:medium][vendor:cnv-qe@redhat.com][level:c
 			if ipv4NetworkCIDR != "" {
 				net.NetworkSource.Pod.VMNetworkCIDR = ipv4NetworkCIDR
 			}
-			return libvmifact.NewCirros(
+			return libvmifact.NewAlpine(
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding(ports...)),
 				libvmi.WithNetwork(net),
 			)
@@ -633,19 +633,19 @@ var _ = SIGDescribe("[rfe_id:694][crit:medium][vendor:cnv-qe@redhat.com][level:c
 				clientVMI = masqueradeVMI([]v1.Port{}, networkCIDR)
 				clientVMI, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), clientVMI, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
-				clientVMI = libwait.WaitUntilVMIReady(clientVMI, console.LoginToCirros)
+				clientVMI = libwait.WaitUntilVMIReady(clientVMI, console.LoginToAlpine)
 
 				serverVMI = masqueradeVMI(ports, networkCIDR)
 
 				serverVMI.Labels = map[string]string{"expose": "server"}
 				serverVMI, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), serverVMI, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
-				serverVMI = libwait.WaitUntilVMIReady(serverVMI, console.LoginToCirros)
+				serverVMI = libwait.WaitUntilVMIReady(serverVMI, console.LoginToAlpine)
 				Expect(serverVMI.Status.Interfaces).To(HaveLen(1))
 				Expect(serverVMI.Status.Interfaces[0].IPs).NotTo(BeEmpty())
 
 				By("starting a tcp server")
-				vmnetserver.StartTCPServer(serverVMI, tcpPort, console.LoginToCirros)
+				vmnetserver.StartTCPServer(serverVMI, tcpPort, console.LoginToAlpine)
 
 				if networkCIDR == "" {
 					networkCIDR = api.DefaultVMCIDR
@@ -678,7 +678,7 @@ var _ = SIGDescribe("[rfe_id:694][crit:medium][vendor:cnv-qe@redhat.com][level:c
 				vmi := masqueradeVMI([]v1.Port{}, "")
 				vmi, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), vmi, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
-				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToAlpine)
 
 				By("Checking ping (IPv4)")
 				Expect(libnet.PingFromVMConsole(vmi, ipv4Address, "-c 5", "-w 15")).To(Succeed())
@@ -784,7 +784,7 @@ var _ = SIGDescribe("[rfe_id:694][crit:medium][vendor:cnv-qe@redhat.com][level:c
 
 				vmi, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), vmi, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
-				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToAlpine)
 				virtHandlerPod, err := getVirtHandlerPod()
 				Expect(err).ToNot(HaveOccurred())
 
@@ -1034,18 +1034,18 @@ func runVMI(vmi *v1.VirtualMachineInstance) *v1.VirtualMachineInstance {
 	var err error
 	vmi, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), vmi, metav1.CreateOptions{})
 	Expect(err).ToNot(HaveOccurred())
-	vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+	vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToAlpine)
 	return vmi
 }
 
 func vmiWithPodNetworkSet() *v1.VirtualMachineInstance {
-	return libvmifact.NewCirros(
+	return libvmifact.NewAlpine(
 		libvmi.WithInterface(*v1.DefaultBridgeNetworkInterface()),
 		libvmi.WithNetwork(v1.DefaultPodNetwork()))
 }
 
 func vmiWithCustomMacAddress(mac string) *v1.VirtualMachineInstance {
-	return libvmifact.NewCirros(
+	return libvmifact.NewAlpine(
 		libvmi.WithInterface(*libvmi.InterfaceWithMac(v1.DefaultBridgeNetworkInterface(), mac)),
 		libvmi.WithNetwork(v1.DefaultPodNetwork()))
 }

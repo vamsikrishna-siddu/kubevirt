@@ -121,7 +121,7 @@ var _ = Describe("[sig-compute]VirtualMachinePool", decorators.SigCompute, func(
 		}
 
 		dataVolume := libdv.NewDataVolume(
-			libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+			libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 			libdv.WithPVC(libdv.PVCWithStorageClass(sc)),
 		)
 
@@ -156,7 +156,7 @@ var _ = Describe("[sig-compute]VirtualMachinePool", decorators.SigCompute, func(
 
 	newOfflineVirtualMachinePool := func() *poolv1.VirtualMachinePool {
 		By("Create a new VirtualMachinePool")
-		return createVirtualMachinePool(newPoolFromVMI(libvmifact.NewCirros()))
+		return createVirtualMachinePool(newPoolFromVMI(libvmifact.NewAlpine()))
 	}
 
 	DescribeTable("[Serial]pool should scale", Serial, func(startScale int, stopScale int) {

@@ -1188,7 +1188,7 @@ func prepareVmiConsole(vmi v12.VirtualMachineInstance, vmiType string) error {
 	case "fedora":
 		return console.LoginToFedora(&vmi, timeout)
 	case "cirros":
-		return console.LoginToCirros(&vmi, timeout)
+		return console.LoginToAlpine(&vmi, timeout)
 	case "alpine":
 		return console.LoginToAlpine(&vmi, timeout)
 	default:

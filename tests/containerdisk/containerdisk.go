@@ -29,6 +29,7 @@ type ContainerDisk string
 
 const (
 	ContainerDiskCirrosCustomLocation ContainerDisk = "cirros-custom"
+	ContainerDiskAlpineCustomLocation ContainerDisk = "alpine-custom"
 	ContainerDiskCirros               ContainerDisk = "cirros"
 	ContainerDiskAlpine               ContainerDisk = "alpine"
 	ContainerDiskAlpineTestTooling    ContainerDisk = "alpine-with-test-tooling"

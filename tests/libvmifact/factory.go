@@ -53,7 +53,7 @@ func NewFedora(opts ...libvmi.Option) *kvirtv1.VirtualMachineInstance {
 // NewCirros instantiates a new CirrOS based VMI configuration
 func NewCirros(opts ...libvmi.Option) *kvirtv1.VirtualMachineInstance {
 	cirrosOpts := []libvmi.Option{
-		libvmi.WithContainerDisk("disk0", cd.ContainerDiskFor(cd.ContainerDiskCirros)),
+		libvmi.WithContainerDisk("disk0", cd.ContainerDiskFor(cd.ContainerDiskAlpine)),
 		libvmi.WithResourceMemory(cirrosMemory()),
 	}
 	cirrosOpts = append(cirrosOpts, opts...)
@@ -76,7 +76,14 @@ func NewAlpine(opts ...libvmi.Option) *kvirtv1.VirtualMachineInstance {
 		libvmi.WithRng(),
 	}
 	alpineOpts = append(alpineOpts, opts...)
-	return libvmi.New(alpineOpts...)
+	vmi := libvmi.New(alpineOpts...)
+
+	// Supplied with no user data, Cirros image takes 230s to allow login
+	if libvmi.GetCloudInitVolume(vmi) == nil {
+		withNonEmptyUserData := libvmi.WithCloudInitNoCloud(WithDummyCloudForFastBoot())
+		withNonEmptyUserData(vmi)
+	}
+	return vmi
 }
 
 func NewAlpineWithTestTooling(opts ...libvmi.Option) *kvirtv1.VirtualMachineInstance {

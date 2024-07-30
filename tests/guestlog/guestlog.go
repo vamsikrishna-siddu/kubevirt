@@ -42,7 +42,7 @@ var _ = Describe("[sig-compute]Guest console log", decorators.SigCompute, func()
 	)
 
 	BeforeEach(func() {
-		cirrosVmi = libvmifact.NewCirros(libvmi.WithLogSerialConsole(true))
+		cirrosVmi = libvmifact.NewAlpine(libvmi.WithLogSerialConsole(true))
 		cirrosVmi.Spec.Domain.Devices.AutoattachSerialConsole = pointer.P(true)
 	})
 
@@ -50,7 +50,7 @@ var _ = Describe("[sig-compute]Guest console log", decorators.SigCompute, func()
 		Context("set LogSerialConsole", func() {
 			DescribeTable("should successfully start with LogSerialConsole", func(autoattachSerialConsole, logSerialConsole, expected bool) {
 				By("Starting a VMI")
-				cirrosVmi = libvmifact.NewCirros(libvmi.WithLogSerialConsole(logSerialConsole))
+				cirrosVmi = libvmifact.NewAlpine(libvmi.WithLogSerialConsole(logSerialConsole))
 				cirrosVmi.Spec.Domain.Devices.AutoattachSerialConsole = pointer.P(autoattachSerialConsole)
 				vmi := tests.RunVMIAndExpectLaunch(cirrosVmi, cirrosStartupTimeout)
 
@@ -95,7 +95,7 @@ var _ = Describe("[sig-compute]Guest console log", decorators.SigCompute, func()
 				Expect(foundContainer).To(BeTrue())
 
 				By("Triggering a shutdown from the guest OS")
-				Expect(console.LoginToCirros(vmi)).To(Succeed())
+				Expect(console.LoginToAlpine(vmi)).To(Succeed())
 				Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
 					&expect.BSnd{S: "sudo poweroff\n"},
 					&expect.BExp{R: "The system is going down NOW!"},
@@ -139,7 +139,7 @@ var _ = Describe("[sig-compute]Guest console log", decorators.SigCompute, func()
 				}, cirrosStartupTimeout*time.Second, 2*time.Second).Should(BeTrue())
 
 				By("Obtaining the serial console, logging in and executing a command there")
-				Expect(console.LoginToCirros(vmi)).To(Succeed())
+				Expect(console.LoginToAlpine(vmi)).To(Succeed())
 				Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
 					&expect.BSnd{S: "echo " + testString + "\n"},
 					&expect.BExp{R: testString},
@@ -163,7 +163,7 @@ var _ = Describe("[sig-compute]Guest console log", decorators.SigCompute, func()
 				By("Ensuring that logs contain the login attempt")
 				Expect(logs).To(ContainSubstring(vmi.Name + " login: cirros"))
 
-				// TODO: console.LoginToCirros is not systematically waiting for `\u001b[8m` to prevent echoing the password, fix it first
+				// TODO: console.LoginToAlpine is not systematically waiting for `\u001b[8m` to prevent echoing the password, fix it first
 				// By("Ensuring that logs don't contain the login password")
 				// Expect(outputString).ToNot(ContainSubstring("Password: gocubsgo"))
 
@@ -267,7 +267,7 @@ var _ = Describe("[sig-compute]Guest console log", decorators.SigCompute, func()
 
 func generateHugeLogData(vmi *v1.VirtualMachineInstance, mb int) {
 	By("Obtaining the serial console, logging in")
-	Expect(console.LoginToCirros(vmi)).To(Succeed())
+	Expect(console.LoginToAlpine(vmi)).To(Succeed())
 	Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
 		&expect.BSnd{S: "echo " + testString + "\n"},
 		&expect.BExp{R: testString},

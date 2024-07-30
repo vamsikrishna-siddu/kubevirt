@@ -57,7 +57,7 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 		BeforeEach(func() {
 			vmi, err = createSoundVMI(virtClient, "test-model-empty")
 			Expect(err).ToNot(HaveOccurred())
-			vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+			vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToAlpine)
 		})
 
 		It("should create an ich9 sound device on empty model", func() {
@@ -69,7 +69,7 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 		BeforeEach(func() {
 			vmi, err = createSoundVMI(virtClient, "ich9")
 			Expect(err).ToNot(HaveOccurred())
-			vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+			vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToAlpine)
 		})
 
 		It("should create ich9 sound device on ich9 model ", func() {
@@ -87,7 +87,7 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 })
 
 func createSoundVMI(virtClient kubecli.KubevirtClient, soundDevice string) (*v1.VirtualMachineInstance, error) {
-	randomVmi := libvmifact.NewCirros()
+	randomVmi := libvmifact.NewAlpine()
 	if soundDevice != "" {
 		model := soundDevice
 		if soundDevice == "test-model-empty" {

@@ -50,6 +50,7 @@ import (
 	"k8s.io/utils/pointer"
 
 	v1 "kubevirt.io/api/core/v1"
+	virtv1 "kubevirt.io/api/core/v1"
 	exportv1 "kubevirt.io/api/export/v1beta1"
 	instancetypev1beta1 "kubevirt.io/api/instancetype/v1beta1"
 	snapshotv1 "kubevirt.io/api/snapshot/v1beta1"
@@ -279,7 +280,7 @@ var _ = SIGDescribe("Export", func() {
 	populateKubeVirtContent := func(sc string, volumeMode k8sv1.PersistentVolumeMode) (*k8sv1.PersistentVolumeClaim, string) {
 		By("Creating source volume")
 		dv := libdv.NewDataVolume(
-			libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros), cdiv1.RegistryPullNode),
+			libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine), cdiv1.RegistryPullNode),
 			libdv.WithPVC(libdv.PVCWithStorageClass(sc), libdv.PVCWithVolumeMode(volumeMode)),
 			libdv.WithForceBindAnnotation(),
 		)
@@ -785,7 +786,7 @@ var _ = SIGDescribe("Export", func() {
 			Skip("Skip test when Filesystem storage is not present")
 		}
 		dv := libdv.NewDataVolume(
-			libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros), cdiv1.RegistryPullNode),
+			libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine), cdiv1.RegistryPullNode),
 			libdv.WithPVC(libdv.PVCWithStorageClass(sc)),
 			libdv.WithForceBindAnnotation(),
 		)
@@ -1277,7 +1278,7 @@ var _ = SIGDescribe("Export", func() {
 			Skip("Skip test when storage with snapshot is not present")
 		}
 
-		vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskCirros, sc)
+		vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, sc)
 		if libstorage.IsStorageClassBindingModeWaitForFirstConsumer(sc) {
 			// In WFFC need to start the VM in order for the
 			// dv to get populated
@@ -1352,7 +1353,7 @@ var _ = SIGDescribe("Export", func() {
 			libdv.WithPVC(libdv.PVCWithStorageClass(sc), libdv.PVCWithVolumeSize(cd.BlankVolumeSize)),
 		)
 
-		vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskCirros, sc)
+		vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, sc)
 		libstorage.AddDataVolumeTemplate(vm, blankDv)
 		addDataVolumeDisk(vm, "blankdisk", blankDv.Name)
 		if libstorage.IsStorageClassBindingModeWaitForFirstConsumer(sc) {
@@ -1376,7 +1377,7 @@ var _ = SIGDescribe("Export", func() {
 	})
 
 	It("should mark the status phase skipped on VMSnapshot without volumes", func() {
-		vm := libvmi.NewVirtualMachine(libvmifact.NewCirros())
+		vm := libvmi.NewVirtualMachine(libvmifact.NewAlpine())
 		vm = createVM(vm)
 		snapshot := createAndVerifyVMSnapshot(vm)
 		Expect(snapshot).ToNot(BeNil())
@@ -1420,8 +1421,8 @@ var _ = SIGDescribe("Export", func() {
 		if !exists {
 			Skip("Skip test when Filesystem storage is not present")
 		}
-		vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskCirros, sc)
-		vm.Spec.RunStrategy = virtpointer.P(v1.RunStrategyAlways)
+		vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, sc)
+		vm.Spec.RunStrategy = virtpointer.P(virtv1.RunStrategyAlways)
 		vm = createVM(vm)
 		Eventually(func() v1.VirtualMachineInstancePhase {
 			vmi, err := virtClient.VirtualMachineInstance(vm.Namespace).Get(context.Background(), vm.Name, metav1.GetOptions{})
@@ -1832,7 +1833,7 @@ var _ = SIGDescribe("Export", func() {
 			Expect(err).ToNot(HaveOccurred())
 		}()
 
-		imageUrl := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)
+		imageUrl := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)
 		dataVolume := libdv.NewDataVolume(
 			libdv.WithRegistryURLSourceAndPullMethod(imageUrl, cdiv1.RegistryPullNode),
 			libdv.WithPVC(libdv.PVCWithStorageClass(sc), libdv.PVCWithVolumeSize(cd.CirrosVolumeSize)),
@@ -1965,7 +1966,7 @@ var _ = SIGDescribe("Export", func() {
 		if !exists {
 			Skip("Skip test when Filesystem storage is not present")
 		}
-		vm := libvmi.NewVirtualMachine(libvmifact.NewCirros())
+		vm := libvmi.NewVirtualMachine(libvmifact.NewAlpine())
 		vm = createVM(vm)
 		// For testing the token is the name of the source VM.
 		token := createExportTokenSecret(vm.Name, vm.Namespace)
@@ -2136,7 +2137,7 @@ var _ = SIGDescribe("Export", func() {
 				libdv.WithPVC(libdv.PVCWithStorageClass(sc), libdv.PVCWithVolumeSize(cd.BlankVolumeSize)),
 			)
 
-			vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskCirros, sc)
+			vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, sc)
 			libstorage.AddDataVolumeTemplate(vm, blankDv)
 			addDataVolumeDisk(vm, "blankdisk", blankDv.Name)
 			if libstorage.IsStorageClassBindingModeWaitForFirstConsumer(sc) {
@@ -2160,8 +2161,8 @@ var _ = SIGDescribe("Export", func() {
 
 		It("Create succeeds using VM source", func() {
 			// Create a populated VM
-			vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskCirros, sc)
-			vm.Spec.RunStrategy = virtpointer.P(v1.RunStrategyAlways)
+			vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, sc)
+			vm.Spec.RunStrategy = virtpointer.P(virtv1.RunStrategyAlways)
 			vm = createVM(vm)
 			Eventually(func() v1.VirtualMachineInstancePhase {
 				vmi, err := virtClient.VirtualMachineInstance(vm.Namespace).Get(context.Background(), vm.Name, metav1.GetOptions{})
@@ -2284,7 +2285,7 @@ var _ = SIGDescribe("Export", func() {
 					libdv.WithBlankImageSource(),
 					libdv.WithPVC(libdv.PVCWithStorageClass(sc), libdv.PVCWithVolumeSize(cd.BlankVolumeSize)),
 				)
-				vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskCirros, sc)
+				vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, sc)
 				libstorage.AddDataVolumeTemplate(vm, blankDv)
 				addDataVolumeDisk(vm, "blankdisk", blankDv.Name)
 				if libstorage.IsStorageClassBindingModeWaitForFirstConsumer(sc) {
@@ -2333,8 +2334,8 @@ var _ = SIGDescribe("Export", func() {
 
 			It("Download succeeds creating and downloading a vmexport using VM source", func() {
 				// Create a populated VM
-				vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskCirros, sc)
-				vm.Spec.RunStrategy = virtpointer.P(v1.RunStrategyAlways)
+				vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, sc)
+				vm.Spec.RunStrategy = virtpointer.P(virtv1.RunStrategyAlways)
 				vm = createVM(vm)
 				Eventually(func() v1.VirtualMachineInstancePhase {
 					vmi, err := virtClient.VirtualMachineInstance(vm.Namespace).Get(context.Background(), vm.Name, metav1.GetOptions{})

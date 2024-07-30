@@ -54,7 +54,7 @@ var _ = Describe("[Serial][sig-compute][USB] host USB Passthrough", Serial, deco
 			Skip("No emulated USB devices present for functional test.")
 		}
 
-		vmi = libvmifact.NewCirros()
+		vmi = libvmifact.NewAlpine()
 	})
 
 	AfterEach(func() {
@@ -99,7 +99,7 @@ var _ = Describe("[Serial][sig-compute][USB] host USB Passthrough", Serial, deco
 			vmi, err = virtClient.VirtualMachineInstance(testsuite.NamespaceTestDefault).Create(context.Background(), vmi, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 			vmi = libwait.WaitForSuccessfulVMIStart(vmi)
-			Expect(console.LoginToCirros(vmi)).To(Succeed())
+			Expect(console.LoginToAlpine(vmi)).To(Succeed())
 
 			By("Making sure the usb is present inside the VMI")
 			Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
