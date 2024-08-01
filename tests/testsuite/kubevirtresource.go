@@ -37,12 +37,16 @@ import (
 	v1 "kubevirt.io/api/core/v1"
 	"kubevirt.io/client-go/kubecli"
 
+	"kubevirt.io/kubevirt/pkg/libvmi"
+	putil "kubevirt.io/kubevirt/pkg/util"
 	virtconfig "kubevirt.io/kubevirt/pkg/virt-config"
+	"kubevirt.io/kubevirt/tests/console"
 	"kubevirt.io/kubevirt/tests/flags"
 	"kubevirt.io/kubevirt/tests/framework/checks"
 	"kubevirt.io/kubevirt/tests/framework/kubevirt"
 	"kubevirt.io/kubevirt/tests/libkubevirt"
 	"kubevirt.io/kubevirt/tests/libstorage"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 	"kubevirt.io/kubevirt/tests/util"
 )
 
@@ -50,6 +54,28 @@ var (
 	KubeVirtDefaultConfig v1.KubeVirtConfiguration
 	originalKV            *v1.KubeVirt
 )
+
+// GetVMGuestByArchitecture returns the VMGuest based on the Architecture.
+func GetVMGuestByArchitecture(opts ...libvmi.Option) (*v1.VirtualMachineInstance,
+	console.LoginToFunction, bool) {
+	var vmi *v1.VirtualMachineInstance
+	var loginToVMI console.LoginToFunction
+	var isAlpine bool
+	arch := putil.TranslateBuildArch()
+	// Cirros is not supported for s390x.
+	// Use Alpine instead of Cirros for s390x.
+	if checks.IsS390X(arch) {
+		vmi = libvmifact.NewAlpine(opts...)
+		loginToVMI = console.LoginToAlpine
+		isAlpine = true
+		return vmi, loginToVMI, isAlpine
+	}
+
+	vmi = libvmifact.NewCirros(opts...)
+	loginToVMI = console.LoginToCirros
+
+	return vmi, loginToVMI, isAlpine
+}
 
 func AdjustKubeVirtResource() {
 	virtClient := kubevirt.Client()
@@ -91,8 +117,14 @@ func AdjustKubeVirtResource() {
 			},
 		},
 	}
+	arch := putil.TranslateBuildArch()
+	// Disable CPUManager Featuregate for s390x as it is not supported.
+	if arch != "s390x" {
+		kv.Spec.Configuration.DeveloperConfiguration.FeatureGates = append(kv.Spec.Configuration.DeveloperConfiguration.FeatureGates,
+			virtconfig.CPUManager,
+		)
+	}
 	kv.Spec.Configuration.DeveloperConfiguration.FeatureGates = append(kv.Spec.Configuration.DeveloperConfiguration.FeatureGates,
-		virtconfig.CPUManager,
 		virtconfig.IgnitionGate,
 		virtconfig.SidecarGate,
 		virtconfig.SnapshotGate,
