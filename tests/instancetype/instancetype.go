@@ -115,7 +115,7 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 		var vmi *virtv1.VirtualMachineInstance
 
 		BeforeEach(func() {
-			vmi = libvmifact.NewGuestless()
+			vmi = libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 		})
 
 		It("[test_id:CNV-9086] should fail to create VM with non-existing cluster instancetype", func() {
@@ -151,7 +151,7 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 		var vmi *virtv1.VirtualMachineInstance
 
 		BeforeEach(func() {
-			vmi = libvmifact.NewGuestless()
+			vmi = libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 		})
 
 		It("[test_id:CNV-9091] should fail to create VM with non-existing cluster preference", func() {
@@ -233,7 +233,7 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 		var vmi *virtv1.VirtualMachineInstance
 
 		BeforeEach(func() {
-			vmi = libvmifact.NewGuestless()
+			vmi = libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 		})
 
 		It("[test_id:CNV-9094] should find and apply cluster instancetype and preferences when kind isn't provided", func() {
@@ -591,7 +591,7 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 			Expect(vmi.Spec.Domain.CPU.Sockets).To(Equal(originalInstancetypeCPUGuest))
 
 			By("Creating a second VirtualMachine using the now updated VirtualMachineInstancetype and original VirtualMachinePreference")
-			newVMI := libvmifact.NewGuestless()
+			newVMI := libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 			newVM := libvmi.NewVirtualMachine(newVMI,
 				libvmi.WithInstancetype(instancetype.Name),
 				libvmi.WithPreference(preference.Name),
@@ -1041,7 +1041,7 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 		})
 
 		It("should be accepted and result in running VirtualMachineInstance", func() {
-			vmi := libvmifact.NewGuestless()
+			vmi := libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 
 			clusterInstancetype := builder.NewClusterInstancetypeFromVMI(vmi)
 			clusterInstancetype.Spec.CPU.DedicatedCPUPlacement = pointer.P(true)

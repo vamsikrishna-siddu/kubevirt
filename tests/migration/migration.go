@@ -2203,6 +2203,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				It("should be able to properly abort migration", func() {
 					By("Starting a VirtualMachineInstance")
 					vmi := libvmifact.NewGuestless(
+						libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()),
 						libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 						libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					)
@@ -3155,6 +3156,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 		It("there should always be a single active migration per VMI", func() {
 			By("Starting a VMI")
 			vmi := libvmifact.NewGuestless(
+				libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			)
