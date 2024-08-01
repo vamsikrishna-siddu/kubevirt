@@ -27,8 +27,10 @@ import (
 	"kubevirt.io/kubevirt/pkg/libvmi"
 	libvmici "kubevirt.io/kubevirt/pkg/libvmi/cloudinit"
 	"kubevirt.io/kubevirt/pkg/pointer"
+	"kubevirt.io/kubevirt/pkg/util"
 
 	cd "kubevirt.io/kubevirt/tests/containerdisk"
+	"kubevirt.io/kubevirt/tests/framework/checks"
 )
 
 const (
@@ -98,19 +100,27 @@ func NewAlpineWithTestTooling(opts ...libvmi.Option) *kvirtv1.VirtualMachineInst
 }
 
 func NewGuestless(opts ...libvmi.Option) *kvirtv1.VirtualMachineInstance {
-	opts = append(
-		[]libvmi.Option{libvmi.WithResourceMemory(qemuMinimumMemory())},
-		opts...)
+	arch := util.TranslateBuildArch()
+	// Use Alpine if the architecture is s390x.
+	if checks.IsS390X(arch) {
+		vmi := NewAlpine(opts...)
+		return vmi
+	}
 	return libvmi.New(opts...)
 }
 
-func qemuMinimumMemory() string {
+func QemuMinimumMemory() string {
+	const armS390xMinimalBootableMemory = "128Mi"
 	if isARM64() {
 		// required to start qemu on ARM with UEFI firmware
 		// https://github.com/kubevirt/kubevirt/pull/11366#issuecomment-1970247448
-		const armMinimalBootableMemory = "128Mi"
-		return armMinimalBootableMemory
+		return armS390xMinimalBootableMemory
 	}
+	if IsS390X() {
+		// Using Alpine for the s390x Architecture.
+		return armS390xMinimalBootableMemory
+	}
+
 	return "1Mi"
 }
 
