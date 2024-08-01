@@ -1608,7 +1608,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 			var vmi *v1.VirtualMachineInstance
 
 			BeforeEach(func() {
-				vmi = libvmifact.NewGuestless()
+				vmi = libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 			})
 
 			It("[test_id:6960]should reject disk with missing volume", func() {
@@ -1647,7 +1647,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 				tests.UpdateKubeVirtConfigValueAndWait(*config)
 
 				By("Creating a new VMI")
-				vmi := libvmifact.NewGuestless()
+				vmi := libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 				// Runtime class related warnings are expected since we created a fake runtime class that isn't supported
 				wp := watcher.WarningsPolicy{FailOnWarnings: true, WarningsIgnoreList: []string{"RuntimeClass"}}
 				vmi = libvmops.RunVMIAndExpectSchedulingWithWarningPolicy(vmi, 30, wp)
@@ -1664,7 +1664,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 			config := libkubevirt.GetCurrentKv(virtClient).Spec.Configuration
 			Expect(config.DefaultRuntimeClass).To(BeEmpty())
 			By("Creating a VMI")
-			vmi := libvmops.RunVMIAndExpectLaunch(libvmifact.NewGuestless(), 60)
+			vmi := libvmops.RunVMIAndExpectLaunch(libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory())), 60)
 
 			By("Checking for absence of runtimeClassName")
 			pod, err := libpod.GetPodByVirtualMachineInstance(vmi, vmi.Namespace)
@@ -1896,7 +1896,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 		})
 
 		It("[test_id:3125]should allow creating VM without Machine defined", func() {
-			vmi := libvmifact.NewGuestless()
+			vmi := libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 			vmi.Spec.Domain.Machine = nil
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, 30)
 			runningVMISpec, err := tests.GetRunningVMIDomainSpec(vmi)
@@ -1934,7 +1934,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 			config.ArchitectureConfiguration.Ppc64le.EmulatedMachines = testEmulatedMachines
 			tests.UpdateKubeVirtConfigValueAndWait(config)
 
-			vmi := libvmifact.NewGuestless()
+			vmi := libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, 30)
 			runningVMISpec, err := tests.GetRunningVMIDomainSpec(vmi)
 
@@ -1973,7 +1973,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 		})
 
 		It("[test_id:3128]should set CPU request when it is not provided", func() {
-			vmi := libvmifact.NewGuestless()
+			vmi := libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 			runningVMI := libvmops.RunVMIAndExpectScheduling(vmi, 30)
 
 			readyPod, err := libpod.GetPodByVirtualMachineInstance(runningVMI, testsuite.GetTestNamespace(vmi))
@@ -1991,7 +1991,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 			config.CPURequest = &configureCPURequest
 			tests.UpdateKubeVirtConfigValueAndWait(config)
 
-			vmi := libvmifact.NewGuestless()
+			vmi := libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 			runningVMI := libvmops.RunVMIAndExpectScheduling(vmi, 30)
 
 			readyPod, err := libpod.GetPodByVirtualMachineInstance(runningVMI, testsuite.GetTestNamespace(vmi))
@@ -2015,7 +2015,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 		})
 		It("should not set a CPU limit if the namespace doesn't match the selector", func() {
 			By("Creating a running VMI")
-			vmi := libvmifact.NewGuestless()
+			vmi := libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 			runningVMI := libvmops.RunVMIAndExpectScheduling(vmi, 30)
 
 			By("Ensuring no CPU limit is set")
@@ -2027,7 +2027,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 		})
 		It("should set a CPU limit if the namespace matches the selector", func() {
 			By("Creating a VMI object")
-			vmi := libvmifact.NewGuestless()
+			vmi := libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 
 			By("Adding the right label to VMI namespace")
 			namespace, err := virtClient.CoreV1().Namespaces().Get(context.Background(), testsuite.GetTestNamespace(vmi), metav1.GetOptions{})
@@ -2521,7 +2521,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 			Expect(vmiCondition.Reason).To(Equal("Synchronizing with the Domain failed."))
 		})
 	})
-	Describe("[rfe_id:897][crit:medium][arm64][vendor:cnv-qe@redhat.com][level:component]VirtualMachineInstance with CPU pinning", func() {
+	Describe("[rfe_id:897][crit:medium][arm64][s390x][vendor:cnv-qe@redhat.com][level:component]VirtualMachineInstance with CPU pinning", func() {
 		var nodes *k8sv1.NodeList
 
 		isNodeHasCPUManagerLabel := func(nodeName string) bool {

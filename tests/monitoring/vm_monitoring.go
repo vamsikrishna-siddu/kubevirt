@@ -69,7 +69,7 @@ var _ = Describe("[Serial][sig-monitoring]VM Monitoring", Serial, decorators.Sig
 	Context("Cluster VM metrics", func() {
 		It("kubevirt_number_of_vms should reflect the number of VMs", func() {
 			for i := 0; i < 5; i++ {
-				vmi := libvmifact.NewGuestless()
+				vmi := libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 				vm := libvmi.NewVirtualMachine(vmi)
 				_, err = virtClient.VirtualMachine(testsuite.GetTestNamespace(nil)).Create(context.Background(), vm, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
@@ -81,7 +81,7 @@ var _ = Describe("[Serial][sig-monitoring]VM Monitoring", Serial, decorators.Sig
 
 	Context("VMI metrics", func() {
 		It("should have kubevirt_vmi_phase_transition_time_seconds buckets correctly configured", func() {
-			vmi := libvmifact.NewGuestless()
+			vmi := libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 			libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 			for _, bucket := range virtcontroller.PhaseTransitionTimeBuckets() {
@@ -93,7 +93,7 @@ var _ = Describe("[Serial][sig-monitoring]VM Monitoring", Serial, decorators.Sig
 		})
 
 		It("should have kubevirt_rest_client_requests_total for the 'virtualmachineinstances' resource", func() {
-			vmi := libvmifact.NewGuestless()
+			vmi := libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 			libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 			labels := map[string]string{"resource": "virtualmachineinstances"}
@@ -110,7 +110,7 @@ var _ = Describe("[Serial][sig-monitoring]VM Monitoring", Serial, decorators.Sig
 		}
 
 		BeforeEach(func() {
-			vmi := libvmifact.NewGuestless()
+			vmi := libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 			vm = libvmi.NewVirtualMachine(vmi)
 
 			By("Create a VirtualMachine")
@@ -333,7 +333,7 @@ var _ = Describe("[Serial][sig-monitoring]VM Monitoring", Serial, decorators.Sig
 
 		It("should fire KubevirtVmHighMemoryUsage alert", func() {
 			By("starting VMI")
-			vmi := libvmifact.NewGuestless()
+			vmi := libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 			By("fill up the vmi pod memory")
@@ -353,7 +353,7 @@ var _ = Describe("[Serial][sig-monitoring]VM Monitoring", Serial, decorators.Sig
 
 		It("[test_id:9260] should fire OrphanedVirtualMachineInstances alert", func() {
 			By("starting VMI")
-			vmi := libvmifact.NewGuestless()
+			vmi := libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 			libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 			By("delete virt-handler daemonset")

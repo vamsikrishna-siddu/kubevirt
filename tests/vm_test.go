@@ -1875,7 +1875,7 @@ status:
 		)
 
 		BeforeEach(func() {
-			vmi = libvmifact.NewGuestless()
+			vmi = libvmifact.NewGuestless(libvmi.WithResourceMemory(libvmifact.QemuMinimumMemory()))
 			vm = libvmi.NewVirtualMachine(vmi, libvmi.WithRunning())
 			Expect(vm.Finalizers).To(BeEmpty())
 			vm.Finalizers = append(vm.Finalizers, customFinalizer)
