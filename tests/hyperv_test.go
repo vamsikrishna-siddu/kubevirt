@@ -54,6 +54,8 @@ var _ = Describe("[sig-compute] Hyper-V enlightenments", decorators.SigCompute, 
 	)
 	BeforeEach(func() {
 		virtClient = kubevirt.Client()
+		arch := checks.GetArchFromBuildArch()
+		checks.SkipIfS390X(arch, "Hyper-V is not supported for s390x.")
 	})
 
 	Context("VMI with HyperV re-enlightenment enabled", func() {

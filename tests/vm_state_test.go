@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"kubevirt.io/kubevirt/tests/framework/checks"
 	"kubevirt.io/kubevirt/tests/libmigration"
 
 	"kubevirt.io/kubevirt/tests/testsuite"
@@ -42,6 +43,9 @@ var _ = Describe("[sig-storage]VM state", decorators.SigStorage, decorators.Requ
 	})
 
 	Context("with persistent TPM VM option enabled", func() {
+		arch := checks.GetArchFromBuildArch()
+		checks.SkipIfS390X(arch, "TPM is not supported for s390x.")
+
 		stopVM := func(vm *v1.VirtualMachine) {
 			By("Stopping the VM")
 			err = virtClient.VirtualMachine(vm.Namespace).Stop(context.Background(), vm.Name, &v1.StopOptions{})

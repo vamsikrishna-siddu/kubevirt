@@ -3,6 +3,8 @@ package checks
 import (
 	"context"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
@@ -226,6 +228,21 @@ func SkipIfS390X(arch string, message string) {
 	if IsS390X(arch) {
 		ginkgo.Skip("Skip test on s390x: " + message)
 	}
+}
+
+func GetArchFromBuildArch() string {
+	buildArch := os.Getenv("BUILD_ARCH")
+	var arch string
+
+	if buildArch != "" {
+		archElements := strings.Split(buildArch, "-")
+		if len(archElements) == 2 {
+			arch = archElements[1]
+		} else {
+			arch = archElements[0]
+		}
+	}
+	return arch
 }
 
 func SkipIfRunningOnKindInfra(message string) {

@@ -35,6 +35,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/pointer"
 	"kubevirt.io/kubevirt/pkg/virt-launcher/virtwrap/api"
 	"kubevirt.io/kubevirt/tests"
+	"kubevirt.io/kubevirt/tests/framework/checks"
 	"kubevirt.io/kubevirt/tests/framework/kubevirt"
 	"kubevirt.io/kubevirt/tests/framework/matcher"
 	"kubevirt.io/kubevirt/tests/libkubevirt"
@@ -101,6 +102,9 @@ var _ = SIGDescribe("VMIDefaults", func() {
 
 		BeforeEach(func() {
 			// create VMI with missing disk target
+			arch := checks.GetArchFromBuildArch()
+			checks.SkipIfS390X(arch, "memory ballooning is not supported for s390x.")
+
 			vmi = libvmi.New(
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),

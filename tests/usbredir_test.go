@@ -40,6 +40,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/libvmi"
 
 	"kubevirt.io/kubevirt/tests"
+	"kubevirt.io/kubevirt/tests/framework/checks"
 	"kubevirt.io/kubevirt/tests/framework/kubevirt"
 )
 
@@ -67,6 +68,8 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 	const enoughMemForSafeBiosEmulation = "32Mi"
 	BeforeEach(func() {
 		virtClient = kubevirt.Client()
+		arch := checks.GetArchFromBuildArch()
+		checks.SkipIfS390X(arch, "sound cards are not supported for s390x.")
 	})
 
 	Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component] A VirtualMachineInstance without usbredir support", func() {
