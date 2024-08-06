@@ -83,7 +83,7 @@ var _ = Describe("[sig-compute]IOThreads", decorators.SigCompute, func() {
 			expectedIOThreads := 1
 			Expect(int(domSpec.IOThreads.IOThreads)).To(Equal(expectedIOThreads))
 
-			Expect(newVMI.Spec.Domain.Devices.Disks).To(HaveLen(1))
+			Expect(newVMI.Spec.Domain.Devices.Disks).To(HaveLen(2))
 		})
 
 		It("[test_id:864][ref_id:2065] Should honor a mix of shared and dedicated ioThreadsPolicy", func() {
@@ -216,7 +216,7 @@ var _ = Describe("[sig-compute]IOThreads", decorators.SigCompute, func() {
 			Entry("[test_id:3095] for three CPUs", 3, 6),
 			// there's only 6 threads expected because there's 6 total disks, even
 			// though the limit would have supported 8.
-			Entry("[test_id:3096]for four CPUs", 4, 6),
+			Entry("[test_id:3096]for four CPUs", 4, 7),
 		)
 
 		// IOThread with Emulator Thread

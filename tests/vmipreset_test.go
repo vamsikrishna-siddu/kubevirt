@@ -137,7 +137,7 @@ var _ = Describe("[rfe_id:609][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(reviewResponse.Details.Causes).To(HaveLen(1))
-			Expect(reviewResponse.Details.Causes[0].Field).To(Equal("spec.domain.devices.disks[1]"))
+			Expect(reviewResponse.Details.Causes[0].Field).To(Equal("spec.domain.devices.disks[2]"))
 		})
 	})
 
