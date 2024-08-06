@@ -381,7 +381,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 
 			Context("without k8s secret", func() {
 				It("[test_id:1629][posneg:negative]should not be able to start virt-launcher pod", func() {
-					vmi, _, _ = testsuite.GetVMGuestByArchitecture()
+					vmi, _, _ = testsuite.GetVMGuestByArchitecture(libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()))
 					for _, volume := range vmi.Spec.Volumes {
 						if volume.CloudInitNoCloud != nil {
 							spec := volume.CloudInitNoCloud
@@ -410,7 +410,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 
 				It("[test_id:1630]should log warning and proceed once the secret is there", func() {
 					userData64 := ""
-					vmi, _, _ := testsuite.GetVMGuestByArchitecture()
+					vmi, _, _ := testsuite.GetVMGuestByArchitecture(libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()))
 
 					for _, volume := range vmi.Spec.Volumes {
 						if volume.CloudInitNoCloud != nil {
