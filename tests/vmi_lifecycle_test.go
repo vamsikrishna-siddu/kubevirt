@@ -75,7 +75,7 @@ import (
 	"kubevirt.io/kubevirt/tests/watcher"
 )
 
-var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com][level:component][sig-compute]VMIlifecycle", decorators.SigCompute, decorators.VMIlifecycle, func() {
+var _ = Describe("[rfe_id:273][crit:high][arm64][vendor:cnv-qe@redhat.com][level:component][sig-compute]VMIlifecycle", decorators.SigCompute, decorators.VMIlifecycle, func() {
 
 	var err error
 
@@ -92,7 +92,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 		testsuite.EnsureKVMPresent()
 	})
 
-	Context("when virt-handler is deleted", Serial, func() {
+	Context("when virt-handler is deleted", Serial, decorators.WgS390x, func() {
 		It("[Serial][test_id:4716]should label the node with kubevirt.io/schedulable=false", func() {
 			pods, err := kubevirt.Client().CoreV1().Pods("").List(context.Background(), metav1.ListOptions{
 				LabelSelector: fmt.Sprintf("%s=%s", v1.AppLabel, "virt-handler"),
@@ -122,17 +122,17 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 	})
 
 	Describe("[rfe_id:273][crit:high][vendor:cnv-qe@redhat.com][level:component]Creating a VirtualMachineInstance", func() {
-		It("[test_id:1619]should success", func() {
+		It("[test_id:1619]should success", decorators.WgS390x, func() {
 			vmi := libvmifact.NewAlpine()
 			_, err := kubevirt.Client().VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred(), "Create VMI successfully")
 		})
 
-		It("[test_id:1620]should start it", func() {
+		It("[test_id:1620]should start it", decorators.WgS390x, func() {
 			libvmops.RunVMIAndExpectLaunch(libvmifact.NewAlpine(), startupTimeout)
 		})
 
-		It("[test_id:6095]should start in paused state if start strategy set to paused", func() {
+		It("[test_id:6095]should start in paused state if start strategy set to paused", decorators.WgS390x, func() {
 			vmi := libvmifact.NewAlpine(libvmi.WithStartStrategy(v1.StartStrategyPaused))
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, startupTimeout)
 			Eventually(matcher.ThisVMI(vmi), 30*time.Second, 2*time.Second).Should(matcher.HaveConditionTrue(v1.VirtualMachineInstancePaused))
@@ -143,7 +143,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			Eventually(matcher.ThisVMI(vmi), 30*time.Second, 2*time.Second).Should(matcher.HaveConditionMissingOrFalse(v1.VirtualMachineInstancePaused))
 		})
 
-		It("[test_id:1621]should attach virt-launcher to it", func() {
+		It("[test_id:1621]should attach virt-launcher to it", decorators.WgS390x, func() {
 			vmi := libvmops.RunVMIAndExpectLaunch(libvmifact.NewAlpine(), startupTimeout)
 
 			By("Getting virt-launcher logs")
@@ -154,7 +154,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 				Should(ContainSubstring("Found PID for"))
 		})
 
-		It("[test_id:3195]should carry annotations to pod", func() {
+		It("[test_id:3195]should carry annotations to pod", decorators.WgS390x, func() {
 			vmi := libvmops.RunVMIAndExpectLaunch(libvmifact.NewAlpine(
 				libvmi.WithAnnotation("testannotation", "annotation from vmi")),
 				startupTimeout)
@@ -165,7 +165,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			Expect(pod.Annotations).To(HaveKeyWithValue("testannotation", "annotation from vmi"), "annotation should be carried to the pod")
 		})
 
-		It("[test_id:3196]should carry kubernetes and kubevirt annotations to pod", func() {
+		It("[test_id:3196]should carry kubernetes and kubevirt annotations to pod", decorators.WgS390x, func() {
 			vmi = libvmops.RunVMIAndExpectLaunch(libvmifact.NewAlpine(
 				libvmi.WithAnnotation("kubevirt.io/test", "test"),
 				libvmi.WithAnnotation("kubernetes.io/test", "test")),
@@ -178,7 +178,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			Expect(pod.Annotations).To(HaveKey("kubernetes.io/test"), "kubernetes annotation should not be carried to the pod")
 		})
 
-		It("Should prevent eviction when EvictionStratgy: External", func() {
+		It("Should prevent eviction when EvictionStratgy: External", decorators.WgS390x, func() {
 			vmi := libvmifact.NewAlpine(libvmi.WithEvictionStrategy(v1.EvictionStrategyExternal))
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, startupTimeout)
 
@@ -206,7 +206,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			}, 20*time.Second, 1*time.Second).ShouldNot(HaveOccurred())
 		})
 
-		It("[test_id:1622]should log libvirtd logs", func() {
+		It("[test_id:1622]should log libvirtd logs", decorators.WgS390x, func() {
 			vmi := libvmops.RunVMIAndExpectLaunch(libvmifact.NewAlpine(), startupTimeout)
 
 			By("Getting virt-launcher logs")
@@ -221,7 +221,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 				Should(ContainSubstring(`"subcomponent":"libvirt"`))
 		})
 
-		DescribeTable("log libvirtd debug logs should be", func(vmiLabels, vmiAnnotations map[string]string, expectDebugLogs bool) {
+		DescribeTable("log libvirtd debug logs should be", decorators.WgS390x, func(vmiLabels, vmiAnnotations map[string]string, expectDebugLogs bool) {
 			arch := util.TranslateBuildArch()
 			var memory string
 			if arch == "s390x" {
@@ -270,7 +270,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			Entry("[test_id:8533]disabled when log verbosity, debug logs and customLogFilters are not defined", nil, nil, false),
 		)
 
-		It("[test_id:1623]should reject POST if validation webhook deems the spec invalid", func() {
+		It("[test_id:1623]should reject POST if validation webhook deems the spec invalid", decorators.WgS390x, func() {
 			vmi := libvmifact.NewAlpine()
 			// Add a disk that doesn't map to a volume.
 			// This should get rejected which tells us the webhook validator is working.
@@ -298,7 +298,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			Expect(reviewResponse.Details.Causes[1].Field).To(Equal("spec.domain.devices.disks[3].name"))
 		})
 
-		It("[test_id:1624]should reject PATCH if schema is invalid", func() {
+		It("[test_id:1624]should reject PATCH if schema is invalid", decorators.WgS390x, func() {
 			vmi := libvmifact.NewAlpine()
 			err := kubevirt.Client().RestClient().Post().Resource("virtualmachineinstances").Namespace(testsuite.GetTestNamespace(vmi)).Body(vmi).Do(context.Background()).Error()
 			Expect(err).ToNot(HaveOccurred(), "Send POST successfully")
@@ -314,7 +314,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			Expect(statusCode).To(Equal(http.StatusUnprocessableEntity), "The entity should be unprocessable")
 		})
 
-		Context("when name is longer than 63 characters", func() {
+		Context("when name is longer than 63 characters", decorators.WgS390x, func() {
 			BeforeEach(func() {
 				vmi = libvmifact.NewAlpine()
 				vmi.Name = "testvmi" + rand.String(63)
@@ -335,7 +335,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			})
 		})
 
-		Context("when it already exist", func() {
+		Context("when it already exist", decorators.WgS390x, func() {
 			It("[test_id:1626]should be rejected", func() {
 				By("Creating a VirtualMachineInstance")
 				vmi := libvmifact.NewAlpine()
@@ -354,8 +354,6 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 
 		Context("with boot order", func() {
 			DescribeTable("[rfe_id:273][crit:high][vendor:cnv-qe@redhat.com][level:component]should be able to boot from selected disk", func(alpineBootOrder uint, cirrosBootOrder uint, consoleText string, wait int) {
-				arch := testsuite.TranslateBuildArch()
-				checks.SkipIfS390X(arch, "skipping for s390x as this test requires both cirros and alpine.")
 				By("defining a VirtualMachineInstance with an Alpine disk")
 				vmi = libvmifact.NewAlpine(libvmi.WithContainerDisk("disk2", cd.ContainerDiskFor(cd.ContainerDiskCirros)))
 
@@ -377,7 +375,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			)
 		})
 
-		Context("with user-data", func() {
+		Context("with user-data", decorators.WgS390x, func() {
 
 			Context("without k8s secret", func() {
 				It("[test_id:1629][posneg:negative]should not be able to start virt-launcher pod", func() {
@@ -448,7 +446,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			})
 		})
 
-		Context("with nodeselector", func() {
+		Context("with nodeselector", decorators.WgS390x, func() {
 			It("[test_id:5760]should check if vm's with non existing nodeselector is not running and node selector is not updated", func() {
 				vmi, _, _ := testsuite.GetVMGuestByArchitecture()
 
@@ -500,7 +498,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			})
 		})
 
-		Context("when virt-launcher crashes", func() {
+		Context("when virt-launcher crashes", decorators.WgS390x, func() {
 			It("[Serial][test_id:1631]should be stopped and have Failed phase", Serial, func() {
 				vmi := libvmifact.NewAlpine()
 				vmi, err := kubevirt.Client().VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
@@ -528,7 +526,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			})
 		})
 
-		Context("[Serial]when virt-handler crashes", Serial, func() {
+		Context("[Serial]when virt-handler crashes", Serial, decorators.WgS390x, func() {
 			// FIXME: This test has the issues that it tests a lot of different timing scenarios in an intransparent way:
 			// e.g. virt-handler can die before or after virt-launcher. If we wait until virt-handler is dead before we
 			// kill virt-launcher then we don't know if virt-handler already restarted.
@@ -577,7 +575,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			})
 		})
 
-		Context("[Serial]when virt-handler is responsive", Serial, func() {
+		Context("[Serial]when virt-handler is responsive", Serial, decorators.WgS390x, func() {
 			It("[test_id:1633]should indicate that a node is ready for vmis", func() {
 
 				By("adding a heartbeat annotation and a schedulable label to the node")
@@ -672,8 +670,6 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			var virtHandlerAvailablePods int32
 
 			BeforeEach(func() {
-				arch := testsuite.TranslateBuildArch()
-				checks.SkipIfS390X(arch, "failing for s390x.")
 				// Schedule a vmi and make sure that virt-handler gets evicted from the node where the vmi was started
 				// Note: we want VMI without any container
 				vmi = libvmifact.NewGuestless(
@@ -786,7 +782,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			})
 		})
 
-		Context("[Serial]with node tainted", Serial, func() {
+		Context("[Serial]with node tainted", Serial, decorators.WgS390x, func() {
 			var nodes *k8sv1.NodeList
 			var err error
 			BeforeEach(func() {
@@ -833,7 +829,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			})
 		})
 
-		Context("with affinity", func() {
+		Context("with affinity", decorators.WgS390x, func() {
 			var nodes *k8sv1.NodeList
 
 			BeforeEach(func() {
@@ -900,7 +896,6 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			BeforeEach(func() {
 				// arm64 does not support cpu model
 				checks.SkipIfARM64(testsuite.Arch, "arm64 does not support cpu model")
-				checks.SkipIfS390X(testsuite.Arch, "the kubevirt support of s390x cpu model is not yet added.")
 				nodes := libnode.GetAllSchedulableNodes(kubevirt.Client())
 				Expect(nodes.Items).ToNot(BeEmpty(), "There should be some compute node")
 				supportedCpuModels = libnode.GetSupportedCPUModels(*nodes)
@@ -1010,7 +1005,6 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			BeforeEach(func() {
 				// arm64 does not support cpu model
 				checks.SkipIfARM64(testsuite.Arch, "arm64 does not support cpu model")
-				checks.SkipIfS390X(testsuite.Arch, "the kubevirt support of s390x cpu model is not yet added.")
 				nodes = libnode.GetAllSchedulableNodes(kubevirt.Client())
 				Expect(nodes.Items).ToNot(BeEmpty(), "There should be some compute node")
 
@@ -1230,7 +1224,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 
 		})
 
-		Context("with non default namespace", func() {
+		Context("with non default namespace", decorators.WgS390x, func() {
 			DescribeTable("[rfe_id:273][crit:high][vendor:cnv-qe@redhat.com][level:component]should log libvirt start and stop lifecycle events of the domain", func(alternativeNamespace bool) {
 				arch := util.TranslateBuildArch()
 				var memory string
@@ -1314,7 +1308,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			)
 		})
 
-		Context("VirtualMachineInstance Emulation Mode", func() {
+		Context("VirtualMachineInstance Emulation Mode", decorators.WgS390x, func() {
 			BeforeEach(func() {
 				// allowEmulation won't change in a test suite run, so cache it
 				if allowEmulation == nil {
@@ -1423,7 +1417,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 			})
 		})
 
-		Context("VM Accelerated Mode", func() {
+		Context("VM Accelerated Mode", decorators.WgS390x, func() {
 			BeforeEach(func() {
 				// allowEmulation won't change in a test suite run, so cache it
 				if allowEmulation == nil {
@@ -1496,7 +1490,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 		})
 	})
 
-	Describe("[rfe_id:273][crit:high][vendor:cnv-qe@redhat.com][level:component]Get a VirtualMachineInstance", func() {
+	Describe("[rfe_id:273][crit:high][vendor:cnv-qe@redhat.com][level:component]Get a VirtualMachineInstance", decorators.WgS390x, func() {
 		Context("when that not exist", func() {
 			It("[test_id:1649]should return 404", func() {
 				vmi := libvmifact.NewAlpine()
@@ -1510,7 +1504,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 		})
 	})
 
-	Describe("[rfe_id:273][crit:high][vendor:cnv-qe@redhat.com][level:component]Delete a VirtualMachineInstance's Pod", func() {
+	Describe("[rfe_id:273][crit:high][vendor:cnv-qe@redhat.com][level:component]Delete a VirtualMachineInstance's Pod", decorators.WgS390x, func() {
 		It("[test_id:1650]should result in the VirtualMachineInstance moving to a finalized state", func() {
 			By("Creating the VirtualMachineInstance")
 			vmi := libvmops.RunVMIAndExpectLaunch(libvmifact.NewAlpine(), startupTimeout)
@@ -1541,7 +1535,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 		})
 	})
 	Describe("[rfe_id:273][crit:high][vendor:cnv-qe@redhat.com][level:component]Delete a VirtualMachineInstance", func() {
-		Context("with an active pod.", func() {
+		Context("with an active pod.", decorators.WgS390x, func() {
 			It("[test_id:1651]should result in pod being terminated", func() {
 
 				By("Creating the VirtualMachineInstance")
@@ -1565,7 +1559,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 
 			})
 		})
-		Context("with ACPI and some grace period seconds", func() {
+		Context("with ACPI and some grace period seconds", decorators.WgS390x, func() {
 			DescribeTable("[rfe_id:273][crit:medium][vendor:cnv-qe@redhat.com][level:component]should result in vmi status succeeded", func(gracePeriod int64) {
 				vmi, loginToVMI, _ := testsuite.GetVMGuestByArchitecture()
 				if gracePeriod >= 0 {
@@ -1598,9 +1592,6 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 		})
 		Context("with grace period greater than 0", func() {
 			It("[test_id:1655]should run graceful shutdown", func() {
-				arch := testsuite.TranslateBuildArch()
-				checks.SkipIfS390X(arch, "failing for s390x.")
-
 				nodes := libnode.GetAllSchedulableNodes(kubevirt.Client())
 				Expect(nodes.Items).ToNot(BeEmpty(), "There should be some compute node")
 				node := nodes.Items[0].Name
@@ -1652,7 +1643,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 		})
 	})
 
-	Describe("[Serial][rfe_id:273][crit:high][vendor:cnv-qe@redhat.com][level:component]Killed VirtualMachineInstance", Serial, func() {
+	Describe("[Serial][rfe_id:273][crit:high][vendor:cnv-qe@redhat.com][level:component]Killed VirtualMachineInstance", Serial, decorators.WgS390x, func() {
 		It("[test_id:1656]should be in Failed phase", func() {
 			By("Starting a VirtualMachineInstance")
 			vmi := libvmifact.NewAlpine()
@@ -1708,7 +1699,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][s390x][vendor:cnv-qe@redhat.com
 		})
 	})
 
-	Context("replicaset with topology spread constraints", func() {
+	Context("replicaset with topology spread constraints", decorators.WgS390x, func() {
 		It("Replicas should be spread across nodes", func() {
 			nodes := libnode.GetAllSchedulableNodes(kubevirt.Client())
 			Expect(nodes.Items).ToNot(BeEmpty(), "There should be some schedulable nodes")
