@@ -23,6 +23,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -37,12 +39,15 @@ import (
 	v1 "kubevirt.io/api/core/v1"
 	"kubevirt.io/client-go/kubecli"
 
+	"kubevirt.io/kubevirt/pkg/libvmi"
 	virtconfig "kubevirt.io/kubevirt/pkg/virt-config"
+	"kubevirt.io/kubevirt/tests/console"
 	"kubevirt.io/kubevirt/tests/flags"
 	"kubevirt.io/kubevirt/tests/framework/checks"
 	"kubevirt.io/kubevirt/tests/framework/kubevirt"
 	"kubevirt.io/kubevirt/tests/libkubevirt"
 	"kubevirt.io/kubevirt/tests/libstorage"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 	"kubevirt.io/kubevirt/tests/util"
 )
 
@@ -50,6 +55,46 @@ var (
 	KubeVirtDefaultConfig v1.KubeVirtConfiguration
 	originalKV            *v1.KubeVirt
 )
+
+/*
+	 TranslateBuildArch translates the build_arch to arch
+
+		 case1:
+		   build_arch is crossbuild-s390x, which will be translated to s390x arch
+		 case2:
+		   build_arch is s390x, which will be translated to s390x arch
+*/
+func TranslateBuildArch() string {
+	buildArch := os.Getenv("BUILD_ARCH")
+
+	if buildArch == "" {
+		return ""
+	}
+	archElements := strings.Split(buildArch, "-")
+	if len(archElements) == 2 {
+		return archElements[1]
+	}
+	return archElements[0]
+}
+
+// ReplaceVMGuestOSIfS390X replaces the VMGuest if the architecture is s390x.
+func ReplaceVMGuestOSIfS390X(arch string,
+	vmi *v1.VirtualMachineInstance, distro string, loginToVMI console.LoginToFunction, opts ...libvmi.Option) (*v1.VirtualMachineInstance, console.LoginToFunction, bool) {
+	var isAlpine bool
+	// Use Alpine for s390x e2e tests instead of cirros and guestless,as they are not supported on s390x.
+	if checks.IsS390X(arch) {
+		if distro == "alpine" {
+			vmi = libvmifact.NewAlpine(opts...)
+			loginToVMI = console.LoginToAlpine
+			isAlpine = true
+		} else if distro == "fedora" {
+			vmi = libvmifact.NewFedora(opts...)
+			loginToVMI = console.LoginToFedora
+		}
+
+	}
+	return vmi, loginToVMI, isAlpine
+}
 
 func AdjustKubeVirtResource() {
 	virtClient := kubevirt.Client()
@@ -91,8 +136,14 @@ func AdjustKubeVirtResource() {
 			},
 		},
 	}
+	arch := TranslateBuildArch()
+	// Disable CPUManager Featuregate for s390x as it is not supported.
+	if arch != "s390x" {
+		kv.Spec.Configuration.DeveloperConfiguration.FeatureGates = append(kv.Spec.Configuration.DeveloperConfiguration.FeatureGates,
+			virtconfig.CPUManager,
+		)
+	}
 	kv.Spec.Configuration.DeveloperConfiguration.FeatureGates = append(kv.Spec.Configuration.DeveloperConfiguration.FeatureGates,
-		virtconfig.CPUManager,
 		virtconfig.IgnitionGate,
 		virtconfig.SidecarGate,
 		virtconfig.SnapshotGate,

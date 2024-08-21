@@ -82,6 +82,8 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 		Context("with ephemeral registry disk", func() {
 			It("[test_id:1463][Conformance] should success multiple times", func() {
 				vmi := libvmifact.NewCirros()
+				arch := testsuite.TranslateBuildArch()
+				vmi, _, _ = testsuite.ReplaceVMGuestOSIfS390X(arch, vmi, "alpine", nil)
 				for range 2 {
 					By("Starting the VirtualMachineInstance")
 					obj, err := virtClient.RestClient().Post().Resource("virtualmachineinstances").Namespace(testsuite.GetTestNamespace(vmi)).Body(vmi).Do(context.Background()).Get()

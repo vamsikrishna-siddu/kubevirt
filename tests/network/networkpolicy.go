@@ -395,18 +395,22 @@ func assertIPsNotEmptyForVMI(vmi *v1.VirtualMachineInstance) {
 }
 
 func createClientVmi(namespace string, virtClient kubecli.KubevirtClient) (*v1.VirtualMachineInstance, error) {
+	loginToVMI := console.LoginToAlpine
 	clientVMI := libvmifact.NewAlpineWithTestTooling(libnet.WithMasqueradeNetworking())
+	arch := testsuite.TranslateBuildArch()
+	clientVMI, loginToVMI, _ = testsuite.ReplaceVMGuestOSIfS390X(arch, clientVMI, "fedora", loginToVMI, libnet.WithMasqueradeNetworking())
 	var err error
 	clientVMI, err = virtClient.VirtualMachineInstance(namespace).Create(context.Background(), clientVMI, metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	clientVMI = libwait.WaitUntilVMIReady(clientVMI, console.LoginToAlpine)
+	clientVMI = libwait.WaitUntilVMIReady(clientVMI, loginToVMI)
 	return clientVMI, nil
 }
 
 func createServerVmi(virtClient kubecli.KubevirtClient, namespace string, serverVMILabels map[string]string) (*v1.VirtualMachineInstance, error) {
+	loginToVMI := console.LoginToAlpine
 	serverVMI := libvmifact.NewAlpineWithTestTooling(
 		libnet.WithMasqueradeNetworking(
 			v1.Port{
@@ -421,12 +425,25 @@ func createServerVmi(virtClient kubecli.KubevirtClient, namespace string, server
 			},
 		),
 	)
+	arch := testsuite.TranslateBuildArch()
+	serverVMI, loginToVMI, _ = testsuite.ReplaceVMGuestOSIfS390X(arch, serverVMI, "fedora", loginToVMI, libnet.WithMasqueradeNetworking(
+		v1.Port{
+			Name:     "http80",
+			Port:     80,
+			Protocol: "TCP",
+		},
+		v1.Port{
+			Name:     "http81",
+			Port:     81,
+			Protocol: "TCP",
+		},
+	))
 	serverVMI.Labels = serverVMILabels
 	serverVMI, err := virtClient.VirtualMachineInstance(namespace).Create(context.Background(), serverVMI, metav1.CreateOptions{})
 	if err != nil {
 		return nil, err
 	}
-	serverVMI = libwait.WaitUntilVMIReady(serverVMI, console.LoginToAlpine)
+	serverVMI = libwait.WaitUntilVMIReady(serverVMI, loginToVMI)
 
 	By("Start HTTP server at serverVMI on ports 80 and 81")
 	vmnetserver.HTTPServer.Start(serverVMI, 80)
