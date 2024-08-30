@@ -98,7 +98,7 @@ var _ = Describe("[sig-compute]CloudInitHookSidecars", decorators.SigCompute, fu
 
 	BeforeEach(func() {
 		virtClient = kubevirt.Client()
-		vmi = libvmifact.NewCirros(
+		vmi = libvmifact.NewAlpine(
 			libvmi.WithAnnotation("hooks.kubevirt.io/hookSidecars",
 				fmt.Sprintf(`[{"args": ["--version", "v1alpha2"], "image": "%s", "imagePullPolicy": "IfNotPresent"}]`,
 					libregistry.GetUtilityImageFromRegistry(cloudinitHookSidecarImage))))

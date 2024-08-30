@@ -90,7 +90,7 @@ var _ = Describe("[sig-compute][virtctl]SCP", decorators.SigCompute, func() {
 
 	DescribeTable("should copy a local file back and forth", func(copyFn func(string, string, bool)) {
 		By("injecting a SSH public key into a VMI")
-		vmi := libvmifact.NewAlpineWithTestTooling(
+		vmi := libvmifact.NewFedora(
 			libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudUserData(libssh.RenderUserDataWithKey(pub))))
 		vmi, err := virtClient.VirtualMachineInstance(testsuite.NamespaceTestDefault).Create(context.Background(), vmi, metav1.CreateOptions{})
 		Expect(err).ToNot(HaveOccurred())
@@ -114,7 +114,7 @@ var _ = Describe("[sig-compute][virtctl]SCP", decorators.SigCompute, func() {
 
 	DescribeTable("should copy a local directory back and forth", func(copyFn func(string, string, bool)) {
 		By("injecting a SSH public key into a VMI")
-		vmi := libvmifact.NewAlpineWithTestTooling(
+		vmi := libvmifact.NewFedora(
 			libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudUserData(libssh.RenderUserDataWithKey(pub))))
 		vmi, err := virtClient.VirtualMachineInstance(testsuite.NamespaceTestDefault).Create(context.Background(), vmi, metav1.CreateOptions{})
 		Expect(err).ToNot(HaveOccurred())

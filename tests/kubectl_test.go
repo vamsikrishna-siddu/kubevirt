@@ -15,10 +15,7 @@ import (
 	"kubevirt.io/kubevirt/tests/framework/kubevirt"
 	"kubevirt.io/kubevirt/tests/testsuite"
 
-	"kubevirt.io/kubevirt/tests/libvmifact"
-
 	"kubevirt.io/kubevirt/tests/clientcmd"
-	"kubevirt.io/kubevirt/tests/console"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -103,11 +100,10 @@ var _ = Describe("[sig-compute]oc/kubectl integration", decorators.SigCompute, f
 
 		BeforeEach(func() {
 			virtCli = kubevirt.Client()
-
-			vm = libvmi.NewVirtualMachine(libvmifact.NewCirros(
+			vmi, _, _ := testsuite.GetVMGuestByArchitecture(
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
-				libvmi.WithNetwork(v1.DefaultPodNetwork()),
-			))
+				libvmi.WithNetwork(v1.DefaultPodNetwork()))
+			vm = libvmi.NewVirtualMachine(vmi)
 			vm, err = virtCli.VirtualMachine(testsuite.GetTestNamespace(vm)).Create(context.Background(), vm, metav1.CreateOptions{})
 			Expect(err).NotTo(HaveOccurred())
 			vm = libvmops.StartVirtualMachine(vm)
@@ -176,15 +172,14 @@ var _ = Describe("[sig-compute]oc/kubectl integration", decorators.SigCompute, f
 
 		Context("'kubectl get vmim'", func() {
 			It("print the expected columns and their corresponding values", func() {
-				vmi := libvmifact.NewCirros(
+				vmi, loginToVMI, _ := testsuite.GetVMGuestByArchitecture(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
-					libvmi.WithNetwork(v1.DefaultPodNetwork()),
-				)
+					libvmi.WithNetwork(v1.DefaultPodNetwork()))
 				By("Starting the VirtualMachineInstance")
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, libmigration.MigrationWaitTime)
 
 				By("Checking that the VirtualMachineInstance console has expected output")
-				Expect(console.LoginToCirros(vmi)).To(Succeed())
+				Expect(loginToVMI(vmi)).To(Succeed())
 
 				By("creating the migration")
 				migration := libmigration.New(vmi.Name, vmi.Namespace)
@@ -234,7 +229,7 @@ var _ = Describe("[sig-compute]oc/kubectl integration", decorators.SigCompute, f
 		)
 
 		It("oc/kubectl logs <vmi-pod> return default container log", func() {
-			vm = libvmifact.NewCirros()
+			vm, _, _ = testsuite.GetVMGuestByArchitecture()
 			vm = libvmops.RunVMIAndExpectLaunch(vm, 30)
 
 			k8sClient := clientcmd.GetK8sCmdClient()

@@ -22,13 +22,11 @@ import (
 	virtconfig "kubevirt.io/kubevirt/pkg/virt-config"
 
 	"kubevirt.io/kubevirt/tests"
-	"kubevirt.io/kubevirt/tests/console"
 	"kubevirt.io/kubevirt/tests/decorators"
 	"kubevirt.io/kubevirt/tests/exec"
 	"kubevirt.io/kubevirt/tests/framework/checks"
 	"kubevirt.io/kubevirt/tests/framework/kubevirt"
 	"kubevirt.io/kubevirt/tests/libnode"
-	"kubevirt.io/kubevirt/tests/libvmifact"
 	"kubevirt.io/kubevirt/tests/libwait"
 	"kubevirt.io/kubevirt/tests/testsuite"
 )
@@ -45,7 +43,7 @@ var _ = Describe("[sig-compute][Serial]NUMA", Serial, decorators.SigCompute, fun
 		checks.SkipTestIfNoFeatureGate(virtconfig.NUMAFeatureGate)
 		checks.SkipTestIfNotEnoughNodesWithCPUManagerWith2MiHugepages(1)
 		var err error
-		cpuVMI := libvmifact.NewCirros()
+		cpuVMI, loginToVMI, _ := testsuite.GetVMGuestByArchitecture()
 		cpuVMI.Spec.Domain.Resources.Requests[k8sv1.ResourceMemory] = resource.MustParse("128Mi")
 		cpuVMI.Spec.Domain.CPU = &v1.CPU{
 			Cores:                 3,
@@ -104,7 +102,7 @@ var _ = Describe("[sig-compute][Serial]NUMA", Serial, decorators.SigCompute, fun
 		Expect(mappings).To(HaveLen(len(domSpec.NUMATune.MemNodes)))
 
 		By("checking if the guest came up and is healthy")
-		Expect(console.LoginToCirros(cpuVMI)).To(Succeed())
+		Expect(loginToVMI(cpuVMI)).To(Succeed())
 	})
 
 })

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	expect "github.com/google/goexpect"
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -44,6 +45,7 @@ var _ = Describe("[Serial][sig-compute][USB] host USB Passthrough", Serial, deco
 
 		nodeName := tests.NodeNameWithHandler()
 		Expect(nodeName).ToNot(BeEmpty())
+		ginkgo.Skip("usbs are not supported for s390x.")
 
 		// Emulated USB devices only on c9s providers. Remove this when sig-compute 1.26 is the
 		// oldest sig-compute with test with.

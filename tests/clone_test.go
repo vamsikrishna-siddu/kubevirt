@@ -42,7 +42,6 @@ import (
 	. "kubevirt.io/kubevirt/tests/framework/matcher"
 	"kubevirt.io/kubevirt/tests/libinstancetype"
 	"kubevirt.io/kubevirt/tests/libstorage"
-	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 const (
@@ -52,6 +51,8 @@ const (
 var _ = Describe("[Serial]VirtualMachineClone Tests", Serial, func() {
 	var err error
 	var virtClient kubecli.KubevirtClient
+	var loginToVMI console.LoginToFunction
+	var vmi *virtv1.VirtualMachineInstance
 
 	BeforeEach(func() {
 		virtClient = kubevirt.Client()
@@ -62,7 +63,7 @@ var _ = Describe("[Serial]VirtualMachineClone Tests", Serial, func() {
 	})
 
 	createVM := func(options ...libvmi.Option) (vm *virtv1.VirtualMachine) {
-		vmi := libvmifact.NewCirros(options...)
+		vmi, loginToVMI, _ = testsuite.GetVMGuestByArchitecture(options...)
 		vmi.Namespace = testsuite.GetTestNamespace(nil)
 		vm = libvmi.NewVirtualMachine(vmi)
 		vm.Annotations = vmi.Annotations
@@ -296,7 +297,7 @@ var _ = Describe("[Serial]VirtualMachineClone Tests", Serial, func() {
 		Context("[sig-compute]simple VM and cloning operations", decorators.SigCompute, func() {
 
 			expectVMRunnable := func(vm *virtv1.VirtualMachine) *virtv1.VirtualMachine {
-				return expectVMRunnable(vm, console.LoginToCirros)
+				return expectVMRunnable(vm, loginToVMI)
 			}
 
 			It("simple default clone", func() {

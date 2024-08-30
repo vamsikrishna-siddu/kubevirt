@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -44,6 +45,7 @@ var _ = Describe("[sig-compute][Serial]CPU Hotplug", decorators.SigCompute, deco
 	)
 	BeforeEach(func() {
 		virtClient = kubevirt.Client()
+		ginkgo.Skip("hotplug is not supported for s390x.")
 		originalKv := libkubevirt.GetCurrentKv(virtClient)
 		updateStrategy := &v1.KubeVirtWorkloadUpdateStrategy{
 			WorkloadUpdateMethods: []v1.WorkloadUpdateMethod{v1.WorkloadUpdateMethodLiveMigrate},

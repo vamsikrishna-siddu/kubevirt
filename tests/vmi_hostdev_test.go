@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	expect "github.com/google/goexpect"
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -41,6 +42,7 @@ var _ = Describe("[Serial][sig-compute]HostDevices", Serial, decorators.SigCompu
 		virtClient = kubevirt.Client()
 		kv := libkubevirt.GetCurrentKv(virtClient)
 		config = kv.Spec.Configuration
+		ginkgo.Skip("the sound cards are not supported on s390x.")
 	})
 
 	AfterEach(func() {

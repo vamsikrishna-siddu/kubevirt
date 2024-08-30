@@ -153,7 +153,8 @@ var _ = Describe("[sig-compute]Dry-Run requests", decorators.SigCompute, func() 
 		const resource = "virtualmachines"
 
 		BeforeEach(func() {
-			vm = libvmi.NewVirtualMachine(libvmifact.NewCirros())
+			vmi, _, _ := testsuite.GetVMGuestByArchitecture()
+			vm = libvmi.NewVirtualMachine(vmi)
 			namespace = testsuite.GetTestNamespace(vm)
 		})
 
@@ -535,7 +536,8 @@ var _ = Describe("[sig-compute]Dry-Run requests", decorators.SigCompute, func() 
 
 		BeforeEach(func() {
 			tests.EnableFeatureGate(virtconfig.SnapshotGate)
-			vm := libvmi.NewVirtualMachine(libvmifact.NewCirros())
+			vmi, _, _ := testsuite.GetVMGuestByArchitecture()
+			vm := libvmi.NewVirtualMachine(vmi)
 			vm, err = virtClient.VirtualMachine(testsuite.GetTestNamespace(nil)).Create(context.Background(), vm, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 
@@ -614,8 +616,8 @@ var _ = Describe("[sig-compute]Dry-Run requests", decorators.SigCompute, func() 
 
 		BeforeEach(func() {
 			tests.EnableFeatureGate(virtconfig.SnapshotGate)
-
-			vm := libvmi.NewVirtualMachine(libvmifact.NewCirros())
+			vmi, _, _ := testsuite.GetVMGuestByArchitecture()
+			vm := libvmi.NewVirtualMachine(vmi)
 			vm, err = virtClient.VirtualMachine(testsuite.GetTestNamespace(nil)).Create(context.Background(), vm, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 

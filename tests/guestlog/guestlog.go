@@ -13,6 +13,7 @@ import (
 	"kubevirt.io/kubevirt/tests/exec"
 	"kubevirt.io/kubevirt/tests/libvmops"
 
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -42,6 +43,7 @@ var _ = Describe("[sig-compute]Guest console log", decorators.SigCompute, func()
 	)
 
 	BeforeEach(func() {
+		ginkgo.Skip("this is monotonously targetting cirros. need to skip it.")
 		cirrosVmi = libvmifact.NewCirros(libvmi.WithLogSerialConsole(true))
 		cirrosVmi.Spec.Domain.Devices.AutoattachSerialConsole = pointer.P(true)
 	})

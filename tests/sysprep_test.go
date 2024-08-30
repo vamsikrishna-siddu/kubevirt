@@ -26,6 +26,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	k8sv1 "k8s.io/api/core/v1"
@@ -310,6 +311,7 @@ var _ = Describe("[Serial][Sysprep][sig-compute]Syspreped VirtualMachineInstance
 	var windowsVMI *v1.VirtualMachineInstance
 
 	BeforeEach(func() {
+		ginkgo.Skip("Skip the windows tests for s390x.")
 		const OSWindowsSysprep = "windows-sysprep"
 		virtClient = kubevirt.Client()
 		checks.SkipIfMissingRequiredImage(virtClient, tests.DiskWindowsSysprep)

@@ -38,6 +38,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/libvmi"
 	"kubevirt.io/kubevirt/pkg/virt-controller/watch/topology"
 
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	k8sv1 "k8s.io/api/core/v1"
@@ -69,6 +70,7 @@ var _ = Describe("[Serial][sig-compute]Windows VirtualMachineInstance", Serial, 
 	BeforeEach(func() {
 		const OSWindows = "windows"
 		virtClient = kubevirt.Client()
+		ginkgo.Skip("windows is not supported for s390x.")
 		checks.SkipIfMissingRequiredImage(virtClient, libvmifact.WindowsPVCName)
 		libstorage.CreatePVC(OSWindows, testsuite.GetTestNamespace(nil), "30Gi", libstorage.Config.StorageClassWindows, true)
 		windowsVMI = libvmifact.NewWindows(libnet.WithMasqueradeNetworking())

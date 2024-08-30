@@ -45,7 +45,6 @@ import (
 	"kubevirt.io/kubevirt/tests/decorators"
 	"kubevirt.io/kubevirt/tests/framework/kubevirt"
 	"kubevirt.io/kubevirt/tests/framework/matcher"
-	"kubevirt.io/kubevirt/tests/libvmifact"
 	"kubevirt.io/kubevirt/tests/libvmops"
 	"kubevirt.io/kubevirt/tests/libwait"
 	"kubevirt.io/kubevirt/tests/testsuite"
@@ -64,7 +63,8 @@ var _ = Describe("[rfe_id:3064][crit:medium][vendor:cnv-qe@redhat.com][level:com
 
 		BeforeEach(func() {
 			const timeout = 90
-			vmi = libvmops.RunVMIAndExpectLaunch(libvmifact.NewCirros(), timeout)
+			vmi, _, _ = testsuite.GetVMGuestByArchitecture()
+			vmi = libvmops.RunVMIAndExpectLaunch(vmi, timeout)
 		})
 
 		It("[test_id:4597]should signal paused state with condition", func() {
@@ -86,7 +86,7 @@ var _ = Describe("[rfe_id:3064][crit:medium][vendor:cnv-qe@redhat.com][level:com
 
 		It("[test_id:3224]should not be paused with a LivenessProbe configured", func() {
 			By("Launching a VMI with LivenessProbe")
-			vmi = libvmifact.NewCirros(
+			vmi, _, _ = testsuite.GetVMGuestByArchitecture(
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			)
@@ -135,10 +135,9 @@ var _ = Describe("[rfe_id:3064][crit:medium][vendor:cnv-qe@redhat.com][level:com
 		var vm *v1.VirtualMachine
 
 		BeforeEach(func() {
-			vmi := libvmifact.NewCirros(
+			vmi, _, _ := testsuite.GetVMGuestByArchitecture(
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
-				libvmi.WithNetwork(v1.DefaultPodNetwork()),
-			)
+				libvmi.WithNetwork(v1.DefaultPodNetwork()))
 			vmi.Namespace = testsuite.NamespaceTestDefault
 			vm = libvmi.NewVirtualMachine(vmi)
 			vm, err := virtClient.VirtualMachine(vm.Namespace).Create(context.Background(), vm, metav1.CreateOptions{})
@@ -338,10 +337,13 @@ var _ = Describe("[rfe_id:3064][crit:medium][vendor:cnv-qe@redhat.com][level:com
 		BeforeEach(func() {
 			By("Starting a Cirros VMI")
 			const timeout = 90
-			vmi = libvmops.RunVMIAndExpectLaunch(libvmifact.NewCirros(), timeout)
+			vmi, loginToVMI, _ := testsuite.GetVMGuestByArchitecture(
+				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
+				libvmi.WithNetwork(v1.DefaultPodNetwork()))
+			vmi = libvmops.RunVMIAndExpectLaunch(vmi, timeout)
 
 			By("Checking that the VirtualMachineInstance console has expected output")
-			Expect(console.LoginToCirros(vmi)).To(Succeed())
+			Expect(loginToVMI(vmi)).To(Succeed())
 
 			By("checking uptime difference between guest and host")
 			uptimeDiffBeforePausing = hostUptime() - grepGuestUptime(vmi)

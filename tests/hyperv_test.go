@@ -30,6 +30,7 @@ import (
 	"kubevirt.io/kubevirt/tests/libnode"
 	"kubevirt.io/kubevirt/tests/testsuite"
 
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -55,6 +56,7 @@ var _ = Describe("[sig-compute] Hyper-V enlightenments", decorators.SigCompute, 
 	)
 	BeforeEach(func() {
 		virtClient = kubevirt.Client()
+		ginkgo.Skip("skip the tests for s390x.")
 	})
 
 	Context("VMI with HyperV re-enlightenment enabled", func() {

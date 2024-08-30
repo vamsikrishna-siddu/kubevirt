@@ -47,7 +47,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/json"
 
 	"kubevirt.io/kubevirt/tests/libreplicaset"
-	"kubevirt.io/kubevirt/tests/libvmifact"
 
 	v1 "kubevirt.io/api/core/v1"
 	"kubevirt.io/client-go/kubecli"
@@ -128,10 +127,10 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 
 	newReplicaSet := func() *v1.VirtualMachineInstanceReplicaSet {
 		By("Create a new VirtualMachineInstance replica set")
-		template := libvmifact.NewCirros(
+		template, _, _ := testsuite.GetVMGuestByArchitecture(
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
-			libvmi.WithNetwork(v1.DefaultPodNetwork()),
-		)
+			libvmi.WithNetwork(v1.DefaultPodNetwork()))
+
 		return newReplicaSetWithTemplate(template)
 	}
 
@@ -157,10 +156,10 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 	)
 
 	DescribeTable("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:component]should scale with the horizontal pod autoscaler", func(startScale int, stopScale int) {
-		template := libvmifact.NewCirros(
+		template, _, _ := testsuite.GetVMGuestByArchitecture(
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
-			libvmi.WithNetwork(v1.DefaultPodNetwork()),
-		)
+			libvmi.WithNetwork(v1.DefaultPodNetwork()))
+
 		newRS := tests.NewRandomReplicaSetFromVMI(template, int32(1))
 		newRS, err = virtClient.ReplicaSet(testsuite.GetTestNamespace(newRS)).Create(context.Background(), newRS, v12.CreateOptions{})
 		Expect(err).ToNot(HaveOccurred())
@@ -407,11 +406,11 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 
 	It("should replace a VMI immediately when a virt-launcher pod gets deleted", func() {
 		By("Creating new replica set")
-		template := libvmifact.NewCirros(
+
+		template, _, _ := testsuite.GetVMGuestByArchitecture(
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 			libvmi.WithNetwork(v1.DefaultPodNetwork()),
-			libvmi.WithTerminationGracePeriod(200),
-		)
+			libvmi.WithTerminationGracePeriod(20))
 		rs := newReplicaSetWithTemplate(template)
 
 		// ensure that the shutdown will take as long as possible

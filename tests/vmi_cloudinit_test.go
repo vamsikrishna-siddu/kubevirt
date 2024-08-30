@@ -139,7 +139,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 		Context("with cloudInitNoCloud userDataBase64 source", func() {
 			It("[test_id:1615]should have cloud-init data", func() {
 				userData := fmt.Sprintf("#!/bin/sh\n\ntouch /%s\n", expectedUserDataFile)
-				vmi := libvmifact.NewCirros(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudEncodedUserData(userData)),
 				)
 
@@ -180,7 +180,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 		Context("with cloudInitConfigDrive userDataBase64 source", func() {
 			It("[test_id:3178]should have cloud-init data", func() {
 				userData := fmt.Sprintf("#!/bin/sh\n\ntouch /%s\n", expectedUserDataFile)
-				vmi := libvmifact.NewCirros(libvmi.WithCloudInitConfigDrive(libcloudinit.WithConfigDriveUserData(userData)))
+				vmi := libvmifact.NewAlpine(libvmi.WithCloudInitConfigDrive(libcloudinit.WithConfigDriveUserData(userData)))
 
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 60)
 				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
@@ -293,14 +293,14 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 			}
 
 			It("[test_id:1617] with cloudInitNoCloud userData source", func() {
-				vmi := libvmifact.NewCirros(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudUserData(userData)),
 				)
 
 				runTest(vmi, cloudinit.DataSourceNoCloud)
 			})
 			It("[test_id:3180] with cloudInitConfigDrive userData source", func() {
-				vmi := libvmifact.NewCirros(libvmi.WithCloudInitConfigDrive(libcloudinit.WithConfigDriveUserData(userData)))
+				vmi := libvmifact.NewAlpine(libvmi.WithCloudInitConfigDrive(libcloudinit.WithConfigDriveUserData(userData)))
 				runTest(vmi, cloudinit.DataSourceConfigDrive)
 			})
 		})
@@ -309,7 +309,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 			userData := fmt.Sprintf("#!/bin/sh\n\ntouch /%s\n", expectedUserDataFile)
 			secretID := fmt.Sprintf("%s-test-secret", uuid.NewString())
 
-			vmi := libvmifact.NewCirros(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudUserDataSecretName(secretID)),
 			)
 
@@ -339,7 +339,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 
 		Context("with cloudInitNoCloud networkData", func() {
 			It("[test_id:3181]should have cloud-init network-config with NetworkData source", func() {
-				vmi := libvmifact.NewCirros(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudNetworkData(testNetworkData)),
@@ -357,7 +357,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 
 			})
 			It("[test_id:3182]should have cloud-init network-config with NetworkDataBase64 source", func() {
-				vmi := libvmifact.NewCirros(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudEncodedNetworkData(testNetworkData)),
@@ -377,7 +377,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 			It("[test_id:3183]should have cloud-init network-config from k8s secret", func() {
 				secretID := fmt.Sprintf("%s-test-secret", uuid.NewString())
 
-				vmi := libvmifact.NewCirros(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudNetworkDataSecretName(secretID)),
@@ -414,7 +414,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 
 		Context("with cloudInitConfigDrive networkData", func() {
 			It("[test_id:3184]should have cloud-init network-config with NetworkData source", func() {
-				vmi := libvmifact.NewCirros(libvmi.WithCloudInitConfigDrive(libcloudinit.WithConfigDriveNetworkData(testNetworkData)))
+				vmi := libvmifact.NewAlpine(libvmi.WithCloudInitConfigDrive(libcloudinit.WithConfigDriveNetworkData(testNetworkData)))
 				vmi = LaunchVMI(vmi)
 				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
 
@@ -428,7 +428,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 			})
 			It("[test_id:4622]should have cloud-init meta_data with tagged devices", func() {
 				testInstancetype := "testInstancetype"
-				vmi := libvmifact.NewCirros(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithCloudInitConfigDrive(libcloudinit.WithConfigDriveNetworkData(testNetworkData)),
 					libvmi.WithInterface(v1.Interface{
 						Name: "default",
@@ -484,7 +484,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 				tests.CheckCloudInitMetaData(vmi, "openstack/latest/meta_data.json", string(buf))
 			})
 			It("[test_id:3185]should have cloud-init network-config with NetworkDataBase64 source", func() {
-				vmi := libvmifact.NewCirros(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithCloudInitConfigDrive(libcloudinit.WithConfigDriveEncodedNetworkData(testNetworkData)),
 				)
 				vmi = LaunchVMI(vmi)
@@ -500,7 +500,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 			})
 			It("[test_id:3186]should have cloud-init network-config from k8s secret", func() {
 				secretID := fmt.Sprintf("%s-test-secret", uuid.NewString())
-				vmi := libvmifact.NewCirros(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithCloudInitConfigDrive(
 						libcloudinit.WithConfigDriveUserDataSecretName(secretID),
 						libcloudinit.WithConfigDriveNetworkDataSecretName(secretID),
@@ -550,7 +550,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 				uSecretID := fmt.Sprintf("%s-test-secret", uuid.NewString())
 				nSecretID := fmt.Sprintf("%s-test-secret", uuid.NewString())
 
-				vmi := libvmifact.NewCirros(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithCloudInitConfigDrive(
 						libcloudinit.WithConfigDriveUserDataSecretName(uSecretID),
 						libcloudinit.WithConfigDriveNetworkDataSecretName(nSecretID),

@@ -27,7 +27,7 @@ var _ = Describe("[sig-compute]Controller devices", decorators.SigCompute, func(
 
 	Context("with ephemeral disk", func() {
 		DescribeTable("a scsi controller", func(enabled bool) {
-			vmi := libvmifact.NewCirros()
+			vmi := libvmifact.NewAlpine()
 			vmi.Spec.Domain.Devices.DisableHotplug = !enabled
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, 30)
 			domain, err := tests.GetRunningVirtualMachineInstanceDomainXML(virtClient, vmi)

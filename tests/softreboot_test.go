@@ -98,15 +98,15 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 
 		When("soft reboot vmi with ACPI feature enabled via API", func() {
 			It("should succeed", func() {
-				vmi = libvmops.RunVMIAndExpectLaunch(libvmifact.NewCirros(), vmiLaunchTimeout)
+				vmi = libvmops.RunVMIAndExpectLaunch(libvmifact.NewAlpine(), vmiLaunchTimeout)
 
-				Expect(console.LoginToCirros(vmi)).To(Succeed())
+				Expect(console.LoginToAlpine(vmi)).To(Succeed())
 				Eventually(matcher.ThisVMI(vmi), 30*time.Second, 2*time.Second).Should(matcher.HaveConditionMissingOrFalse(v1.VirtualMachineInstanceAgentConnected))
 
 				err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).SoftReboot(context.Background(), vmi.Name)
 				Expect(err).ToNot(HaveOccurred())
 
-				waitForVMIRebooted(vmi, console.LoginToCirros)
+				waitForVMIRebooted(vmi, console.LoginToAlpine)
 			})
 		})
 
@@ -125,23 +125,23 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 
 		When("soft reboot vmi with ACPI feature enabled via virtctl", func() {
 			It("should succeed", func() {
-				vmi = libvmops.RunVMIAndExpectLaunch(libvmifact.NewCirros(), vmiLaunchTimeout)
+				vmi = libvmops.RunVMIAndExpectLaunch(libvmifact.NewAlpine(), vmiLaunchTimeout)
 
-				Expect(console.LoginToCirros(vmi)).To(Succeed())
+				Expect(console.LoginToAlpine(vmi)).To(Succeed())
 				Eventually(matcher.ThisVMI(vmi), 30*time.Second, 2*time.Second).Should(matcher.HaveConditionMissingOrFalse(v1.VirtualMachineInstanceAgentConnected))
 
 				command := clientcmd.NewRepeatableVirtctlCommand(virtctlsoftreboot.COMMAND_SOFT_REBOOT, "--namespace", testsuite.GetTestNamespace(vmi), vmi.Name)
 				Expect(command()).To(Succeed())
 
-				waitForVMIRebooted(vmi, console.LoginToCirros)
+				waitForVMIRebooted(vmi, console.LoginToAlpine)
 			})
 		})
 
 		When("soft reboot vmi neither have the agent connected nor the ACPI feature enabled via virtctl", func() {
 			It("should failed", func() {
-				vmi = libvmops.RunVMIAndExpectLaunch(libvmifact.NewCirros(withoutACPI()), vmiLaunchTimeout)
+				vmi = libvmops.RunVMIAndExpectLaunch(libvmifact.NewAlpine(withoutACPI()), vmiLaunchTimeout)
 
-				Expect(console.LoginToCirros(vmi)).To(Succeed())
+				Expect(console.LoginToAlpine(vmi)).To(Succeed())
 				Eventually(matcher.ThisVMI(vmi), 30*time.Second, 2*time.Second).Should(matcher.HaveConditionMissingOrFalse(v1.VirtualMachineInstanceAgentConnected))
 
 				command := clientcmd.NewRepeatableVirtctlCommand(virtctlsoftreboot.COMMAND_SOFT_REBOOT, "--namespace", testsuite.GetTestNamespace(vmi), vmi.Name)

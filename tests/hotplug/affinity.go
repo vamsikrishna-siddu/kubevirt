@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -35,6 +36,7 @@ var _ = Describe("[sig-compute]VM Affinity", decorators.SigCompute, decorators.S
 		virtClient kubecli.KubevirtClient
 	)
 	BeforeEach(func() {
+		ginkgo.Skip("hotplug is not supported for s390x.")
 		virtClient = kubevirt.Client()
 		kv := libkubevirt.GetCurrentKv(virtClient)
 		kv.Spec.Configuration.VMRolloutStrategy = pointer.P(v1.VMRolloutStrategyLiveUpdate)

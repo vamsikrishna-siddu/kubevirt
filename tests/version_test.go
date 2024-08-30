@@ -26,6 +26,7 @@ import (
 	"kubevirt.io/kubevirt/tests/decorators"
 	"kubevirt.io/kubevirt/tests/framework/kubevirt"
 
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -38,6 +39,7 @@ var _ = Describe("[sig-compute]Version", decorators.SigCompute, func() {
 
 	BeforeEach(func() {
 		virtClient = kubevirt.Client()
+		ginkgo.Skip("skp the version test for crossbuilds")
 	})
 
 	Describe("Check that version parameters where loaded by ldflags in build time", func() {

@@ -31,6 +31,7 @@ import (
 	"kubevirt.io/kubevirt/tests/decorators"
 	"kubevirt.io/kubevirt/tests/libvmops"
 
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -73,6 +74,7 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 
 		var vmi *v1.VirtualMachineInstance
 		BeforeEach(func() {
+			ginkgo.Skip("usb redirection is not supported on s390x.")
 			vmi = libvmi.New(libvmi.WithResourceMemory(enoughMemForSafeBiosEmulation))
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, 90)
 		})

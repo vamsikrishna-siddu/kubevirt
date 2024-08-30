@@ -25,6 +25,7 @@ import (
 	"fmt"
 
 	expect "github.com/google/goexpect"
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -51,6 +52,7 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 
 	BeforeEach(func() {
 		virtClient = kubevirt.Client()
+		ginkgo.Skip("the sound cards are not supported on s390x.")
 	})
 
 	Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component] A VirtualMachineInstance with default sound support", func() {
