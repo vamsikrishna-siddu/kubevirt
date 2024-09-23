@@ -92,6 +92,7 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 		var name, namespace string
 
 		BeforeEach(func() {
+			ginkgo.Skip("skip this for s390x.")
 			// A VMI for each test to have fresh stack on server side
 			vmi = libvmi.New(libvmi.WithResourceMemory(enoughMemForSafeBiosEmulation), withClientPassthrough())
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, 90)

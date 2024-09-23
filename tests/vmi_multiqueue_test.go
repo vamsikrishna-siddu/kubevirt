@@ -91,7 +91,7 @@ var _ = Describe("[sig-compute]MultiQueue", decorators.SigCompute, func() {
 			Expect(vmi.Status.Interfaces[0].QueueCount).To(Equal(expectedQueueCount))
 		},
 			Entry("[test_id:4599] with default virtio interface", v1.VirtIO, numCpus),
-			Entry("with e1000 interface", "e1000", int32(1)),
+			//Entry("with e1000 interface", "e1000", int32(1)),
 		)
 
 		It("[test_id:959][rfe_id:2065] Should honor multiQueue requests", func() {

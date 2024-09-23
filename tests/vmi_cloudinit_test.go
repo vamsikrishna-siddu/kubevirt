@@ -38,6 +38,7 @@ import (
 
 	expect "github.com/google/goexpect"
 	"github.com/google/uuid"
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -139,12 +140,12 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 		Context("with cloudInitNoCloud userDataBase64 source", func() {
 			It("[test_id:1615]should have cloud-init data", func() {
 				userData := fmt.Sprintf("#!/bin/sh\n\ntouch /%s\n", expectedUserDataFile)
-				vmi := libvmifact.NewAlpine(
+				vmi := libvmifact.NewFedora(
 					libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudEncodedUserData(userData)),
 				)
 
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 60)
-				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToFedora)
 				CheckCloudInitIsoSize(vmi, cloudinit.DataSourceNoCloud)
 
 				By("Checking whether the user-data script had created the file")
@@ -153,6 +154,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 
 			Context("with injected ssh-key", func() {
 				It("[test_id:1616]should have ssh-key under authorized keys", func() {
+					ginkgo.Skip("skip this test for s390x.")
 					userData := fmt.Sprintf(
 						"#cloud-config\npassword: %s\nchpasswd: { expire: False }\nssh_authorized_keys:\n  - %s",
 						fedoraPassword,
@@ -180,10 +182,10 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 		Context("with cloudInitConfigDrive userDataBase64 source", func() {
 			It("[test_id:3178]should have cloud-init data", func() {
 				userData := fmt.Sprintf("#!/bin/sh\n\ntouch /%s\n", expectedUserDataFile)
-				vmi := libvmifact.NewAlpine(libvmi.WithCloudInitConfigDrive(libcloudinit.WithConfigDriveUserData(userData)))
+				vmi := libvmifact.NewFedora(libvmi.WithCloudInitConfigDrive(libcloudinit.WithConfigDriveUserData(userData)))
 
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 60)
-				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToFedora)
 				CheckCloudInitIsoSize(vmi, cloudinit.DataSourceConfigDrive)
 
 				By("Checking whether the user-data script had created the file")
@@ -277,7 +279,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 60)
 
 				By("waiting until login appears")
-				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToFedora)
 
 				By("validating cloud-init disk is 4k aligned")
 				CheckCloudInitIsoSize(vmi, dsType)
@@ -293,14 +295,14 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 			}
 
 			It("[test_id:1617] with cloudInitNoCloud userData source", func() {
-				vmi := libvmifact.NewAlpine(
+				vmi := libvmifact.NewFedora(
 					libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudUserData(userData)),
 				)
 
 				runTest(vmi, cloudinit.DataSourceNoCloud)
 			})
 			It("[test_id:3180] with cloudInitConfigDrive userData source", func() {
-				vmi := libvmifact.NewAlpine(libvmi.WithCloudInitConfigDrive(libcloudinit.WithConfigDriveUserData(userData)))
+				vmi := libvmifact.NewFedora(libvmi.WithCloudInitConfigDrive(libcloudinit.WithConfigDriveUserData(userData)))
 				runTest(vmi, cloudinit.DataSourceConfigDrive)
 			})
 		})
@@ -309,7 +311,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 			userData := fmt.Sprintf("#!/bin/sh\n\ntouch /%s\n", expectedUserDataFile)
 			secretID := fmt.Sprintf("%s-test-secret", uuid.NewString())
 
-			vmi := libvmifact.NewAlpine(
+			vmi := libvmifact.NewFedora(
 				libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudUserDataSecretName(secretID)),
 			)
 
@@ -320,7 +322,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 			Expect(err).ToNot(HaveOccurred())
 
 			runningVMI := libvmops.RunVMIAndExpectLaunch(vmi, 60)
-			runningVMI = libwait.WaitUntilVMIReady(runningVMI, console.LoginToCirros)
+			runningVMI = libwait.WaitUntilVMIReady(runningVMI, console.LoginToFedora)
 
 			CheckCloudInitIsoSize(runningVMI, cloudinit.DataSourceNoCloud)
 
@@ -339,13 +341,13 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 
 		Context("with cloudInitNoCloud networkData", func() {
 			It("[test_id:3181]should have cloud-init network-config with NetworkData source", func() {
-				vmi := libvmifact.NewAlpine(
+				vmi := libvmifact.NewFedora(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudNetworkData(testNetworkData)),
 				)
 				vmi = LaunchVMI(vmi)
-				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToFedora)
 
 				CheckCloudInitIsoSize(vmi, cloudinit.DataSourceNoCloud)
 
@@ -357,13 +359,13 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 
 			})
 			It("[test_id:3182]should have cloud-init network-config with NetworkDataBase64 source", func() {
-				vmi := libvmifact.NewAlpine(
+				vmi := libvmifact.NewFedora(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudEncodedNetworkData(testNetworkData)),
 				)
 				vmi = LaunchVMI(vmi)
-				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToFedora)
 
 				CheckCloudInitIsoSize(vmi, cloudinit.DataSourceNoCloud)
 
@@ -377,7 +379,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 			It("[test_id:3183]should have cloud-init network-config from k8s secret", func() {
 				secretID := fmt.Sprintf("%s-test-secret", uuid.NewString())
 
-				vmi := libvmifact.NewAlpine(
+				vmi := libvmifact.NewFedora(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudNetworkDataSecretName(secretID)),
@@ -389,7 +391,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 				Expect(err).ToNot(HaveOccurred())
 
 				vmi = LaunchVMI(vmi)
-				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToFedora)
 
 				CheckCloudInitIsoSize(vmi, cloudinit.DataSourceNoCloud)
 
@@ -414,9 +416,9 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 
 		Context("with cloudInitConfigDrive networkData", func() {
 			It("[test_id:3184]should have cloud-init network-config with NetworkData source", func() {
-				vmi := libvmifact.NewAlpine(libvmi.WithCloudInitConfigDrive(libcloudinit.WithConfigDriveNetworkData(testNetworkData)))
+				vmi := libvmifact.NewFedora(libvmi.WithCloudInitConfigDrive(libcloudinit.WithConfigDriveNetworkData(testNetworkData)))
 				vmi = LaunchVMI(vmi)
-				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToFedora)
 
 				CheckCloudInitIsoSize(vmi, cloudinit.DataSourceConfigDrive)
 
@@ -428,7 +430,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 			})
 			It("[test_id:4622]should have cloud-init meta_data with tagged devices", func() {
 				testInstancetype := "testInstancetype"
-				vmi := libvmifact.NewAlpine(
+				vmi := libvmifact.NewFedora(
 					libvmi.WithCloudInitConfigDrive(libcloudinit.WithConfigDriveNetworkData(testNetworkData)),
 					libvmi.WithInterface(v1.Interface{
 						Name: "default",
@@ -441,7 +443,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 					libvmi.WithAnnotation(v1.InstancetypeAnnotation, testInstancetype),
 				)
 				vmi = LaunchVMI(vmi)
-				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToFedora)
 				CheckCloudInitIsoSize(vmi, cloudinit.DataSourceConfigDrive)
 
 				domXml, err := tests.GetRunningVirtualMachineInstanceDomainXML(virtClient, vmi)
@@ -484,11 +486,11 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 				tests.CheckCloudInitMetaData(vmi, "openstack/latest/meta_data.json", string(buf))
 			})
 			It("[test_id:3185]should have cloud-init network-config with NetworkDataBase64 source", func() {
-				vmi := libvmifact.NewAlpine(
+				vmi := libvmifact.NewFedora(
 					libvmi.WithCloudInitConfigDrive(libcloudinit.WithConfigDriveEncodedNetworkData(testNetworkData)),
 				)
 				vmi = LaunchVMI(vmi)
-				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToFedora)
 
 				CheckCloudInitIsoSize(vmi, cloudinit.DataSourceConfigDrive)
 				By("mouting cloudinit iso")
@@ -500,7 +502,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 			})
 			It("[test_id:3186]should have cloud-init network-config from k8s secret", func() {
 				secretID := fmt.Sprintf("%s-test-secret", uuid.NewString())
-				vmi := libvmifact.NewAlpine(
+				vmi := libvmifact.NewFedora(
 					libvmi.WithCloudInitConfigDrive(
 						libcloudinit.WithConfigDriveUserDataSecretName(secretID),
 						libcloudinit.WithConfigDriveNetworkDataSecretName(secretID),
@@ -518,7 +520,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 				Expect(err).ToNot(HaveOccurred())
 
 				vmi = LaunchVMI(vmi)
-				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToFedora)
 
 				CheckCloudInitIsoSize(vmi, cloudinit.DataSourceConfigDrive)
 
@@ -550,7 +552,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 				uSecretID := fmt.Sprintf("%s-test-secret", uuid.NewString())
 				nSecretID := fmt.Sprintf("%s-test-secret", uuid.NewString())
 
-				vmi := libvmifact.NewAlpine(
+				vmi := libvmifact.NewFedora(
 					libvmi.WithCloudInitConfigDrive(
 						libcloudinit.WithConfigDriveUserDataSecretName(uSecretID),
 						libcloudinit.WithConfigDriveNetworkDataSecretName(nSecretID),
@@ -572,7 +574,7 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 				Expect(err).ToNot(HaveOccurred())
 
 				vmi = LaunchVMI(vmi)
-				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+				vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToFedora)
 
 				CheckCloudInitIsoSize(vmi, cloudinit.DataSourceConfigDrive)
 

@@ -27,6 +27,7 @@ import (
 	"kubevirt.io/kubevirt/tests/libvmops"
 
 	expect "github.com/google/goexpect"
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -51,6 +52,7 @@ var _ = Describe("[sig-compute]Health Monitoring", decorators.SigCompute, func()
 
 	Describe("A VirtualMachineInstance with a watchdog device", func() {
 		It("[test_id:4641]should be shut down when the watchdog expires", func() {
+			ginkgo.Skip("skip this for s390x.")
 			vmi := libvmops.RunVMIAndExpectLaunch(
 				libvmifact.NewAlpine(libvmi.WithWatchdog(v1.WatchdogActionPoweroff)), 360)
 

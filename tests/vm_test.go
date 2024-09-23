@@ -951,11 +951,11 @@ var _ = Describe("[rfe_id:1177][crit:medium][vendor:cnv-qe@redhat.com][level:com
 					vmi, err := virtClient.VirtualMachineInstance(vm.Namespace).Get(context.Background(), vm.Name, metav1.GetOptions{})
 					Expect(err).ToNot(HaveOccurred())
 
-					Expect(console.LoginToCirros(vmi)).To(Succeed())
+					Expect(console.LoginToAlpine(vmi)).To(Succeed())
 
 					By("Issuing a poweroff command from inside VM")
 					Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
-						&expect.BSnd{S: "sudo poweroff\n"},
+						&expect.BSnd{S: "poweroff\n"},
 						&expect.BExp{R: console.PromptExpression},
 					}, 10)).To(Succeed())
 
@@ -1071,11 +1071,11 @@ var _ = Describe("[rfe_id:1177][crit:medium][vendor:cnv-qe@redhat.com][level:com
 					vmi, err := virtClient.VirtualMachineInstance(vm.Namespace).Get(context.Background(), vm.Name, metav1.GetOptions{})
 					Expect(err).ToNot(HaveOccurred())
 
-					Expect(console.LoginToCirros(vmi)).To(Succeed())
+					Expect(console.LoginToAlpine(vmi)).To(Succeed())
 
 					By("Issuing a poweroff command from inside VM")
 					Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
-						&expect.BSnd{S: "sudo poweroff\n"},
+						&expect.BSnd{S: "poweroff\n"},
 						&expect.BExp{R: console.PromptExpression},
 					}, 10)).To(Succeed())
 
@@ -1178,11 +1178,11 @@ var _ = Describe("[rfe_id:1177][crit:medium][vendor:cnv-qe@redhat.com][level:com
 
 					vmi, err := virtClient.VirtualMachineInstance(vm.Namespace).Get(context.Background(), vm.Name, metav1.GetOptions{})
 					Expect(err).ToNot(HaveOccurred())
-					Expect(console.LoginToCirros(vmi)).To(Succeed())
+					Expect(console.LoginToAlpine(vmi)).To(Succeed())
 
 					By("Issuing a poweroff command from inside VM")
 					Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
-						&expect.BSnd{S: "sudo poweroff\n"},
+						&expect.BSnd{S: "poweroff\n"},
 						&expect.BExp{R: console.PromptExpression},
 					}, 10)).To(Succeed())
 

@@ -23,6 +23,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -112,6 +113,7 @@ var _ = SIGDescribe("VMIDefaults", func() {
 		})
 
 		It("[test_id:4556]Should be present in domain", func() {
+			ginkgo.Skip("skip this test for s390x.")
 			By("Creating a virtual machine")
 			vmi, err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), vmi, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())

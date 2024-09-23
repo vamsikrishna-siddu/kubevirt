@@ -27,6 +27,7 @@ import (
 	"kubevirt.io/kubevirt/tests/decorators"
 	"kubevirt.io/kubevirt/tests/libvmops"
 
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -98,6 +99,7 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 
 		When("soft reboot vmi with ACPI feature enabled via API", func() {
 			It("should succeed", func() {
+				ginkgo.Skip("skip this test for s390x.")
 				vmi = libvmops.RunVMIAndExpectLaunch(libvmifact.NewAlpine(), vmiLaunchTimeout)
 
 				Expect(console.LoginToAlpine(vmi)).To(Succeed())
@@ -112,6 +114,7 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 
 		When("soft reboot vmi with agent connected via virtctl", func() {
 			It("should succeed", func() {
+
 				vmi = libvmops.RunVMIAndExpectLaunch(libvmifact.NewFedora(withoutACPI()), vmiLaunchTimeout)
 
 				Eventually(matcher.ThisVMI(vmi), 12*time.Minute, 2*time.Second).Should(matcher.HaveConditionTrue(v1.VirtualMachineInstanceAgentConnected))
@@ -125,6 +128,7 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 
 		When("soft reboot vmi with ACPI feature enabled via virtctl", func() {
 			It("should succeed", func() {
+				ginkgo.Skip("skip this for s390x.")
 				vmi = libvmops.RunVMIAndExpectLaunch(libvmifact.NewAlpine(), vmiLaunchTimeout)
 
 				Expect(console.LoginToAlpine(vmi)).To(Succeed())

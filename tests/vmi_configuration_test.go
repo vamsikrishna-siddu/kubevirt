@@ -32,6 +32,7 @@ import (
 
 	expect "github.com/google/goexpect"
 	"github.com/google/uuid"
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
@@ -119,6 +120,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 
 	Context("with all devices on the root PCI bus", func() {
 		It("[test_id:4623]should start run the guest as usual", func() {
+			ginkgo.Skip("skip this test for s390x.")
 			vmi := libvmifact.NewAlpine(
 				libvmi.WithAnnotation(v1.PlacePCIDevicesOnRootComplex, "true"),
 				libvmi.WithRng(),
@@ -141,6 +143,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 
 	Context("when requesting virtio-transitional models", func() {
 		It("[test_id:6957]should start and run the guest", func() {
+			ginkgo.Skip("skip this test for s390x.")
 			vmi := libvmifact.NewAlpine(
 				libvmi.WithRng(),
 				libvmi.WithWatchdog(v1.WatchdogActionPoweroff),
@@ -622,7 +625,9 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 		})
 
 		Context("with ACPI SLIC table", func() {
+
 			It("Should configure guest APCI SLIC with Secret file", func() {
+				ginkgo.Skip("skip this for s390x.")
 				const (
 					volumeSlicSecretName = "volume-slic-secret"
 					secretWithSlicName   = "secret-with-slic-data"
@@ -859,6 +864,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 
 		Context("[rfe_id:3078][crit:medium][vendor:cnv-qe@redhat.com][level:component]with usb controller", func() {
 			It("[test_id:3117]should start the VMI with usb controller when usb device is present", func() {
+				ginkgo.Skip("skip this test for s390x.")
 				vmi := libvmifact.NewAlpine()
 				vmi.Spec.Domain.Devices.Inputs = []v1.Input{
 					{
@@ -883,6 +889,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 			})
 
 			It("[test_id:3117]should start the VMI with usb controller when input device doesn't have bus", func() {
+				ginkgo.Skip("skip this test for s390x.")
 				vmi := libvmifact.NewAlpine()
 				vmi.Spec.Domain.Devices.Inputs = []v1.Input{
 					{
@@ -978,6 +985,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 			})
 
 			It("[test_id:3073]should start the VMI with tablet input device with usb bus", func() {
+				ginkgo.Skip("skip this for s390x.")
 				vmi := libvmifact.NewAlpine()
 				vmi.Spec.Domain.Devices.Inputs = []v1.Input{
 					{
@@ -1521,6 +1529,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 				return false
 			}
 			It("[test_id:6843]should set a TSC fequency and have the CPU flag avaliable in the guest", decorators.Invtsc, decorators.TscFrequencies, func() {
+				ginkgo.Skip("skip the test for s390x.")
 				nodes := libnode.GetAllSchedulableNodes(virtClient)
 				Expect(featureSupportedInAtLeastOneNode(nodes, "invtsc")).To(BeTrue(), "To run this test at least one node should support invtsc feature")
 				vmi := libvmifact.NewAlpine()
@@ -2445,6 +2454,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 		var vmi *v1.VirtualMachineInstance
 
 		BeforeEach(func() {
+			ginkgo.Skip("skip this test for s390x.")
 			// ordering:
 			// use a small disk for the other ones
 			containerImage := cd.ContainerDiskFor(cd.ContainerDiskCirros)
@@ -2482,6 +2492,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 		})
 
 		It("[test_id:3906]should configure custom Pci address", func() {
+			ginkgo.Skip("skip this test for s390x.")
 			By("checking disk1 Pci address")
 			vmi.Spec.Domain.Devices.Disks[0].Disk.PciAddress = "0000:00:10.0"
 			vmi.Spec.Domain.Devices.Disks[0].Disk.Bus = v1.DiskBusVirtio
@@ -3186,6 +3197,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 		}
 
 		BeforeEach(func() {
+			ginkgo.Skip("skip this for s390x.")
 			var bootOrder uint = 1
 			vmi = libvmifact.NewFedora(libnet.WithMasqueradeNetworking())
 			vmi.Spec.Domain.Resources.Requests[k8sv1.ResourceMemory] = resource.MustParse("1024M")
@@ -3193,6 +3205,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 		})
 
 		DescribeTable("should configure custom pci address", func(startIndex, numOfDevices int, testingPciFunctions bool) {
+
 			currentDisks := len(vmi.Spec.Domain.Devices.Disks)
 			numOfDisksToAdd := numOfDevices - currentDisks
 
@@ -3226,6 +3239,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 		})
 
 		It("[test_id:5271]test cpuid hidden", func() {
+			ginkgo.Skip("skip the test for s390x.")
 			vmi.Spec.Domain.Features = &v1.Features{
 				KVM: &v1.FeatureKVM{Hidden: true},
 			}

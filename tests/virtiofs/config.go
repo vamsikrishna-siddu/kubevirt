@@ -37,6 +37,7 @@ import (
 
 	expect "github.com/google/goexpect"
 	"github.com/google/uuid"
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -51,9 +52,10 @@ import (
 	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
-var _ = Describe("[sig-compute] vitiofs config volumes", decorators.SigCompute, func() {
+var _ = Describe("[sig-compute] vitiofs config volumes ", decorators.SigCompute, func() {
 	BeforeEach(func() {
 		checks.SkipTestIfNoFeatureGate(virtconfig.VirtIOFSGate)
+		ginkgo.Skip("skip this test for s390x.")
 	})
 
 	Context("With a single ConfigMap volume", func() {

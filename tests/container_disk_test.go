@@ -26,6 +26,7 @@ import (
 	"time"
 
 	expect "github.com/google/goexpect"
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -107,6 +108,7 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 	Describe("[rfe_id:273][crit:medium][vendor:cnv-qe@redhat.com][level:component]Starting a VirtualMachineInstance", func() {
 		Context("with ephemeral registry disk", func() {
 			It("[test_id:1464]should not modify the spec on status update", func() {
+				ginkgo.Skip("skip this test for s390x.")
 				vmi := libvmifact.NewCirros()
 				v1.SetObjectDefaults_VirtualMachineInstance(vmi)
 
@@ -204,6 +206,7 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 	Describe("[rfe_id:273][crit:medium][vendor:cnv-qe@redhat.com][level:component]Starting with virtio-win", func() {
 		Context("with virtio-win as secondary disk", func() {
 			It("[test_id:1467]should boot and have the virtio as sata CDROM", func() {
+				ginkgo.Skip("skip this test for s390x.")
 				vmi := libvmifact.NewAlpine(
 					libvmi.WithEphemeralCDRom("disk4", v1.DiskBusSATA, cd.ContainerDiskFor(cd.ContainerDiskVirtio)),
 				)

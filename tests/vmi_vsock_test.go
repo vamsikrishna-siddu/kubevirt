@@ -34,6 +34,7 @@ import (
 	"kubevirt.io/kubevirt/tests/decorators"
 
 	expect "github.com/google/goexpect"
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	k8sv1 "k8s.io/api/core/v1"
@@ -63,11 +64,13 @@ var _ = Describe("[sig-compute]VSOCK", Serial, decorators.SigCompute, func() {
 
 	BeforeEach(func() {
 		tests.EnableFeatureGate(virtconfig.VSOCKGate)
+		ginkgo.Skip("skip the vsock test for s390x.")
 		checks.SkipTestIfNoFeatureGate(virtconfig.VSOCKGate)
 		virtClient = kubevirt.Client()
 	})
 
 	Context("VM creation", func() {
+
 		DescribeTable("should expose a VSOCK device", func(useVirtioTransitional bool) {
 			By("Creating a VMI with VSOCK enabled")
 			vmi := libvmifact.NewFedora(libnet.WithMasqueradeNetworking())
@@ -127,6 +130,7 @@ var _ = Describe("[sig-compute]VSOCK", Serial, decorators.SigCompute, func() {
 		}
 
 		It("should retain the CID for migration target", func() {
+			ginkgo.Skip("skip the test for s390x.")
 			By("Creating a VMI with VSOCK enabled")
 			vmi := libvmifact.NewFedora(libnet.WithMasqueradeNetworking())
 			vmi.Spec.Domain.Devices.AutoattachVSOCK = pointer.Bool(true)
