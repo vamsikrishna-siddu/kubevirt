@@ -29,6 +29,7 @@ import (
 	v1 "kubevirt.io/api/core/v1"
 
 	"kubevirt.io/kubevirt/pkg/libvmi"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("ServiceAccount", func() {
@@ -52,7 +53,7 @@ var _ = Describe("ServiceAccount", func() {
 	})
 
 	It("Should create a new service account iso disk", func() {
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithServiceAccountDisk("testaccount"),
 		)
 

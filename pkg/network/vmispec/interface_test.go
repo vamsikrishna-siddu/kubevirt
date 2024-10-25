@@ -26,6 +26,7 @@ import (
 
 	"kubevirt.io/kubevirt/pkg/libvmi"
 	netvmispec "kubevirt.io/kubevirt/pkg/network/vmispec"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("VMI network spec", func() {
@@ -186,7 +187,7 @@ var _ = Describe("VMI network spec", func() {
 		Context("vmi", func() {
 			It("shouldn't allow migration if the VMI use non-migratable binding plugin to connect to the pod network", func() {
 				network := podNetwork(podNet0)
-				vmi := libvmi.New(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithInterface(interfaceWithBindingPlugin(podNet0, nonMigratablePlugin)),
 					libvmi.WithNetwork(&network),
 				)
@@ -194,7 +195,7 @@ var _ = Describe("VMI network spec", func() {
 			})
 			It("shouldn't allow migration if the VMI uses bridge binding to connect to the pod network", func() {
 				network := podNetwork(podNet0)
-				vmi := libvmi.New(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithInterface(*v1.DefaultBridgeNetworkInterface()),
 					libvmi.WithNetwork(&network),
 				)
@@ -202,7 +203,7 @@ var _ = Describe("VMI network spec", func() {
 			})
 			It("should allow migration if the VMI uses masquerade to connect to the pod network", func() {
 				network := podNetwork(podNet0)
-				vmi := libvmi.New(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithInterface(*v1.DefaultMasqueradeNetworkInterface()),
 					libvmi.WithNetwork(&network),
 				)
@@ -210,7 +211,7 @@ var _ = Describe("VMI network spec", func() {
 			})
 			It("should allow migration if the VMI use bridge to connect to the pod network and has AllowLiveMigrationBridgePodNetwork annotation", func() {
 				network := podNetwork(podNet0)
-				vmi := libvmi.New(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithInterface(*v1.DefaultBridgeNetworkInterface()),
 					libvmi.WithNetwork(&network),
 					libvmi.WithAnnotation(v1.AllowPodBridgeNetworkLiveMigrationAnnotation, ""),
@@ -219,7 +220,7 @@ var _ = Describe("VMI network spec", func() {
 			})
 			It("should allow migration if the VMI use migratable binding plugin to connect to the pod network", func() {
 				network := podNetwork(podNet0)
-				vmi := libvmi.New(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithInterface(interfaceWithBindingPlugin(podNet0, migratablePlugin)),
 					libvmi.WithNetwork(&network),
 				)

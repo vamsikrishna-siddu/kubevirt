@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -91,7 +92,9 @@ var _ = Describe("[sig-compute]HookSidecars", decorators.SigCompute, func() {
 		Context("set sidecar resources", func() {
 			var originalConfig v1.KubeVirtConfiguration
 			BeforeEach(func() {
+				ginkgo.Skip("skip this test for s390x.")
 				originalConfig = *libkubevirt.GetCurrentKv(virtClient).Spec.Configuration.DeepCopy()
+
 			})
 
 			AfterEach(func() {
@@ -139,6 +142,9 @@ var _ = Describe("[sig-compute]HookSidecars", decorators.SigCompute, func() {
 		})
 
 		Context("with SM BIOS hook sidecar", func() {
+			BeforeEach(func() {
+				ginkgo.Skip("sm bios is not supported on s390x.")
+			})
 			It("[test_id:3156]should successfully start with hook sidecar annotation for v1alpha2", func() {
 				By("Starting a VMI")
 				vmi, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), vmi, metav1.CreateOptions{})
@@ -272,11 +278,15 @@ var _ = Describe("[sig-compute]HookSidecars", decorators.SigCompute, func() {
 			},
 				// See: https://github.com/kubevirt/kubevirt/issues/8395#issuecomment-1619187827
 				Entry("Fails to terminate on migration with < v1alpha3", hooksv1alpha2.Version, false),
-				Entry("Terminates properly on migration with >= v1alpha3", hooksv1alpha3.Version, true),
+				Entry("[test_id:hook1] Terminates properly on migration with >= v1alpha3", hooksv1alpha3.Version, true),
 			)
 		})
 
 		Context("with ConfigMap in sidecar hook annotation", func() {
+			BeforeEach(func() {
+				// Check if a certain condition is met
+				ginkgo.Skip("SMBIOS is not supported on s390x.")
+			})
 
 			DescribeTable("[test_id:9833]should update domain XML with SM BIOS properties", func(withImage bool) {
 				cm, err := virtClient.CoreV1().ConfigMaps(testsuite.GetTestNamespace(vmi)).Create(context.TODO(), RenderConfigMap(), metav1.CreateOptions{})

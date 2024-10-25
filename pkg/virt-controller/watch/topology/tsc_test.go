@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"kubevirt.io/kubevirt/pkg/pointer"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 
 	v1 "kubevirt.io/api/core/v1"
 
@@ -85,7 +86,7 @@ var _ = Describe("TSC", func() {
 	Context("needs to be set when", func() {
 
 		newVmi := func(options ...libvmi.Option) *v1.VirtualMachineInstance {
-			vmi := libvmi.New(options...)
+			vmi := libvmifact.NewAlpine(options...)
 			vmi.Status.TopologyHints = &v1.TopologyHints{TSCFrequency: pointer.P(int64(12345))}
 
 			return vmi

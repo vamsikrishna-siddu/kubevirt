@@ -25,6 +25,7 @@ import (
 
 	"kubevirt.io/kubevirt/pkg/libvmi"
 	"kubevirt.io/kubevirt/pkg/storage/pod/annotations"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("Annotations Generator", func() {
@@ -35,7 +36,7 @@ var _ = Describe("Annotations Generator", func() {
 		)
 
 		generator := annotations.Generator{}
-		annotations, err := generator.Generate(libvmi.New(libvmi.WithNamespace(testNamespace), libvmi.WithName(vmiName)))
+		annotations, err := generator.Generate(libvmifact.NewAlpine(libvmi.WithNamespace(testNamespace), libvmi.WithName(vmiName)))
 		Expect(err).NotTo(HaveOccurred())
 
 		const (

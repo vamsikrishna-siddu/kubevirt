@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"kubevirt.io/kubevirt/tests/framework/kubevirt"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 
 	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -233,7 +234,7 @@ func RenderVMIWithDataVolume(dvName, ns string, opts ...libvmi.Option) *v1.Virtu
 		libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 		libvmi.WithNetwork(v1.DefaultPodNetwork()),
 	}
-	return libvmi.New(append(defaultOptions, opts...)...)
+	return libvmifact.NewAlpine(append(defaultOptions, opts...)...)
 }
 
 func RenderVMWithDataVolumeTemplate(dv *v1beta1.DataVolume, opts ...libvmi.VMOption) *v1.VirtualMachine {

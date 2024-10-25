@@ -21,6 +21,7 @@ package tests_test
 
 import (
 	expect "github.com/google/goexpect"
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -48,7 +49,8 @@ var _ = Describe("[rfe_id:151][crit:high][vendor:cnv-qe@redhat.com][level:compon
 	Describe("[rfe_id:151][crit:medium][vendor:cnv-qe@redhat.com][level:component]A new VirtualMachineInstance", func() {
 		Context("with IgnitionData annotation", func() {
 			Context("with injected data", func() {
-				It("[test_id:1616]should have injected data under firmware directory", func() {
+				It("[test_id:1616][test_id:mno]should have injected data under firmware directory", func() {
+					ginkgo.Skip("fw_cfg device is not supported on s390x.")
 					ignitionData := "ignition injected"
 					vmi := libvmops.RunVMIAndExpectLaunch(
 						libvmifact.NewFedora(libvmi.WithAnnotation(v1.IgnitionAnnotation, ignitionData)),

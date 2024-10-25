@@ -31,6 +31,7 @@ import (
 
 	"kubevirt.io/kubevirt/pkg/libvmi"
 	"kubevirt.io/kubevirt/pkg/network/netbinding"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("Network Binding plugin compute resource overhead", func() {
@@ -48,23 +49,23 @@ var _ = Describe("Network Binding plugin compute resource overhead", func() {
 			actualResult := memoryCalculator.Calculate(vmi, registeredPlugins)
 			Expect(actualResult.Value()).To(BeZero())
 		},
-		Entry("when the VMI does not have NICs and there aren't any registered plugins", libvmi.New(), nil),
+		Entry("when the VMI does not have NICs and there aren't any registered plugins", libvmifact.NewAlpine(), nil),
 		Entry("when no binding plugin is used on the VMI and there aren't any registered plugins",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(*v1.DefaultBridgeNetworkInterface()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			),
 			nil,
 		),
 		Entry("when no binding plugin is used on the VMI and there are registered plugins",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(*v1.DefaultBridgeNetworkInterface()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			),
 			map[string]v1.InterfaceBindingPlugin{plugin1name: newPlugin(nil)},
 		),
 		Entry("when binding plugin is used on the VMI, but it does not require compute overhead",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(v1.Interface{Name: iface1name, Binding: &v1.PluginBinding{Name: plugin1name}}),
 				libvmi.WithNetwork(&v1.Network{Name: iface1name}),
 			),
@@ -73,7 +74,7 @@ var _ = Describe("Network Binding plugin compute resource overhead", func() {
 			},
 		),
 		Entry("when binding plugin is used on the VMI, but it does not require memory overhead",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(v1.Interface{Name: iface1name, Binding: &v1.PluginBinding{Name: plugin1name}}),
 				libvmi.WithNetwork(&v1.Network{Name: iface1name}),
 			),
@@ -97,7 +98,7 @@ var _ = Describe("Network Binding plugin compute resource overhead", func() {
 			Expect(actualResult.Value()).To(Equal(expectedValue.Value()))
 		},
 		Entry("when there is a single interface using a binding plugin",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(v1.Interface{Name: iface1name, Binding: &v1.PluginBinding{Name: plugin1name}}),
 				libvmi.WithNetwork(&v1.Network{Name: iface1name}),
 			),
@@ -113,7 +114,7 @@ var _ = Describe("Network Binding plugin compute resource overhead", func() {
 			resource.MustParse("500Mi"),
 		),
 		Entry("when there are two interfaces using the same binding plugin",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(v1.Interface{Name: iface1name, Binding: &v1.PluginBinding{Name: plugin1name}}),
 				libvmi.WithNetwork(&v1.Network{Name: iface1name}),
 				libvmi.WithInterface(v1.Interface{Name: iface2name, Binding: &v1.PluginBinding{Name: plugin1name}}),
@@ -131,7 +132,7 @@ var _ = Describe("Network Binding plugin compute resource overhead", func() {
 			resource.MustParse("500Mi"),
 		),
 		Entry("when there are two interfaces using different binding plugins",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(v1.Interface{Name: iface1name, Binding: &v1.PluginBinding{Name: plugin1name}}),
 				libvmi.WithNetwork(&v1.Network{Name: iface1name}),
 				libvmi.WithInterface(v1.Interface{Name: iface2name, Binding: &v1.PluginBinding{Name: plugin2name}}),
@@ -156,7 +157,7 @@ var _ = Describe("Network Binding plugin compute resource overhead", func() {
 			resource.MustParse("1100Mi"),
 		),
 		Entry("when there are two interfaces and just one is using a binding plugin",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(v1.Interface{Name: iface1name}),
 				libvmi.WithNetwork(&v1.Network{Name: iface1name}),
 				libvmi.WithInterface(v1.Interface{Name: iface2name, Binding: &v1.PluginBinding{Name: plugin2name}}),
@@ -181,7 +182,7 @@ var _ = Describe("Network Binding plugin compute resource overhead", func() {
 			resource.MustParse("600Mi"),
 		),
 		Entry("when there is a non-registered plugin, it should not be taken into account",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(v1.Interface{Name: iface1name, Binding: &v1.PluginBinding{Name: plugin1name}}),
 				libvmi.WithNetwork(&v1.Network{Name: iface1name}),
 				libvmi.WithInterface(v1.Interface{Name: iface2name, Binding: &v1.PluginBinding{Name: "non existent"}}),

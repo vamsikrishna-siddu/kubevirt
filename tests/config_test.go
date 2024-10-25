@@ -137,7 +137,7 @@ var _ = Describe("[rfe_id:899][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 				By("Checking mounted iso image")
 				Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
 					// mount iso ConfigMap image
-					&expect.BSnd{S: "mount /dev/sda /mnt\n"},
+					&expect.BSnd{S: "mount /dev/vdb /mnt\n"},
 					&expect.BExp{R: console.PromptExpression},
 					&expect.BSnd{S: "echo $?\n"},
 					&expect.BExp{R: console.RetValue("0")},
@@ -236,7 +236,9 @@ var _ = Describe("[rfe_id:899][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 				By("Checking mounted iso image")
 				Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
 					// mount iso Secret image
-					&expect.BSnd{S: "mount /dev/sda /mnt\n"},
+					&expect.BSnd{S: "cat /proc/partitions\n"},
+					&expect.BExp{R: console.PromptExpression},
+					&expect.BSnd{S: "mount /dev/vdb /mnt\n"},
 					&expect.BExp{R: console.PromptExpression},
 					&expect.BSnd{S: "echo $?\n"},
 					&expect.BExp{R: console.RetValue("0")},
@@ -327,7 +329,7 @@ var _ = Describe("[rfe_id:899][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 			By("Checking mounted iso image")
 			Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
 				// mount service account iso image
-				&expect.BSnd{S: "mount /dev/sda /mnt\n"},
+				&expect.BSnd{S: "mount /dev/vdb /mnt\n"},
 				&expect.BExp{R: console.PromptExpression},
 				&expect.BSnd{S: "echo $?\n"},
 				&expect.BExp{R: console.RetValue("0")},
@@ -544,7 +546,7 @@ var _ = Describe("[rfe_id:899][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 					// mount iso Secret image
 					&expect.BSnd{S: "sudo su -\n"},
 					&expect.BExp{R: console.PromptExpression},
-					&expect.BSnd{S: "mount /dev/sda /mnt\n"},
+					&expect.BSnd{S: "mount /dev/vdb /mnt\n"},
 					&expect.BExp{R: console.PromptExpression},
 					&expect.BSnd{S: "echo $?\n"},
 					&expect.BExp{R: console.RetValue("0")},
@@ -593,7 +595,7 @@ var _ = Describe("[rfe_id:899][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 			By("Checking mounted iso image")
 			Expect(console.ExpectBatch(vmi, []expect.Batcher{
 				// mount iso DownwardAPI image
-				&expect.BSnd{S: "mount /dev/sda /mnt\n"},
+				&expect.BSnd{S: "mount /dev/vdb /mnt\n"},
 				&expect.BSnd{S: "echo $?\n"},
 				&expect.BExp{R: console.RetValue("0")},
 				&expect.BSnd{S: "grep " + testLabelKey + " /mnt/labels\n"},

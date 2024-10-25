@@ -30,6 +30,7 @@ import (
 
 	"kubevirt.io/kubevirt/pkg/libvmi"
 	"kubevirt.io/kubevirt/pkg/virt-launcher/virtwrap/api"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("ContainerDisk", func() {
@@ -77,7 +78,7 @@ var _ = Describe("ContainerDisk", func() {
 		Context("With single ephemeral volume", func() {
 			It("Should create VirtualMachineInstance's ephemeral image", func() {
 				By("Creating a minimal VirtualMachineInstance object with single ephemeral-backed PVC")
-				vmi := libvmi.New(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithEphemeralPersistentVolumeClaim("fake-disk", "fake-pvc"),
 				)
 
@@ -97,7 +98,7 @@ var _ = Describe("ContainerDisk", func() {
 		Context("With multiple ephemeral volumes", func() {
 			It("Should create VirtualMachineInstance's ephemeral images", func() {
 				By("Creating a minimal VirtualMachineInstance object with multiple ephemeral-backed PVC")
-				vmi := libvmi.New(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithEphemeralPersistentVolumeClaim("fake-disk1", "fake-pvc1"),
 					libvmi.WithEphemeralPersistentVolumeClaim("fake-disk2", "fake-pvc2"),
 					libvmi.WithEphemeralPersistentVolumeClaim("fake-disk3", "fake-pvc3"),
@@ -122,7 +123,7 @@ var _ = Describe("ContainerDisk", func() {
 			})
 			It("Should create ephemeral images in an idempotent way", func() {
 				By("Creating a minimal VirtualMachineInstance object with single ephemeral-backed PVC")
-				vmi := libvmi.New(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithEphemeralPersistentVolumeClaim("fake-disk", "fake-pvc"),
 				)
 
@@ -139,7 +140,7 @@ var _ = Describe("ContainerDisk", func() {
 		Context("With a block pvc backed ephemeral volume", func() {
 			It("Should create VirtualMachineInstance's ephemeral image", func() {
 				By("Creating a minimal VirtualMachineInstance object with single ephemeral-backed PVC")
-				vmi := libvmi.New(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithEphemeralPersistentVolumeClaim("fake-disk", "fake-pvc"),
 				)
 

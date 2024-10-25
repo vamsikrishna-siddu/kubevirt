@@ -35,6 +35,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/defaults"
 	"kubevirt.io/kubevirt/pkg/util/hardware"
 	"kubevirt.io/kubevirt/pkg/virt-launcher/virtwrap/converter/vcpu"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
@@ -1047,7 +1048,7 @@ var _ = Describe("Converter", func() {
 		})
 
 		It("should generate the block backingstore disk within the domain", func() {
-			vmi = libvmi.New(
+			vmi = libvmifact.NewAlpine(
 				libvmi.WithEphemeralPersistentVolumeClaim(blockPVCName, "test-ephemeral"),
 			)
 

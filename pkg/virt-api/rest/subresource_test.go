@@ -64,6 +64,7 @@ import (
 	storagetypes "kubevirt.io/kubevirt/pkg/storage/types"
 	"kubevirt.io/kubevirt/pkg/testutils"
 	virtconfig "kubevirt.io/kubevirt/pkg/virt-config"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 const (
@@ -588,7 +589,7 @@ var _ = Describe("VirtualMachineInstance Subresources", func() {
 			})
 
 			It("should fail when the volume migration in ongoing", func() {
-				vmi := libvmi.New()
+				vmi := libvmifact.NewAlpine()
 				vm := libvmi.NewVirtualMachine(vmi)
 				controller.NewVirtualMachineConditionManager().UpdateCondition(vm, &v1.VirtualMachineCondition{
 					Type:   v1.VirtualMachineConditionType(v1.VirtualMachineInstanceVolumesChange),
@@ -1675,7 +1676,7 @@ var _ = Describe("VirtualMachineInstance Subresources", func() {
 		)
 
 		It("should fail when the volume migration in ongoing", func() {
-			vmi := libvmi.New()
+			vmi := libvmifact.NewAlpine()
 			vm := libvmi.NewVirtualMachine(vmi)
 			controller.NewVirtualMachineConditionManager().UpdateCondition(vm, &v1.VirtualMachineCondition{
 				Type:   v1.VirtualMachineManualRecoveryRequired,

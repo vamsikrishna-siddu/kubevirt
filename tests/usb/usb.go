@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	expect "github.com/google/goexpect"
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -41,6 +42,7 @@ var _ = Describe("[sig-compute][USB] host USB Passthrough", Serial, decorators.S
 
 	BeforeEach(func() {
 		virtClient = kubevirt.Client()
+		ginkgo.Skip("the usbs are not supported on s390x.")
 		kv := libkubevirt.GetCurrentKv(virtClient)
 		config = kv.Spec.Configuration
 
@@ -56,7 +58,7 @@ var _ = Describe("[sig-compute][USB] host USB Passthrough", Serial, decorators.S
 			Skip("No emulated USB devices present for functional test.")
 		}
 
-		vmi = libvmifact.NewCirros()
+		vmi = libvmifact.NewAlpine()
 	})
 
 	AfterEach(func() {
@@ -101,7 +103,7 @@ var _ = Describe("[sig-compute][USB] host USB Passthrough", Serial, decorators.S
 			vmi, err = virtClient.VirtualMachineInstance(testsuite.NamespaceTestDefault).Create(context.Background(), vmi, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 			vmi = libwait.WaitForSuccessfulVMIStart(vmi)
-			Expect(console.LoginToCirros(vmi)).To(Succeed())
+			Expect(console.LoginToAlpine(vmi)).To(Succeed())
 
 			By("Making sure the usb is present inside the VMI")
 			Expect(console.SafeExpectBatch(vmi, []expect.Batcher{

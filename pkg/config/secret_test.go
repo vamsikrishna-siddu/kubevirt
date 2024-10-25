@@ -29,6 +29,7 @@ import (
 	v1 "kubevirt.io/api/core/v1"
 
 	"kubevirt.io/kubevirt/pkg/libvmi"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("Secret", func() {
@@ -52,7 +53,7 @@ var _ = Describe("Secret", func() {
 	})
 
 	It("Should create a new secret iso disk", func() {
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithSecretDisk("test-secret", "secret-volume"),
 		)
 

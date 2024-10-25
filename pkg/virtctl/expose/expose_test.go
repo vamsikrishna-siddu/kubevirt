@@ -19,6 +19,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/pointer"
 	"kubevirt.io/kubevirt/pkg/virtctl/expose"
 	"kubevirt.io/kubevirt/tests/clientcmd"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("Expose", func() {
@@ -96,7 +97,7 @@ var _ = Describe("Expose", func() {
 		)
 
 		It("with missing port and missing pod network ports", func() {
-			vmi := libvmi.New(libvmi.WithLabel("key", "value"))
+			vmi := libvmifact.NewAlpine(libvmi.WithLabel("key", "value"))
 			vmi, err := virtClient.KubevirtV1().VirtualMachineInstances(metav1.NamespaceDefault).Create(context.Background(), vmi, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 			err = runCommand("vmi", vmi.Name, "--name", "my-service")
@@ -105,7 +106,7 @@ var _ = Describe("Expose", func() {
 
 		Context("when labels are missing", func() {
 			It("with VirtualMachineInstance", func() {
-				vmi := libvmi.New()
+				vmi := libvmifact.NewAlpine()
 				vmi, err := virtClient.KubevirtV1().VirtualMachineInstances(metav1.NamespaceDefault).Create(context.Background(), vmi, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
 				err = runCommand("vmi", vmi.Name, "--name", "my-service")
@@ -113,7 +114,7 @@ var _ = Describe("Expose", func() {
 			})
 
 			It("with VirtualMachineInstance and unwanted labels", func() {
-				vmi := libvmi.New(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithLabel(v1.NodeNameLabel, "value"),
 					libvmi.WithLabel(v1.VirtualMachinePoolRevisionName, "value"),
 					libvmi.WithLabel(v1.MigrationTargetNodeNameLabel, "value"),
@@ -125,7 +126,7 @@ var _ = Describe("Expose", func() {
 			})
 
 			It("with VirtualMachine", func() {
-				vm := libvmi.NewVirtualMachine(libvmi.New())
+				vm := libvmi.NewVirtualMachine(libvmifact.NewAlpine())
 				vm, err := virtClient.KubevirtV1().VirtualMachines(metav1.NamespaceDefault).Create(context.Background(), vm, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
 				err = runCommand("vm", vm.Name, "--name", "my-service")
@@ -133,7 +134,7 @@ var _ = Describe("Expose", func() {
 			})
 
 			It("with VirtualMachine and unwanted labels", func() {
-				vm := libvmi.NewVirtualMachine(libvmi.New(
+				vm := libvmi.NewVirtualMachine(libvmifact.NewAlpine(
 					libvmi.WithLabel(v1.VirtualMachinePoolRevisionName, "value"),
 				))
 				vm, err := virtClient.KubevirtV1().VirtualMachines(metav1.NamespaceDefault).Create(context.Background(), vm, metav1.CreateOptions{})
@@ -196,7 +197,7 @@ var _ = Describe("Expose", func() {
 		}
 
 		BeforeEach(func() {
-			vmi = libvmi.New(libvmi.WithLabel(labelKey, labelValue))
+			vmi = libvmifact.NewAlpine(libvmi.WithLabel(labelKey, labelValue))
 			vmi, err := virtClient.KubevirtV1().VirtualMachineInstances(metav1.NamespaceDefault).Create(context.Background(), vmi, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 

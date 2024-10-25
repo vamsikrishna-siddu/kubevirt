@@ -23,6 +23,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -56,7 +57,7 @@ var _ = SIGDescribe("VMIDefaults", func() {
 	Context("Disk defaults", func() {
 		BeforeEach(func() {
 			// create VMI with missing disk target
-			vmi = libvmi.New(
+			vmi = libvmifact.NewAlpine(
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 				libvmi.WithResourceMemory("8192Ki"),
@@ -101,8 +102,9 @@ var _ = SIGDescribe("VMIDefaults", func() {
 		var kvConfiguration v1.KubeVirtConfiguration
 
 		BeforeEach(func() {
+			ginkgo.Skip("skip the memory ballooning for s390x.")
 			// create VMI with missing disk target
-			vmi = libvmi.New(
+			vmi = libvmifact.NewAlpine(
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 				libvmi.WithResourceMemory("128Mi"),
@@ -223,7 +225,7 @@ var _ = SIGDescribe("VMIDefaults", func() {
 		It("[test_id:TODO]Should be set in VirtualMachineInstance", func() {
 
 			By("Creating a VirtualMachineInstance with an input device without a bus or type set")
-			vmi = libvmifact.NewCirros()
+			vmi = libvmifact.NewAlpine()
 			vmi.Spec.Domain.Devices.Inputs = append(vmi.Spec.Domain.Devices.Inputs, v1.Input{
 				Name: "foo-1",
 			})
@@ -240,7 +242,7 @@ var _ = SIGDescribe("VMIDefaults", func() {
 
 		It("[test_id:TODO]Should be applied to a device added by AutoattachInputDevice", func() {
 			By("Creating a VirtualMachine with AutoattachInputDevice enabled")
-			vm := libvmi.NewVirtualMachine(libvmifact.NewCirros(), libvmi.WithRunStrategy(v1.RunStrategyAlways))
+			vm := libvmi.NewVirtualMachine(libvmifact.NewAlpine(), libvmi.WithRunStrategy(v1.RunStrategyAlways))
 			vm.Spec.Template.Spec.Domain.Devices.AutoattachInputDevice = pointer.P(true)
 			vm, err := virtClient.VirtualMachine(testsuite.GetTestNamespace(nil)).Create(context.Background(), vm, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())

@@ -121,14 +121,14 @@ var _ = Describe("[sig-compute]VirtualMachinePool", decorators.SigCompute, func(
 		}
 
 		dataVolume := libdv.NewDataVolume(
-			libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+			libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 			libdv.WithStorage(libdv.StorageWithStorageClass(sc)),
 		)
 
 		vm := libvmi.NewVirtualMachine(
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithDataVolume("disk0", dataVolume.Name),
-				libvmi.WithResourceMemory("100M"),
+				libvmi.WithResourceMemory("128M"),
 			),
 			libvmi.WithDataVolumeTemplate(dataVolume),
 		)
@@ -147,14 +147,14 @@ var _ = Describe("[sig-compute]VirtualMachinePool", decorators.SigCompute, func(
 
 	newVirtualMachinePool := func() *poolv1.VirtualMachinePool {
 		By("Create a new VirtualMachinePool")
-		pool := newPoolFromVMI(libvmi.New(libvmi.WithResourceMemory("2Mi")))
+		pool := newPoolFromVMI(libvmifact.NewAlpine(libvmi.WithResourceMemory("128Mi")))
 		pool.Spec.VirtualMachineTemplate.Spec.RunStrategy = pointer.P(v1.RunStrategyAlways)
 		return createVirtualMachinePool(pool)
 	}
 
 	newOfflineVirtualMachinePool := func() *poolv1.VirtualMachinePool {
 		By("Create a new VirtualMachinePool")
-		return createVirtualMachinePool(newPoolFromVMI(libvmifact.NewCirros()))
+		return createVirtualMachinePool(newPoolFromVMI(libvmifact.NewAlpine()))
 	}
 
 	DescribeTable("pool should scale", func(startScale int, stopScale int) {
@@ -197,7 +197,7 @@ var _ = Describe("[sig-compute]VirtualMachinePool", decorators.SigCompute, func(
 		Expect(err.Error()).To(ContainSubstring("admission webhook \"virtualmachinepool-validator.kubevirt.io\" denied the request: spec.virtualMachineTemplate.spec.template.spec.domain.devices.disks[2].Name 'testdisk' not found"))
 	})
 
-	It("should remove VMs once they are marked for deletion", func() {
+	It("[test_id:poolvamsi]should remove VMs once they are marked for deletion", func() {
 		newPool := newVirtualMachinePool()
 		// Create a pool with two replicas
 		doScale(newPool.ObjectMeta.Name, 2)
@@ -213,7 +213,7 @@ var _ = Describe("[sig-compute]VirtualMachinePool", decorators.SigCompute, func(
 		}, 120*time.Second, 1*time.Second).Should(BeZero())
 	})
 
-	It("should handle pool with dataVolumeTemplates", func() {
+	It("[test_id:pool1]should handle pool with dataVolumeTemplates", func() {
 		newPool := newPersistentStorageVirtualMachinePool()
 		doScale(newPool.ObjectMeta.Name, 2)
 
@@ -329,7 +329,7 @@ var _ = Describe("[sig-compute]VirtualMachinePool", decorators.SigCompute, func(
 		}
 	})
 
-	It("should replace deleted VM and get replacement", func() {
+	It("[test_id:pool6]should replace deleted VM and get replacement", func() {
 		newPool := newVirtualMachinePool()
 		doScale(newPool.ObjectMeta.Name, 3)
 
@@ -376,7 +376,7 @@ var _ = Describe("[sig-compute]VirtualMachinePool", decorators.SigCompute, func(
 
 	})
 
-	It("should roll out VM template changes without impacting VMI", func() {
+	It("[test_id:pool5]should roll out VM template changes without impacting VMI", func() {
 		newPool := newVirtualMachinePool()
 		doScale(newPool.ObjectMeta.Name, 1)
 		waitForVMIs(newPool.Namespace, 1)
@@ -432,7 +432,7 @@ var _ = Describe("[sig-compute]VirtualMachinePool", decorators.SigCompute, func(
 		}, 5*time.Second, 1*time.Second).Should(BeNil())
 	})
 
-	It("should roll out VMI template changes and proactively roll out new VMIs", func() {
+	It("[test_id:pool2]should roll out VMI template changes and proactively roll out new VMIs", func() {
 		newPool := newVirtualMachinePool()
 		doScale(newPool.ObjectMeta.Name, 1)
 		waitForVMIs(newPool.Namespace, 1)

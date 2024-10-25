@@ -106,15 +106,15 @@ var _ = Describe("[sig-compute][virtctl]SCP", decorators.SigCompute, func() {
 		Expect(libssh.DumpPrivateKey(priv, keyFile)).To(Succeed())
 	})
 
-	DescribeTable("should copy a local file back and forth", func(copyFn func(string, string, bool)) {
+	DescribeTable("[test_id:test]should copy a local file back and forth", func(copyFn func(string, string, bool)) {
 		By("injecting a SSH public key into a VMI")
-		vmi := libvmifact.NewAlpineWithTestTooling(
+		vmi := libvmifact.NewFedora(
 			libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudUserData(libssh.RenderUserDataWithKey(pub))),
 		)
 		vmi, err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), vmi, metav1.CreateOptions{})
 		Expect(err).ToNot(HaveOccurred())
 
-		vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToAlpine)
+		vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToFedora)
 
 		By("copying a file to the VMI")
 		copyFn(keyFile, vmi.Name+":"+"./keyfile", false)
@@ -133,13 +133,13 @@ var _ = Describe("[sig-compute][virtctl]SCP", decorators.SigCompute, func() {
 
 	DescribeTable("should copy a local directory back and forth", func(copyFn func(string, string, bool)) {
 		By("injecting a SSH public key into a VMI")
-		vmi := libvmifact.NewAlpineWithTestTooling(
+		vmi := libvmifact.NewFedora(
 			libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudUserData(libssh.RenderUserDataWithKey(pub))),
 		)
 		vmi, err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), vmi, metav1.CreateOptions{})
 		Expect(err).ToNot(HaveOccurred())
 
-		vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToAlpine)
+		vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToFedora)
 
 		By("creating a few random files")
 		copyFromDir := filepath.Join(GinkgoT().TempDir(), "sourcedir")
@@ -159,8 +159,8 @@ var _ = Describe("[sig-compute][virtctl]SCP", decorators.SigCompute, func() {
 		compareFile(filepath.Join(copyFromDir, "file1"), filepath.Join(copyToDir, "file1"))
 		compareFile(filepath.Join(copyFromDir, "file2"), filepath.Join(copyToDir, "file2"))
 	},
-		Entry("using the native scp method", decorators.NativeSsh, copyNative),
-		Entry("using the local scp method with --local-ssh flag", decorators.NativeSsh, copyLocal(true)),
+		Entry("[test_id:scp_native]using the native scp method", decorators.NativeSsh, copyNative),
+		Entry("[test_id:scp]using the local scp method with --local-ssh flag", decorators.NativeSsh, copyLocal(true)),
 		Entry("using the local scp method without --local-ssh flag", decorators.ExcludeNativeSsh, copyLocal(false)),
 	)
 

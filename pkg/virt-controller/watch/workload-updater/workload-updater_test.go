@@ -32,6 +32,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/pointer"
 	"kubevirt.io/kubevirt/pkg/testutils"
 	virtconfig "kubevirt.io/kubevirt/pkg/virt-config"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("Workload Updater", func() {
@@ -500,7 +501,7 @@ var _ = Describe("Workload Updater", func() {
 				Type:   v1.VirtualMachineInstanceMemoryChange,
 				Status: k8sv1.ConditionTrue,
 			}
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithName("testvm"),
 				libvmistatus.WithStatus(
 					libvmistatus.New(libvmistatus.WithCondition(condition)),
@@ -545,7 +546,7 @@ var _ = Describe("Workload Updater", func() {
 			if hasAbortionAnnotation {
 				opts = append(opts, libvmi.WithAnnotation(v1.WorkloadUpdateMigrationAbortionAnnotation, ""))
 			}
-			vmi := libvmi.New(opts...)
+			vmi := libvmifact.NewAlpine(opts...)
 			controller.vmiStore.Add(vmi)
 			return vmi
 		}
@@ -631,7 +632,7 @@ var _ = Describe("Workload Updater", func() {
 		})
 
 		It("shouldn't cancel the migration if the migration object is still in running phase but the domain is ready on the target", func() {
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithName("testvm"),
 				libvmi.WithNamespace(k8sv1.NamespaceDefault),
 				libvmistatus.WithStatus(
@@ -692,7 +693,7 @@ func newVirtualMachineInstance(name string, isMigratable bool, image string) *v1
 		statusOpts = append(statusOpts, libvmistatus.WithCondition(v1.VirtualMachineInstanceCondition{Type: v1.VirtualMachineInstanceIsMigratable, Status: k8sv1.ConditionTrue}))
 	}
 
-	vmi := libvmi.New(
+	vmi := libvmifact.NewAlpine(
 		libvmi.WithResourceMemory("8192Ki"),
 		libvmi.WithNamespace(k8sv1.NamespaceDefault),
 		libvmi.WithName(name),

@@ -42,6 +42,7 @@ import (
 	virtpointer "kubevirt.io/kubevirt/pkg/pointer"
 	"kubevirt.io/kubevirt/pkg/testutils"
 	volumemigration "kubevirt.io/kubevirt/pkg/virt-controller/watch/volume-migration"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("Volume Migration", func() {
@@ -56,29 +57,29 @@ var _ = Describe("Volume Migration", func() {
 		},
 			Entry("with empty VMI", nil, &v1.VirtualMachine{}, fmt.Errorf("cannot validate the migrated volumes for an empty VMI")),
 			Entry("with empty VM", &v1.VirtualMachineInstance{}, nil, fmt.Errorf("cannot validate the migrated volumes for an empty VM")),
-			Entry("without any migrated volumes", libvmi.New(
+			Entry("without any migrated volumes", libvmifact.NewAlpine(
 				libvmi.WithPersistentVolumeClaim("disk0", "vol0"), libvmi.WithPersistentVolumeClaim("disk1", "vol1"),
-			), libvmi.NewVirtualMachine(libvmi.New(
+			), libvmi.NewVirtualMachine(libvmifact.NewAlpine(
 				libvmi.WithPersistentVolumeClaim("disk0", "vol0"), libvmi.WithPersistentVolumeClaim("disk1", "vol1"),
 			)), nil),
-			Entry("with valid volumes", libvmi.New(
+			Entry("with valid volumes", libvmifact.NewAlpine(
 				libvmi.WithPersistentVolumeClaim("disk0", "vol0"), libvmi.WithPersistentVolumeClaim("disk1", "vol1"),
-			), libvmi.NewVirtualMachine(libvmi.New(
+			), libvmi.NewVirtualMachine(libvmifact.NewAlpine(
 				libvmi.WithPersistentVolumeClaim("disk0", "vol2"), libvmi.WithPersistentVolumeClaim("disk1", "vol3"),
 			)), nil),
-			Entry("with an invalid lun volume", libvmi.New(
+			Entry("with an invalid lun volume", libvmifact.NewAlpine(
 				libvmi.WithPersistentVolumeClaim("disk0", "vol0"), libvmi.WithPersistentVolumeClaimLun("disk1", "vol1", false),
-			), libvmi.NewVirtualMachine(libvmi.New(
+			), libvmi.NewVirtualMachine(libvmifact.NewAlpine(
 				libvmi.WithPersistentVolumeClaim("disk0", "vol2"), libvmi.WithPersistentVolumeClaimLun("disk1", "vol4", false),
 			)), fmt.Errorf("invalid volumes to update with migration: luns: [disk1]")),
-			Entry("with an invalid shareable volume", libvmi.New(
+			Entry("with an invalid shareable volume", libvmifact.NewAlpine(
 				libvmi.WithPersistentVolumeClaim("disk0", "vol0"), withShareableVolume("disk1", "vol1"),
-			), libvmi.NewVirtualMachine(libvmi.New(
+			), libvmi.NewVirtualMachine(libvmifact.NewAlpine(
 				libvmi.WithPersistentVolumeClaim("disk0", "vol2"), withShareableVolume("disk1", "vol4"),
 			)), fmt.Errorf("invalid volumes to update with migration: shareable: [disk1]")),
-			Entry("with an invalid filesystem volume", libvmi.New(
+			Entry("with an invalid filesystem volume", libvmifact.NewAlpine(
 				libvmi.WithPersistentVolumeClaim("disk0", "vol0"), withFilesystemVolume("disk1", "vol1"),
-			), libvmi.NewVirtualMachine(libvmi.New(
+			), libvmi.NewVirtualMachine(libvmifact.NewAlpine(
 				libvmi.WithPersistentVolumeClaim("disk0", "vol2"), withFilesystemVolume("disk1", "vol4"),
 			)), fmt.Errorf("invalid volumes to update with migration: filesystems: [disk1]")),
 			Entry("with valid hotplugged volume", libvmi.New(
@@ -110,7 +111,7 @@ var _ = Describe("Volume Migration", func() {
 		})
 
 		DescribeTable("should evaluate the volume migration cancellation", func(vmiVols, vmVols []string, migVols []migVolumes, expectRes bool, expectErr error, expectCancellation bool) {
-			vmi := libvmi.New(append(addVMIOptionsForVolumes(vmiVols), libvmi.WithNamespace(ns))...)
+			vmi := libvmifact.NewAlpine(append(addVMIOptionsForVolumes(vmiVols), libvmi.WithNamespace(ns))...)
 			vmi.Status.Conditions = append(vmi.Status.Conditions, v1.VirtualMachineInstanceCondition{
 				Type: v1.VirtualMachineInstanceVolumesChange, Status: k8sv1.ConditionTrue})
 			for _, v := range migVols {
@@ -120,7 +121,7 @@ var _ = Describe("Volume Migration", func() {
 					DestinationPVCInfo: &v1.PersistentVolumeClaimInfo{ClaimName: v.dst},
 				})
 			}
-			vm := libvmi.NewVirtualMachine(libvmi.New(append(addVMIOptionsForVolumes(vmVols), libvmi.WithNamespace(ns))...))
+			vm := libvmi.NewVirtualMachine(libvmifact.NewAlpine(append(addVMIOptionsForVolumes(vmVols), libvmi.WithNamespace(ns))...))
 
 			_, err := fakeClientset.KubevirtV1().VirtualMachineInstances(ns).Create(context.TODO(), vmi, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
@@ -171,7 +172,7 @@ var _ = Describe("Volume Migration", func() {
 
 	Context("IsVolumeMigrating", func() {
 		DescribeTable("should detect the volume update condition", func(cond *v1.VirtualMachineInstanceCondition, expectRes bool) {
-			vmi := libvmi.New()
+			vmi := libvmifact.NewAlpine()
 			if cond != nil {
 				vmi.Status.Conditions = append(vmi.Status.Conditions, *cond)
 			}
@@ -231,8 +232,8 @@ var _ = Describe("Volume Migration", func() {
 		}
 		DescribeTable("should update the migrated volumes in the vmi", func(vmiVols, vmVols []string, expectedMigVols map[string]migVolumes) {
 			shouldAddPVCsIntoTheStore(vmiVols, vmVols)
-			vmi := libvmi.New(append(addVMIOptionsForVolumes(vmiVols), libvmi.WithNamespace(ns))...)
-			vm := libvmi.NewVirtualMachine(libvmi.New(append(addVMIOptionsForVolumes(vmVols), libvmi.WithNamespace(ns))...))
+			vmi := libvmifact.NewAlpine(append(addVMIOptionsForVolumes(vmiVols), libvmi.WithNamespace(ns))...)
+			vm := libvmi.NewVirtualMachine(libvmifact.NewAlpine(append(addVMIOptionsForVolumes(vmVols), libvmi.WithNamespace(ns))...))
 			_, err := fakeClientset.KubevirtV1().VirtualMachineInstances(ns).Create(context.TODO(), vmi, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 			_, err = fakeClientset.KubevirtV1().VirtualMachines(ns).Create(context.TODO(), vm, metav1.CreateOptions{})
@@ -283,7 +284,7 @@ var _ = Describe("Volume Migration", func() {
 			}
 		},
 			Entry("with nil VMI", nil, fmt.Errorf("VMI is empty")),
-			Entry("with valid migrated volumes", libvmi.New(libvmistatus.WithStatus(
+			Entry("with valid migrated volumes", libvmifact.NewAlpine(libvmistatus.WithStatus(
 				v1.VirtualMachineInstanceStatus{
 					MigratedVolumes: []v1.StorageMigratedVolumeInfo{
 						{
@@ -300,7 +301,7 @@ var _ = Describe("Volume Migration", func() {
 						},
 					},
 				})), nil),
-			Entry("with valid migrated volumes but unmigratable VMI", libvmi.New(libvmistatus.WithStatus(
+			Entry("with valid migrated volumes but unmigratable VMI", libvmifact.NewAlpine(libvmistatus.WithStatus(
 				v1.VirtualMachineInstanceStatus{
 					MigratedVolumes: []v1.StorageMigratedVolumeInfo{
 						{
@@ -318,7 +319,7 @@ var _ = Describe("Volume Migration", func() {
 						},
 					},
 				})), fmt.Errorf("cannot migrate the volumes as the VMI isn't migratable: non migratable test condition")),
-			Entry("with valid migrated volumes but with an additional RWO volume", libvmi.New(libvmistatus.WithStatus(
+			Entry("with valid migrated volumes but with an additional RWO volume", libvmifact.NewAlpine(libvmistatus.WithStatus(
 				v1.VirtualMachineInstanceStatus{
 					MigratedVolumes: []v1.StorageMigratedVolumeInfo{
 						{
@@ -369,9 +370,9 @@ var _ = Describe("Volume Migration", func() {
 
 		It("should patch the VMI volumes", func() {
 			volName := "disk0"
-			vmi := libvmi.New(libvmi.WithPersistentVolumeClaim(volName, "vol0"),
+			vmi := libvmifact.NewAlpine(libvmi.WithPersistentVolumeClaim(volName, "vol0"),
 				libvmistatus.WithStatus(libvmistatus.New(libvmistatus.WithMigratedVolume(v1.StorageMigratedVolumeInfo{VolumeName: volName}))))
-			vm := libvmi.NewVirtualMachine(libvmi.New(libvmi.WithPersistentVolumeClaim(volName, "vol1")))
+			vm := libvmi.NewVirtualMachine(libvmifact.NewAlpine(libvmi.WithPersistentVolumeClaim(volName, "vol1")))
 			_, err := fakeClientset.KubevirtV1().VirtualMachineInstances(metav1.NamespaceNone).Create(context.TODO(), vmi, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 			_, err = fakeClientset.KubevirtV1().VirtualMachines(metav1.NamespaceNone).Create(context.TODO(), vm, metav1.CreateOptions{})
@@ -403,19 +404,19 @@ var _ = Describe("Volume Migration", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(vmiRes).To(Equal(vmi))
 		},
-			Entry("without the migrated volumes set", libvmi.New(libvmi.WithPersistentVolumeClaim("disk0", "vol0")),
-				libvmi.NewVirtualMachine(libvmi.New(libvmi.WithPersistentVolumeClaim("disk0", "vol0")))),
-			Entry("without any updates with a VM using a PVC", libvmi.New(libvmi.WithPersistentVolumeClaim("disk0", "vol0"),
+			Entry("without the migrated volumes set", libvmifact.NewAlpine(libvmi.WithPersistentVolumeClaim("disk0", "vol0")),
+				libvmi.NewVirtualMachine(libvmifact.NewAlpine(libvmi.WithPersistentVolumeClaim("disk0", "vol0")))),
+			Entry("without any updates with a VM using a PVC", libvmifact.NewAlpine(libvmi.WithPersistentVolumeClaim("disk0", "vol0"),
 				libvmistatus.WithStatus(libvmistatus.New(libvmistatus.WithMigratedVolume(v1.StorageMigratedVolumeInfo{VolumeName: "vol0"})))),
-				libvmi.NewVirtualMachine(libvmi.New(libvmi.WithPersistentVolumeClaim("disk0", "vol0"))),
+				libvmi.NewVirtualMachine(libvmifact.NewAlpine(libvmi.WithPersistentVolumeClaim("disk0", "vol0"))),
 			),
 			// The image pull policy for the container disks is set by the mutating webhook on the VMI spec but not on the VM.
 			// This entry test simulates the scenario when the pull policy isn't set on the VM and the default is applied only
 			// on the VMI spec.
-			Entry("without any updates with a VM using a PVC and a containerdisk", libvmi.New(libvmi.WithPersistentVolumeClaim("disk0", "vol0"),
+			Entry("without any updates with a VM using a PVC and a containerdisk", libvmifact.NewAlpine(libvmi.WithPersistentVolumeClaim("disk0", "vol0"),
 				libvmistatus.WithStatus(libvmistatus.New(libvmistatus.WithMigratedVolume(v1.StorageMigratedVolumeInfo{VolumeName: "vol0"}))),
 				withContainerDisk("vol1", virtpointer.P(k8sv1.PullIfNotPresent))),
-				libvmi.NewVirtualMachine(libvmi.New(libvmi.WithPersistentVolumeClaim("disk0", "vol0"),
+				libvmi.NewVirtualMachine(libvmifact.NewAlpine(libvmi.WithPersistentVolumeClaim("disk0", "vol0"),
 					withContainerDisk("vol1", nil))),
 			),
 		)

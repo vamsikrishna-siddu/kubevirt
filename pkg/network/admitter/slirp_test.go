@@ -30,11 +30,12 @@ import (
 
 	"kubevirt.io/kubevirt/pkg/libvmi"
 	"kubevirt.io/kubevirt/pkg/network/admitter"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("Validate interface with SLIRP binding", func() {
 	It("should be rejected if not enabled in the Kubevirt CR", func() {
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithInterface(v1.Interface{
 				Name:                   "default",
 				InterfaceBindingMethod: v1.InterfaceBindingMethod{DeprecatedSlirp: &v1.DeprecatedInterfaceSlirp{}},
@@ -49,7 +50,7 @@ var _ = Describe("Validate interface with SLIRP binding", func() {
 	})
 
 	It("should be rejected without a pod network", func() {
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithInterface(v1.Interface{
 				Name:                   "default",
 				InterfaceBindingMethod: v1.InterfaceBindingMethod{DeprecatedSlirp: &v1.DeprecatedInterfaceSlirp{}},
@@ -64,7 +65,7 @@ var _ = Describe("Validate interface with SLIRP binding", func() {
 	})
 
 	It("should be accepted with a pod network when SLIRP is enabled in the Kubevirt CR", func() {
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithInterface(v1.Interface{
 				Name:                   "default",
 				InterfaceBindingMethod: v1.InterfaceBindingMethod{DeprecatedSlirp: &v1.DeprecatedInterfaceSlirp{}},
@@ -80,7 +81,7 @@ var _ = Describe("Validate interface with SLIRP binding", func() {
 
 var _ = Describe("Validate creation of interface with SLIRP binding", func() {
 	It("should be rejected", func() {
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithInterface(v1.Interface{
 				Name:                   "default",
 				InterfaceBindingMethod: v1.InterfaceBindingMethod{DeprecatedSlirp: &v1.DeprecatedInterfaceSlirp{}},

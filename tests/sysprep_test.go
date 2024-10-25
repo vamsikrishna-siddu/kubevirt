@@ -26,6 +26,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	k8sv1 "k8s.io/api/core/v1"
@@ -36,7 +37,6 @@ import (
 	"kubevirt.io/client-go/kubecli"
 
 	"kubevirt.io/kubevirt/pkg/libvmi"
-
 	"kubevirt.io/kubevirt/pkg/pointer"
 	"kubevirt.io/kubevirt/tests/decorators"
 	"kubevirt.io/kubevirt/tests/exec"
@@ -249,6 +249,7 @@ var _ = Describe("[Sysprep][sig-compute]Syspreped VirtualMachineInstance", Seria
 
 	BeforeEach(func() {
 		const OSWindowsSysprep = "windows-sysprep"
+		ginkgo.Skip("Skip the windows tests for s390x.")
 		virtClient = kubevirt.Client()
 		checks.RecycleImageOrFail(virtClient, diskWindowsSysprep)
 		libstorage.CreatePVC(OSWindowsSysprep, testsuite.GetTestNamespace(nil), "35Gi", libstorage.Config.StorageClassWindows, true)

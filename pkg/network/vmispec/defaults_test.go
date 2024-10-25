@@ -27,6 +27,7 @@ import (
 
 	"kubevirt.io/kubevirt/pkg/libvmi"
 	"kubevirt.io/kubevirt/pkg/network/vmispec"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("Default pod network", func() {
@@ -37,9 +38,9 @@ var _ = Describe("Default pod network", func() {
 
 		Expect(vmi.Spec).To(Equal(*origSpec))
 	},
-		Entry("when AutoattachPodInterface is false", libvmi.New(libvmi.WithAutoAttachPodInterface(false))),
+		Entry("when AutoattachPodInterface is false", libvmifact.NewAlpine(libvmi.WithAutoAttachPodInterface(false))),
 		Entry("when at least one network and one interface are specified",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(v1.Interface{Name: "mynet"}),
 				libvmi.WithNetwork(&v1.Network{Name: "mynet"}),
 			),
@@ -57,8 +58,8 @@ var _ = Describe("Default pod network", func() {
 		Expect(vmi.Spec.Domain.Devices.Interfaces).To(Equal([]v1.Interface{*v1.DefaultBridgeNetworkInterface()}))
 		Expect(vmi.Spec.Networks).To(Equal([]v1.Network{*v1.DefaultPodNetwork()}))
 	},
-		Entry("when AutoattachPodInterface is undefined", libvmi.New()),
-		Entry("when AutoattachPodInterface is true", libvmi.New(libvmi.WithAutoAttachPodInterface(true))),
+		Entry("when AutoattachPodInterface is undefined", libvmifact.NewAlpine()),
+		Entry("when AutoattachPodInterface is true", libvmifact.NewAlpine(libvmi.WithAutoAttachPodInterface(true))),
 	)
 
 	DescribeTable("It should add the pod network using masquerade binding", func(vmi *v1.VirtualMachineInstance) {
@@ -69,8 +70,8 @@ var _ = Describe("Default pod network", func() {
 		Expect(vmi.Spec.Domain.Devices.Interfaces).To(Equal([]v1.Interface{*v1.DefaultMasqueradeNetworkInterface()}))
 		Expect(vmi.Spec.Networks).To(Equal([]v1.Network{*v1.DefaultPodNetwork()}))
 	},
-		Entry("when AutoattachPodInterface is undefined", libvmi.New()),
-		Entry("when AutoattachPodInterface is true", libvmi.New(libvmi.WithAutoAttachPodInterface(true))),
+		Entry("when AutoattachPodInterface is undefined", libvmifact.NewAlpine()),
+		Entry("when AutoattachPodInterface is true", libvmifact.NewAlpine(libvmi.WithAutoAttachPodInterface(true))),
 	)
 
 	DescribeTable("It should return an error", func(config stubClusterConfig, expectedErrMsg string) {

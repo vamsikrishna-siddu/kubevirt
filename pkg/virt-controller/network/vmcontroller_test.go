@@ -39,12 +39,13 @@ import (
 	"kubevirt.io/kubevirt/pkg/libvmi"
 	"kubevirt.io/kubevirt/pkg/network/vmispec"
 	"kubevirt.io/kubevirt/pkg/virt-controller/network"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("VM Network Controller", func() {
 	It("sync does nothing when the hotplug FG is unset", func() {
 		c := network.NewVMNetController(fake.NewSimpleClientset(), stubPodGetter{})
-		Expect(c.Sync(newEmptyVM(), libvmi.New())).To(Equal(newEmptyVM()))
+		Expect(c.Sync(newEmptyVM(), libvmifact.NewAlpine())).To(Equal(newEmptyVM()))
 	})
 
 	DescribeTable("sync does nothing when", func(vm *v1.VirtualMachine, vmi *v1.VirtualMachineInstance, podGetter stubPodGetter) {
@@ -59,20 +60,20 @@ var _ = Describe("VM Network Controller", func() {
 			&v1.VirtualMachineInstance{ObjectMeta: k8smetav1.ObjectMeta{DeletionTimestamp: &k8smetav1.Time{}}},
 			stubPodGetter{},
 		),
-		Entry("the VM & VMI have no interfaces and no pod is found", newEmptyVM(), libvmi.New(), stubPodGetter{}),
+		Entry("the VM & VMI have no interfaces and no pod is found", newEmptyVM(), libvmifact.NewAlpine(), stubPodGetter{}),
 		Entry(
 			"the VM & VMI have no interfaces",
 			newEmptyVM(),
-			libvmi.New(),
+			libvmifact.NewAlpine(),
 			stubPodGetter{pod: &k8sv1.Pod{}},
 		),
 		Entry(
 			"the VM & VMI have identical interfaces",
-			libvmi.NewVirtualMachine(libvmi.New(
+			libvmi.NewVirtualMachine(libvmifact.NewAlpine(
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			)),
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			),
@@ -85,7 +86,7 @@ var _ = Describe("VM Network Controller", func() {
 			fake.NewSimpleClientset(),
 			stubPodGetter{err: errors.New("test")},
 		)
-		updatedVM, err := c.Sync(newEmptyVM(), libvmi.New())
+		updatedVM, err := c.Sync(newEmptyVM(), libvmifact.NewAlpine())
 		Expect(err).To(MatchError(isSyncErrorType, "syncError"))
 		Expect(updatedVM).To(Equal(newEmptyVM()))
 	})
@@ -103,7 +104,7 @@ var _ = Describe("VM Network Controller", func() {
 			return true, nil, injectedPatchError
 		})
 
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 			libvmi.WithNetwork(v1.DefaultPodNetwork()),
 		)
@@ -128,7 +129,7 @@ var _ = Describe("VM Network Controller", func() {
 			clientset,
 			stubPodGetter{pod: &k8sv1.Pod{}},
 		)
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 			libvmi.WithNetwork(v1.DefaultPodNetwork()),
 		)
@@ -162,7 +163,7 @@ var _ = Describe("VM Network Controller", func() {
 		)
 		unpluggedIface := libvmi.InterfaceDeviceWithBridgeBinding("foonet")
 		unpluggedIface.State = v1.InterfaceStateAbsent
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 			libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			libvmi.WithInterface(unpluggedIface),
@@ -197,7 +198,7 @@ var _ = Describe("VM Network Controller", func() {
 			clientset,
 			stubPodGetter{pod: nil},
 		)
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 			libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding("foonet")),
@@ -249,7 +250,7 @@ var _ = Describe("VM Network Controller", func() {
 			clientset,
 			stubPodGetter{pod: pod},
 		)
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 			libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding("foonet")),

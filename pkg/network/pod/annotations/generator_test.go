@@ -42,6 +42,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/network/pod/annotations"
 	"kubevirt.io/kubevirt/pkg/testutils"
 	virtconfig "kubevirt.io/kubevirt/pkg/virt-config"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("Annotations Generator", func() {
@@ -73,7 +74,7 @@ var _ = Describe("Annotations Generator", func() {
 		})
 
 		It("should generate the Multus networks annotation", func() {
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(testNamespace),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(defaultNetworkName)),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(network1Name)),
@@ -97,7 +98,7 @@ var _ = Describe("Annotations Generator", func() {
 		})
 
 		It("should generate the Multus networks and Multus default network annotations", func() {
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(testNamespace),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(defaultNetworkName)),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(network1Name)),
@@ -120,7 +121,7 @@ var _ = Describe("Annotations Generator", func() {
 
 			sriovNIC := libvmi.InterfaceDeviceWithSRIOVBinding(network1Name)
 
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(testNamespace),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(defaultNetworkName)),
 				libvmi.WithInterface(*libvmi.InterfaceWithMac(&sriovNIC, customMACAddress)),
@@ -152,7 +153,7 @@ var _ = Describe("Annotations Generator", func() {
 		})
 
 		It("should generate Istio annotation when VMI is connected to pod network using masquerade binding", func() {
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithInterface(*v1.DefaultMasqueradeNetworkInterface()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			)
@@ -171,9 +172,9 @@ var _ = Describe("Annotations Generator", func() {
 
 			Expect(annotations).To(Not(HaveKey(istio.KubeVirtTrafficAnnotation)))
 		},
-			Entry("when VMI is not connected any network", libvmi.New()),
+			Entry("when VMI is not connected any network", libvmifact.NewAlpine()),
 			Entry("when VMI is connected to pod network and not using masquerade binding",
-				libvmi.New(
+				libvmifact.NewAlpine(
 					libvmi.WithInterface(*v1.DefaultBridgeNetworkInterface()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 				),
@@ -201,7 +202,7 @@ var _ = Describe("Annotations Generator", func() {
 
 			clusterConfig = newClusterConfig(kv)
 
-			vmi = libvmi.New(
+			vmi = libvmifact.NewAlpine(
 				libvmi.WithNamespace(testNamespace),
 				libvmi.WithInterface(*v1.DefaultBridgeNetworkInterface()),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(networkName1)),
@@ -320,7 +321,7 @@ var _ = Describe("Annotations Generator", func() {
 		})
 
 		It("Should not generate the network info annotation when there are no networks", func() {
-			vmi := libvmi.New(libvmi.WithNamespace(testNamespace), libvmi.WithAutoAttachPodInterface(false))
+			vmi := libvmifact.NewAlpine(libvmi.WithNamespace(testNamespace), libvmi.WithAutoAttachPodInterface(false))
 
 			const multusNetworkStatusWithPrimaryNet = `[` +
 				`{"name":"k8s-pod-network","ips":["10.244.196.146","fd10:244::c491"],"default":true,"dns":{}}` +
@@ -335,7 +336,7 @@ var _ = Describe("Annotations Generator", func() {
 		})
 
 		It("Should not generate the network info annotation when there are no networks with binding plugin / SR-IOV", func() {
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(testNamespace),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(networkName1)),
 				libvmi.WithNetwork(libvmi.MultusNetwork(networkName1, networkAttachmentDefinitionName1)),
@@ -350,7 +351,7 @@ var _ = Describe("Annotations Generator", func() {
 		})
 
 		It("Should not generate the network info annotation when there are networks with binding plugin but none with device-info", func() {
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(testNamespace),
 				libvmi.WithInterface(libvmi.InterfaceWithBindingPlugin(networkName1, v1.PluginBinding{Name: nonDeviceInfoPlugin})),
 				libvmi.WithNetwork(libvmi.MultusNetwork(networkName1, networkAttachmentDefinitionName1)),
@@ -365,7 +366,7 @@ var _ = Describe("Annotations Generator", func() {
 		})
 
 		It("Should generate the network info annotation when there is one binding plugin with device info", func() {
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(testNamespace),
 				libvmi.WithInterface(libvmi.InterfaceWithBindingPlugin(networkName2, v1.PluginBinding{Name: deviceInfoPlugin})),
 				libvmi.WithNetwork(libvmi.MultusNetwork(networkName2, networkAttachmentDefinitionName2)),
@@ -388,7 +389,7 @@ var _ = Describe("Annotations Generator", func() {
 		})
 
 		It("Should generate the network info annotation when there is an SR-IOV interface", func() {
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(testNamespace),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithSRIOVBinding(networkName3)),
 				libvmi.WithNetwork(libvmi.MultusNetwork(networkName3, networkAttachmentDefinitionName3)),
@@ -411,7 +412,7 @@ var _ = Describe("Annotations Generator", func() {
 		})
 
 		It("Should generate the network info annotation when there is SR-IOV interface and binding plugin interface with device-info", func() {
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(testNamespace),
 				libvmi.WithInterface(libvmi.InterfaceWithBindingPlugin(networkName2, v1.PluginBinding{Name: deviceInfoPlugin})),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithSRIOVBinding(networkName3)),

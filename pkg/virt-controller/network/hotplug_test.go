@@ -29,6 +29,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/libvmi"
 	"kubevirt.io/kubevirt/pkg/network/vmispec"
 	"kubevirt.io/kubevirt/pkg/virt-controller/network"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("Network interface hot{un}plug", func() {
@@ -47,97 +48,97 @@ var _ = Describe("Network interface hot{un}plug", func() {
 			Expect(updatedVMI.Domain.Devices.Interfaces).To(Equal(expectedVMI.Spec.Domain.Devices.Interfaces))
 		},
 		Entry("when the are no interfaces to hotplug/unplug",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(bridgeInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			),
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(bridgeInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			),
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(bridgeInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			),
 			false),
 		Entry("when a bridge binding interface has to be hotplugged",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(bridgeInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			),
-			libvmi.New(),
-			libvmi.New(
+			libvmifact.NewAlpine(),
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(bridgeInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			),
 			!ordinal),
 		Entry("when an SRIOV  binding interface has to be hotplugged",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(sriovInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			),
-			libvmi.New(),
-			libvmi.New(
+			libvmifact.NewAlpine(),
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(sriovInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			),
 			!ordinal),
 		Entry("when an interface has to be hotplugged but it has no SRIOV or bridge binding",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(v1.Interface{Name: testNetworkName1, InterfaceBindingMethod: v1.InterfaceBindingMethod{Masquerade: &v1.InterfaceMasquerade{}}}),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			),
-			libvmi.New(),
-			libvmi.New(),
+			libvmifact.NewAlpine(),
+			libvmifact.NewAlpine(),
 			!ordinal),
 		Entry("when an interface has to be hotplugged but it is absent",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(bridgeAbsentInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			),
-			libvmi.New(),
-			libvmi.New(),
+			libvmifact.NewAlpine(),
+			libvmifact.NewAlpine(),
 			!ordinal),
 		Entry("when an interface has to be hotunplugged",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(bridgeAbsentInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			),
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(bridgeInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			),
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(bridgeAbsentInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			),
 			!ordinal),
 		Entry("when an interface has to be hotunplugged but it has ordinal name",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(bridgeAbsentInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			),
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(bridgeInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			),
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(bridgeInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			),
 			ordinal),
 		Entry("when one interface has to be plugged and other hotunplugged",
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(bridgeAbsentInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 				libvmi.WithInterface(bridgeInterface(testNetworkName2)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName2}),
 			),
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(bridgeInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			),
-			libvmi.New(
+			libvmifact.NewAlpine(
 				libvmi.WithInterface(bridgeAbsentInterface(testNetworkName1)),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 				libvmi.WithInterface(bridgeInterface(testNetworkName2)),

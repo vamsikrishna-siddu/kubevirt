@@ -240,7 +240,7 @@ var _ = Describe("[sig-operator]Operator", Serial, decorators.SigOperator, func(
 					Expect(err).ToNot(HaveOccurred())
 				}
 
-				vmi := libvmifact.NewCirros(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					libvmi.WithConfigMapDisk(configMapName, configMapName),
@@ -500,7 +500,7 @@ spec:
 
             echo 'printed from cloud-init userdata'
         name: cloudinitdisk
-`, version, version, version, i, version, i, previousUtilityRegistry, cd.ContainerDiskCirros, previousUtilityTag)
+`, version, version, version, i, version, i, previousUtilityRegistry, cd.ContainerDiskAlpine, previousUtilityTag)
 
 				yamlFile := filepath.Join(workDir, fmt.Sprintf("vm-%s.yaml", version))
 				err = os.WriteFile(yamlFile, []byte(vmYaml), 0644)
@@ -784,7 +784,7 @@ spec:
 			}
 
 			By("starting a VM")
-			vmi := libvmifact.NewCirros()
+			vmi := libvmifact.NewAlpine()
 			vmi, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 			libwait.WaitForSuccessfulVMIStart(vmi)
@@ -971,7 +971,7 @@ spec:
 			checkVirtComponents(nil)
 
 			By("Starting a VMI")
-			vmi := libvmi.New(libvmi.WithResourceMemory("1Mi"))
+			vmi := libvmifact.NewAlpine(libvmi.WithResourceMemory("128Mi"))
 			vmi, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
 			Expect(err).NotTo(HaveOccurred())
 			libwait.WaitForSuccessfulVMIStart(vmi)
@@ -1020,7 +1020,7 @@ spec:
 			checkVirtComponents(imagePullSecrets)
 
 			By("Starting a VMI")
-			vmi := libvmi.New(libvmi.WithResourceMemory("1Mi"))
+			vmi := libvmifact.NewAlpine(libvmi.WithResourceMemory("128Mi"))
 			vmi, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
 			Expect(err).NotTo(HaveOccurred())
 			libwait.WaitForSuccessfulVMIStart(vmi)
@@ -1280,7 +1280,7 @@ spec:
 				Eventually(func() error {
 					vmi, err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Get(context.Background(), vmYaml.vmName, metav1.GetOptions{})
 					Expect(err).ToNot(HaveOccurred())
-					if err := console.LoginToCirros(vmi); err != nil {
+					if err := console.LoginToAlpine(vmi); err != nil {
 						return err
 					}
 					return nil
@@ -1440,7 +1440,7 @@ spec:
 
 			It("[test_id:3683]should be blocked if a workload exists", func() {
 				By("creating a simple VMI")
-				vmi := libvmifact.NewCirros()
+				vmi := libvmifact.NewAlpine()
 				_, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), vmi, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
 
@@ -1569,7 +1569,7 @@ spec:
 			if checks.HasAtLeastTwoNodes() {
 				vmis = generateMigratableVMIs(2)
 			}
-			vmisNonMigratable := []*v1.VirtualMachineInstance{libvmifact.NewCirros(), libvmifact.NewCirros()}
+			vmisNonMigratable := []*v1.VirtualMachineInstance{libvmifact.NewAlpine(), libvmifact.NewAlpine()}
 
 			allKvInfraPodsAreReady(originalKv)
 			sanityCheckDeploymentsExist()
@@ -1811,7 +1811,7 @@ spec:
 				)
 
 				By("Checking if virt-launcher is assigned to kubevirt-controller SCC")
-				vmi := libvmifact.NewCirros()
+				vmi := libvmifact.NewAlpine()
 				vmi, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
 				libwait.WaitForSuccessfulVMIStart(vmi)
@@ -2397,7 +2397,7 @@ spec:
 				kvconfig.UpdateKubeVirtConfigValueAndWait(kv.Spec.Configuration)
 
 				By("Checking launcher seccomp policy")
-				vmi, err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), libvmifact.NewCirros(), metav1.CreateOptions{})
+				vmi, err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), libvmifact.NewAlpine(), metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
 				fetchVMI := matcher.ThisVMI(vmi)
 				psaRelatedErrorDetected := false

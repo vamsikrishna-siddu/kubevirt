@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"kubevirt.io/kubevirt/tests/decorators"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -43,7 +44,7 @@ bootcmd:
 )
 
 func newFedoraRealtime(realtimeMask string) *v1.VirtualMachineInstance {
-	return libvmi.New(
+	return libvmifact.NewAlpine(
 		libvmi.WithRng(),
 		libvmi.WithContainerDisk("disk0", cd.ContainerDiskFor(cd.ContainerDiskFedoraRealtime)),
 		libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudEncodedUserData(tuneAdminRealtimeCloudInitData)),

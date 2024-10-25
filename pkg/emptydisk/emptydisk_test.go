@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"kubevirt.io/kubevirt/pkg/libvmi"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("EmptyDisk", func() {
@@ -31,7 +32,7 @@ var _ = Describe("EmptyDisk", func() {
 
 	Describe("a vmi with emptyDisks attached", func() {
 		It("should get a new qcow2 image if not already present", func() {
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithEmptyDisk("testdisk", "", resource.MustParse("3Gi")),
 			)
 
@@ -43,7 +44,7 @@ var _ = Describe("EmptyDisk", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 		It("should not override ", func() {
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithEmptyDisk("testdisk", "", resource.MustParse("3Gi")),
 			)
 
@@ -58,7 +59,7 @@ var _ = Describe("EmptyDisk", func() {
 			Expect(NewEmptyDiskCreator().FilePathForVolumeName("volume1")).ToNot(Equal(NewEmptyDiskCreator().FilePathForVolumeName("volume2")))
 		})
 		It("should leave pre-existing disks alone", func() {
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithEmptyDisk("testdisk", "", resource.MustParse("3Gi")),
 			)
 

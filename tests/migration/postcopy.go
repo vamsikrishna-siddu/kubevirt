@@ -298,7 +298,7 @@ func VMIMigrationWithGuestAgent(virtClient kubecli.KubevirtClient, pvName string
             mkdir /mnt/servacc
             mount /dev/$(lsblk --nodeps -no name,serial | grep %s | cut -f1 -d' ') /mnt/servacc
         `, secretDiskSerial)
-	vmi := libvmi.New(
+	vmi := libvmifact.NewAlpine(
 		libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 		libvmi.WithNetwork(v1.DefaultPodNetwork()),
 		libvmi.WithPersistentVolumeClaim("disk0", pvName),

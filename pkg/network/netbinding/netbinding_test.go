@@ -28,6 +28,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/hooks"
 	"kubevirt.io/kubevirt/pkg/libvmi"
 	"kubevirt.io/kubevirt/pkg/network/netbinding"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("Network Binding", func() {
@@ -54,19 +55,19 @@ var _ = Describe("Network Binding", func() {
 				Expect(sidecars).To(ConsistOf(expectedSidecars))
 			},
 			Entry("VMI has binding plugin but config image is empty",
-				libvmi.New(libvmi.WithInterface(v1.Interface{Name: testNetworkName1, Binding: &v1.PluginBinding{Name: testBindingName1}}),
+				libvmifact.NewAlpine(libvmi.WithInterface(v1.Interface{Name: testNetworkName1, Binding: &v1.PluginBinding{Name: testBindingName1}}),
 					libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 				),
 				map[string]v1.InterfaceBindingPlugin{testBindingName1: {}},
 				nil),
 			Entry("VMI has binding plugin and config image",
-				libvmi.New(libvmi.WithInterface(v1.Interface{Name: testNetworkName1, Binding: &v1.PluginBinding{Name: testBindingName1}}),
+				libvmifact.NewAlpine(libvmi.WithInterface(v1.Interface{Name: testNetworkName1, Binding: &v1.PluginBinding{Name: testBindingName1}}),
 					libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 				),
 				map[string]v1.InterfaceBindingPlugin{testBindingName1: {SidecarImage: testSidecarImage1}},
 				hooks.HookSidecarList{{Image: testSidecarImage1}}),
 			Entry("VMI has multiple plugin bindings",
-				libvmi.New(libvmi.WithInterface(v1.Interface{Name: testNetworkName1, Binding: &v1.PluginBinding{Name: testBindingName1}}),
+				libvmifact.NewAlpine(libvmi.WithInterface(v1.Interface{Name: testNetworkName1, Binding: &v1.PluginBinding{Name: testBindingName1}}),
 					libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 					libvmi.WithInterface(v1.Interface{Name: testNetworkName2, Binding: &v1.PluginBinding{Name: testBindingName2}}),
 					libvmi.WithNetwork(&v1.Network{Name: testNetworkName2}),
@@ -82,16 +83,13 @@ var _ = Describe("Network Binding", func() {
 				},
 				hooks.HookSidecarList{{Image: testSidecarImage1, DownwardAPI: v1.DeviceInfo}, {Image: testSidecarImage2}}),
 			Entry("VMI has no plugin bindings",
-				libvmi.New(libvmi.WithInterface(v1.Interface{
-					Name:                   testNetworkName1,
-					InterfaceBindingMethod: v1.InterfaceBindingMethod{SRIOV: &v1.InterfaceSRIOV{}},
-				}),
+				libvmifact.NewAlpine(libvmi.WithInterface(v1.Interface{Name: testNetworkName1, InterfaceBindingMethod: v1.InterfaceBindingMethod{SRIOV: &v1.InterfaceSRIOV{}}}),
 					libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 				),
 				nil,
 				nil),
 			Entry("VMI has two interfaces with the same plugin sidecar",
-				libvmi.New(libvmi.WithInterface(v1.Interface{Name: testNetworkName1, Binding: &v1.PluginBinding{Name: testBindingName1}}),
+				libvmifact.NewAlpine(libvmi.WithInterface(v1.Interface{Name: testNetworkName1, Binding: &v1.PluginBinding{Name: testBindingName1}}),
 					libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 					libvmi.WithInterface(v1.Interface{Name: testNetworkName2, Binding: &v1.PluginBinding{Name: testBindingName1}}),
 					libvmi.WithNetwork(&v1.Network{Name: testNetworkName2}),
@@ -101,7 +99,7 @@ var _ = Describe("Network Binding", func() {
 		)
 
 		It("should retrun an error when VMI has binding plugin but config doesn't exist", func() {
-			vmi := libvmi.New(libvmi.WithInterface(v1.Interface{Name: testNetworkName1, Binding: &v1.PluginBinding{Name: testBindingName1}}),
+			vmi := libvmifact.NewAlpine(libvmi.WithInterface(v1.Interface{Name: testNetworkName1, Binding: &v1.PluginBinding{Name: testBindingName1}}),
 				libvmi.WithNetwork(&v1.Network{Name: testNetworkName1}),
 			)
 			config := &v1.KubeVirtConfiguration{

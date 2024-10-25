@@ -50,6 +50,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/virt-controller/watch/common"
 	watchtesting "kubevirt.io/kubevirt/pkg/virt-controller/watch/testing"
 	watchutil "kubevirt.io/kubevirt/pkg/virt-controller/watch/util"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 
 	gomegatypes "github.com/onsi/gomega/types"
 
@@ -7382,7 +7383,7 @@ var _ = Describe("VirtualMachine", func() {
 
 		Context("startVMI", func() {
 			It("should not start the VMI if the VM has the ManualRecoveryRequiredCondition set", func() {
-				vm := libvmi.NewVirtualMachine(libvmi.New(libvmi.WithNamespace(metav1.NamespaceDefault)), libvmistatus.WithVMStatus(libvmistatus.NewVMStatus(libvmistatus.WithVMCondition(v1.VirtualMachineCondition{
+				vm := libvmi.NewVirtualMachine(libvmifact.NewAlpine(libvmi.WithNamespace(metav1.NamespaceDefault)), libvmistatus.WithVMStatus(libvmistatus.NewVMStatus(libvmistatus.WithVMCondition(v1.VirtualMachineCondition{
 					Type:   v1.VirtualMachineManualRecoveryRequired,
 					Status: k8sv1.ConditionTrue,
 				}))))
@@ -7554,19 +7555,19 @@ var _ = Describe("VirtualMachine", func() {
 			Expect(controller.NewVirtualMachineConditionManager().HasConditionWithStatus(vm,
 				v1.VirtualMachineManualRecoveryRequired, k8sv1.ConditionTrue)).To(Equal(expectCond))
 		},
-			Entry("without any volume migration in progress", libvmi.NewVirtualMachine(libvmi.New(), libvmistatus.WithVMStatus(libvmistatus.NewVMStatus(libvmistatus.WithVMVolumeUpdateState(&v1.VolumeUpdateState{})))), libvmi.New(), nil, false),
-			Entry("with volume migration in progress but no vmi", libvmi.NewVirtualMachine(libvmi.New(), libvmistatus.WithVMStatus(
+			Entry("without any volume migration in progress", libvmi.NewVirtualMachine(libvmifact.NewAlpine(), libvmistatus.WithVMStatus(libvmistatus.NewVMStatus(libvmistatus.WithVMVolumeUpdateState(&v1.VolumeUpdateState{})))), libvmifact.NewAlpine(), nil, false),
+			Entry("with volume migration in progress but no vmi", libvmi.NewVirtualMachine(libvmifact.NewAlpine(), libvmistatus.WithVMStatus(
 				libvmistatus.NewVMStatus(libvmistatus.WithVMVolumeUpdateState(&v1.VolumeUpdateState{VolumeMigrationState: &v1.VolumeMigrationState{
 					MigratedVolumes: withMigVols(volName, "dv0", "dv1")}},
 				), libvmistatus.WithVMCondition(withVMCondVolumeMigInProgress(k8sv1.ConditionTrue, ""))),
 			)),
 				nil, nil, false),
-			Entry("with recovered volumes", libvmi.NewVirtualMachine(libvmi.New(libvmi.WithDataVolume(volName, "dv0")), libvmistatus.WithVMStatus(
+			Entry("with recovered volumes", libvmi.NewVirtualMachine(libvmifact.NewAlpine(libvmi.WithDataVolume(volName, "dv0")), libvmistatus.WithVMStatus(
 				libvmistatus.NewVMStatus(libvmistatus.WithVMVolumeUpdateState(
 					&v1.VolumeUpdateState{VolumeMigrationState: &v1.VolumeMigrationState{MigratedVolumes: withMigVols(volName, "dv0", "dv1")}},
 				)))),
-				libvmi.New(libvmi.WithDataVolume(volName, "dv0")), nil, false),
-			Entry("with volumes still to be recovered", libvmi.NewVirtualMachine(libvmi.New(libvmi.WithDataVolume(volName, "dv1")), libvmistatus.WithVMStatus(
+				libvmifact.NewAlpine(libvmi.WithDataVolume(volName, "dv0")), nil, false),
+			Entry("with volumes still to be recovered", libvmi.NewVirtualMachine(libvmifact.NewAlpine(libvmi.WithDataVolume(volName, "dv1")), libvmistatus.WithVMStatus(
 				libvmistatus.NewVMStatus(
 					libvmistatus.WithVMCondition(v1.VirtualMachineCondition{
 						Type:   v1.VirtualMachineManualRecoveryRequired,
@@ -7577,43 +7578,43 @@ var _ = Describe("VirtualMachine", func() {
 							MigratedVolumes: withMigVols(volName, "dv0", "dv1"),
 						}},
 					)))),
-				libvmi.New(libvmi.WithDataVolume(volName, "dv0")), &v1.VolumeMigrationState{
+				libvmifact.NewAlpine(libvmi.WithDataVolume(volName, "dv0")), &v1.VolumeMigrationState{
 					MigratedVolumes: withMigVols(volName, "dv0", "dv1"),
 				}, true,
 			),
-			Entry("with volume change", libvmi.NewVirtualMachine(libvmi.New(libvmi.WithDataVolume(volName, "dv1")),
+			Entry("with volume change", libvmi.NewVirtualMachine(libvmifact.NewAlpine(libvmi.WithDataVolume(volName, "dv1")),
 				libvmistatus.WithVMStatus(
 					libvmistatus.NewVMStatus(libvmistatus.WithVMVolumeUpdateState(&v1.VolumeUpdateState{VolumeMigrationState: &v1.VolumeMigrationState{
 						MigratedVolumes: withMigVols(volName, "dv0", "dv1"),
 					}}), libvmistatus.WithVMCondition(withVMCondVolumeMigInProgress(k8sv1.ConditionTrue, "")),
 					))),
-				libvmi.New(libvmi.WithDataVolume(volName, "dv0"),
+				libvmifact.NewAlpine(libvmi.WithDataVolume(volName, "dv0"),
 					libvmistatus.WithStatus(
 						libvmistatus.New(libvmistatus.WithCondition(
 							withVMICondVolumeMigInProgress(k8sv1.ConditionTrue, "")))),
 				),
 				&v1.VolumeMigrationState{MigratedVolumes: withMigVols(volName, "dv0", "dv1")}, false,
 			),
-			Entry("with volume change cancellation", libvmi.NewVirtualMachine(libvmi.New(libvmi.WithDataVolume(volName, "dv1")),
+			Entry("with volume change cancellation", libvmi.NewVirtualMachine(libvmifact.NewAlpine(libvmi.WithDataVolume(volName, "dv1")),
 				libvmistatus.WithVMStatus(
 					libvmistatus.NewVMStatus(libvmistatus.WithVMVolumeUpdateState(&v1.VolumeUpdateState{VolumeMigrationState: &v1.VolumeMigrationState{
 						MigratedVolumes: withMigVols(volName, "dv0", "dv1"),
 					}}), libvmistatus.WithVMCondition(withVMCondVolumeMigInProgress(k8sv1.ConditionFalse, v1.VirtualMachineInstanceReasonVolumesChangeCancellation)),
 					))),
-				libvmi.New(libvmi.WithDataVolume(volName, "dv0"),
+				libvmifact.NewAlpine(libvmi.WithDataVolume(volName, "dv0"),
 					libvmistatus.WithStatus(
 						libvmistatus.New(libvmistatus.WithCondition(
 							withVMICondVolumeMigInProgress(k8sv1.ConditionFalse, v1.VirtualMachineInstanceReasonVolumesChangeCancellation)))),
 				),
 				nil, false,
 			),
-			Entry("with a failed volume migration", libvmi.NewVirtualMachine(libvmi.New(libvmi.WithDataVolume(volName, "dv1")),
+			Entry("with a failed volume migration", libvmi.NewVirtualMachine(libvmifact.NewAlpine(libvmi.WithDataVolume(volName, "dv1")),
 				libvmistatus.WithVMStatus(
 					libvmistatus.NewVMStatus(libvmistatus.WithVMVolumeUpdateState(&v1.VolumeUpdateState{VolumeMigrationState: &v1.VolumeMigrationState{
 						MigratedVolumes: withMigVols(volName, "dv0", "dv1"),
 					}}), libvmistatus.WithVMCondition(withVMCondVolumeMigInProgress(k8sv1.ConditionFalse, "")),
 					))),
-				libvmi.New(libvmi.WithDataVolume(volName, "dv0"),
+				libvmifact.NewAlpine(libvmi.WithDataVolume(volName, "dv0"),
 					libvmistatus.WithStatus(
 						libvmistatus.New(libvmistatus.WithCondition(
 							withVMICondVolumeMigInProgress(k8sv1.ConditionFalse, "")))),
@@ -7621,7 +7622,7 @@ var _ = Describe("VirtualMachine", func() {
 					MigratedVolumes: withMigVols(volName, "dv0", "dv1"),
 				}, false,
 			),
-			Entry("with volume migration in progress and vmi disappeared", libvmi.NewVirtualMachine(libvmi.New(libvmi.WithDataVolume(volName, "dv1")),
+			Entry("with volume migration in progress and vmi disappeared", libvmi.NewVirtualMachine(libvmifact.NewAlpine(libvmi.WithDataVolume(volName, "dv1")),
 				libvmistatus.WithVMStatus(
 					libvmistatus.NewVMStatus(libvmistatus.WithVMVolumeUpdateState(&v1.VolumeUpdateState{VolumeMigrationState: &v1.VolumeMigrationState{
 						MigratedVolumes: withMigVols(volName, "dv0", "dv1"),

@@ -27,6 +27,7 @@ import (
 
 	"kubevirt.io/kubevirt/pkg/libvmi"
 	libvmici "kubevirt.io/kubevirt/pkg/libvmi/cloudinit"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 
 	cmdclient "kubevirt.io/kubevirt/pkg/virt-handler/cmd-client"
 
@@ -4433,7 +4434,7 @@ var _ = Describe("Function getNumberOfPodInterfaces()", func() {
 
 func newBaseVmi(opts ...libvmi.Option) *v1.VirtualMachineInstance {
 	opts = append(opts, libvmi.WithResourceMemory("512Mi"))
-	return libvmi.New(opts...)
+	return libvmifact.NewAlpine(opts...)
 }
 
 func newAdmissionReviewForVMICreation(vmi *v1.VirtualMachineInstance) (*admissionv1.AdmissionReview, error) {

@@ -30,6 +30,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/liveupdate/memory"
 	"kubevirt.io/kubevirt/pkg/virt-launcher/virtwrap/api"
 	"kubevirt.io/kubevirt/pkg/virt-launcher/virtwrap/converter/vcpu"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("LiveUpdate Memory", func() {
@@ -43,7 +44,7 @@ var _ = Describe("LiveUpdate Memory", func() {
 				}
 				vmiOpts = append(vmiOpts, opts...)
 
-				vm := libvmi.NewVirtualMachine(libvmi.New(vmiOpts...))
+				vm := libvmi.NewVirtualMachine(libvmifact.NewAlpine(vmiOpts...))
 
 				maxGuest := resource.MustParse(maxGuestStr)
 				err := memory.ValidateLiveUpdateMemory(&vm.Spec.Template.Spec, &maxGuest)
@@ -96,7 +97,7 @@ var _ = Describe("LiveUpdate Memory", func() {
 				}
 				vmiOpts = append(vmiOpts, opts...)
 
-				vmi := libvmi.New(vmiOpts...)
+				vmi := libvmifact.NewAlpine(vmiOpts...)
 
 				vmi.Status = v1.VirtualMachineInstanceStatus{
 					Memory: &v1.MemoryStatus{

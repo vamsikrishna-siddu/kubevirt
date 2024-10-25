@@ -27,8 +27,8 @@ import (
 
 	v1 "kubevirt.io/api/core/v1"
 
-	"kubevirt.io/kubevirt/pkg/libvmi"
 	"kubevirt.io/kubevirt/pkg/virt-config/deprecation"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("Validator", func() {
@@ -45,7 +45,7 @@ var _ = Describe("Validator", func() {
 			Message:     fgWarning,
 		})
 		DeferCleanup(deprecation.UnregisterFeatureGate, fgName)
-		vmi := libvmi.New()
+		vmi := libvmifact.NewAlpine()
 
 		Expect(deprecation.ValidateFeatureGates([]string{fgName}, &vmi.Spec)).To(ConsistOf(expected))
 	},

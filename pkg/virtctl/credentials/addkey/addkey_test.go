@@ -26,6 +26,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/libvmi"
 	"kubevirt.io/kubevirt/pkg/pointer"
 	"kubevirt.io/kubevirt/tests/clientcmd"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("Credentials add-ssh-key", func() {
@@ -69,7 +70,7 @@ var _ = Describe("Credentials add-ssh-key", func() {
 			Return(virtClient.KubevirtV1().VirtualMachines(metav1.NamespaceDefault)).AnyTimes()
 		kubecli.MockKubevirtClientInstance.EXPECT().CoreV1().Return(kubeClient.CoreV1()).AnyTimes()
 
-		vmi = libvmi.New(
+		vmi = libvmifact.NewAlpine(
 			libvmi.WithNamespace(metav1.NamespaceDefault),
 			libvmi.WithName(vmName),
 			libvmi.WithAccessCredentialSSHPublicKey(secretName, userName),

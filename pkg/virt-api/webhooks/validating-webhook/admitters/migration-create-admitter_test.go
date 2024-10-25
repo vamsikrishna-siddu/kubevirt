@@ -36,11 +36,12 @@ import (
 	"kubevirt.io/kubevirt/pkg/libvmi"
 	"kubevirt.io/kubevirt/pkg/virt-api/webhooks"
 	"kubevirt.io/kubevirt/pkg/virt-api/webhooks/validating-webhook/admitters"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("Validating MigrationCreate Admitter", func() {
 	It("should reject Migration spec on create when another VMI migration is in-flight", func() {
-		vmi := libvmi.New(libvmi.WithNamespace(k8sv1.NamespaceDefault))
+		vmi := libvmifact.NewAlpine(libvmi.WithNamespace(k8sv1.NamespaceDefault))
 		inFlightMigration := &v1.VirtualMachineInstanceMigration{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: vmi.Namespace,
@@ -91,7 +92,7 @@ var _ = Describe("Validating MigrationCreate Admitter", func() {
 		})
 
 		It("should accept valid Migration spec on create", func() {
-			vmi := libvmi.New(libvmi.WithNamespace(k8sv1.NamespaceDefault))
+			vmi := libvmifact.NewAlpine(libvmi.WithNamespace(k8sv1.NamespaceDefault))
 
 			migration := &v1.VirtualMachineInstanceMigration{
 				ObjectMeta: metav1.ObjectMeta{
@@ -111,7 +112,7 @@ var _ = Describe("Validating MigrationCreate Admitter", func() {
 		})
 
 		It("should accept Migration spec on create when previous VMI migration completed", func() {
-			vmi := libvmi.New(libvmi.WithNamespace(k8sv1.NamespaceDefault))
+			vmi := libvmifact.NewAlpine(libvmi.WithNamespace(k8sv1.NamespaceDefault))
 			vmi.Status.MigrationState = &v1.VirtualMachineInstanceMigrationState{
 				MigrationUID: "123",
 				Completed:    true,
@@ -137,7 +138,7 @@ var _ = Describe("Validating MigrationCreate Admitter", func() {
 		})
 
 		It("should reject Migration spec on create when VMI is finalized", func() {
-			vmi := libvmi.New(libvmi.WithNamespace(k8sv1.NamespaceDefault))
+			vmi := libvmifact.NewAlpine(libvmi.WithNamespace(k8sv1.NamespaceDefault))
 			vmi.Status.Phase = v1.Succeeded
 
 			migration := &v1.VirtualMachineInstanceMigration{
@@ -159,7 +160,7 @@ var _ = Describe("Validating MigrationCreate Admitter", func() {
 		})
 
 		It("should reject Migration spec for non-migratable VMIs", func() {
-			vmi := libvmi.New(libvmi.WithNamespace(k8sv1.NamespaceDefault))
+			vmi := libvmifact.NewAlpine(libvmi.WithNamespace(k8sv1.NamespaceDefault))
 			vmi.Status.Phase = v1.Running
 			vmi.Status.Conditions = []v1.VirtualMachineInstanceCondition{
 				{

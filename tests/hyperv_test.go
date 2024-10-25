@@ -30,6 +30,7 @@ import (
 	"kubevirt.io/kubevirt/tests/libnode"
 	"kubevirt.io/kubevirt/tests/testsuite"
 
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -54,6 +55,7 @@ var _ = Describe("[sig-compute] Hyper-V enlightenments", decorators.SigCompute, 
 	)
 	BeforeEach(func() {
 		virtClient = kubevirt.Client()
+		ginkgo.Skip("Hyper-V is not supported on s390x.")
 	})
 
 	Context("VMI with HyperV re-enlightenment enabled", func() {
@@ -230,7 +232,7 @@ var _ = Describe("[sig-compute] Hyper-V enlightenments", decorators.SigCompute, 
 			}
 
 			for _, label := range supportedKVMInfoFeature {
-				vmi := libvmifact.NewCirros()
+				vmi := libvmifact.NewAlpine()
 				features := enableHyperVInVMI(label)
 				vmi.Spec.Domain.Features = &v1.Features{
 					Hyperv: &features,
@@ -247,7 +249,7 @@ var _ = Describe("[sig-compute] Hyper-V enlightenments", decorators.SigCompute, 
 
 		DescribeTable(" the vmi with EVMCS HyperV feature should have correct HyperV and cpu features auto filled", Serial, func(featureState *v1.FeatureState) {
 			config.EnableFeatureGate(virtconfig.HypervStrictCheckGate)
-			vmi := libvmifact.NewCirros()
+			vmi := libvmifact.NewAlpine()
 			vmi.Spec.Domain.Features = &v1.Features{
 				Hyperv: &v1.FeatureHyperv{
 					EVMCS: featureState,
@@ -283,7 +285,7 @@ var _ = Describe("[sig-compute] Hyper-V enlightenments", decorators.SigCompute, 
 
 	Context("VMI with HyperV passthrough", func() {
 		It("should be usable and non-migratable", func() {
-			vmi := libvmifact.NewCirros(withHypervPassthrough())
+			vmi := libvmifact.NewAlpine(withHypervPassthrough())
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, 60)
 
 			domSpec, err := tests.GetRunningVMIDomainSpec(vmi)

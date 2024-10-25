@@ -24,6 +24,7 @@ import (
 	"fmt"
 
 	expect "github.com/google/goexpect"
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -44,14 +45,15 @@ var _ = Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component][sig-c
 	Describe("[crit:medium][vendor:cnv-qe@redhat.com][level:component] A VirtualMachineInstance with default sound support", func() {
 
 		It("should create an ich9 sound device on empty model", func() {
-			vmi := libvmifact.NewCirros()
+			ginkgo.Skip("the sound cards are not supported on s390x.")
+			vmi := libvmifact.NewAlpine()
 			vmi.Spec.Domain.Devices.Sound = &v1.SoundDevice{
 				Name: "test-audio-device",
 			}
 			vmi, err := kubevirt.Client().VirtualMachineInstance(testsuite.NamespaceTestDefault).Create(context.Background(), vmi, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 
-			vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToCirros)
+			vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToAlpine)
 			err = checkICH9AudioDeviceInGuest(vmi)
 			Expect(err).ToNot(HaveOccurred(), "ICH9 sound device was no found")
 		})

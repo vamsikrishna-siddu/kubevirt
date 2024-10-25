@@ -49,6 +49,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/testutils"
 	"kubevirt.io/kubevirt/pkg/virt-api/webhooks/validating-webhook/admitters"
 	virtconfig "kubevirt.io/kubevirt/pkg/virt-config"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("Pod eviction admitter", func() {
@@ -111,7 +112,7 @@ var _ = Describe("Pod eviction admitter", func() {
 	})
 
 	DescribeTable("should allow the request when it refers to a virt-launcher pod", func(podPhase k8sv1.PodPhase) {
-		vmi := libvmi.New(defaultVMIOptions...)
+		vmi := libvmifact.NewAlpine(defaultVMIOptions...)
 		virtClient := kubevirtfake.NewSimpleClientset(vmi)
 
 		pod := newVirtLauncherPodWithPhase(vmi.Namespace, vmi.Name, vmi.Status.NodeName, podPhase)
@@ -139,7 +140,7 @@ var _ = Describe("Pod eviction admitter", func() {
 	DescribeTable("should trigger VMI Evacuation and deny the request", func(clusterWideEvictionStrategy *virtv1.EvictionStrategy, additionalVMIOptions ...libvmi.Option) {
 		vmiOptions := append(defaultVMIOptions, additionalVMIOptions...)
 
-		vmi := libvmi.New(vmiOptions...)
+		vmi := libvmifact.NewAlpine(vmiOptions...)
 		virtClient := kubevirtfake.NewSimpleClientset(vmi)
 
 		evictedVirtLauncherPod := newVirtLauncherPod(vmi.Namespace, vmi.Name, vmi.Status.NodeName)
@@ -206,7 +207,7 @@ var _ = Describe("Pod eviction admitter", func() {
 	DescribeTable("should allow the request without triggering VMI evacuation", func(clusterWideEvictionStrategy *virtv1.EvictionStrategy, additionalVMIOptions ...libvmi.Option) {
 		vmiOptions := append(defaultVMIOptions, additionalVMIOptions...)
 
-		vmi := libvmi.New(vmiOptions...)
+		vmi := libvmifact.NewAlpine(vmiOptions...)
 		virtClient := kubevirtfake.NewSimpleClientset(vmi)
 
 		evictedVirtLauncherPod := newVirtLauncherPod(vmi.Namespace, vmi.Name, vmi.Status.NodeName)
@@ -262,7 +263,7 @@ var _ = Describe("Pod eviction admitter", func() {
 	DescribeTable("should deny the request without triggering VMI evacuation", func(clusterWideEvictionStrategy *virtv1.EvictionStrategy, additionalVMIOptions ...libvmi.Option) {
 		vmiOptions := append(defaultVMIOptions, additionalVMIOptions...)
 
-		vmi := libvmi.New(vmiOptions...)
+		vmi := libvmifact.NewAlpine(vmiOptions...)
 		virtClient := kubevirtfake.NewSimpleClientset(vmi)
 
 		evictedVirtLauncherPod := newVirtLauncherPod(vmi.Namespace, vmi.Name, vmi.Status.NodeName)
@@ -297,7 +298,7 @@ var _ = Describe("Pod eviction admitter", func() {
 	)
 
 	It("should deny the request when the admitter fails to fetch the VMI", func() {
-		vmi := libvmi.New(defaultVMIOptions...)
+		vmi := libvmifact.NewAlpine(defaultVMIOptions...)
 		virtClient := kubevirtfake.NewSimpleClientset(vmi)
 
 		expectedError := errors.New("some error")
@@ -334,7 +335,7 @@ var _ = Describe("Pod eviction admitter", func() {
 			withLiveMigratableCondition(),
 		)
 
-		migratableVMI := libvmi.New(vmiOptions...)
+		migratableVMI := libvmifact.NewAlpine(vmiOptions...)
 		virtClient := kubevirtfake.NewSimpleClientset(migratableVMI)
 
 		expectedError := errors.New("some error")
@@ -375,7 +376,7 @@ var _ = Describe("Pod eviction admitter", func() {
 			withEvacuationNodeName(testNodeName),
 		)
 
-		migratableVMI := libvmi.New(vmiOptions...)
+		migratableVMI := libvmifact.NewAlpine(vmiOptions...)
 		virtClient := kubevirtfake.NewSimpleClientset(migratableVMI)
 
 		evictedVirtLauncherPod := newVirtLauncherPod(migratableVMI.Namespace, migratableVMI.Name, migratableVMI.Status.NodeName)
@@ -403,7 +404,7 @@ var _ = Describe("Pod eviction admitter", func() {
 			withLiveMigratableCondition(),
 		)
 
-		migratableVMI := libvmi.New(vmiOptions...)
+		migratableVMI := libvmifact.NewAlpine(vmiOptions...)
 		virtClient := kubevirtfake.NewSimpleClientset(migratableVMI)
 
 		evictedVirtLauncherPod := newVirtLauncherPod(migratableVMI.Namespace, migratableVMI.Name, migratableVMI.Status.NodeName)

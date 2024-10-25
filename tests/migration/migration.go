@@ -177,7 +177,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 			const labelKey = "subdomain"
 			const labelValue = "mysub"
 
-			vmi := libvmifact.NewCirros(
+			vmi := libvmifact.NewFedora(
 				libvmi.WithHostname(hostname),
 				withSubdomain(subdomain),
 				libvmi.WithLabel(labelKey, labelValue),
@@ -187,7 +187,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 			By("Starting hello world in the VM")
-			vmnetserver.StartTCPServer(vmi, port, console.LoginToCirros)
+			vmnetserver.StartTCPServer(vmi, port, console.LoginToFedora)
 
 			By("Exposing headless service matching subdomain")
 			service := service.BuildHeadlessSpec(subdomain, port, port, labelKey, labelValue)
@@ -857,7 +857,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 					libdv.WithStorage(libdv.StorageWithStorageClass(sc)),
 				)
 
-				vmi := libvmi.New(
+				vmi := libvmifact.NewAlpine(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					libvmi.WithDataVolume("disk0", dataVolume.Name),
@@ -993,14 +993,12 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 
 			It("[test_id:3240]should be successfully with a cloud init", func() {
 				// Start the VirtualMachineInstance with the PVC attached
-				vmi := newVMIWithDataVolumeForMigration(cd.ContainerDiskCirros, k8sv1.ReadWriteMany, sc,
-					libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()),
-					libvmi.WithHostname(fmt.Sprintf("%s", cd.ContainerDiskCirros)),
-				)
+				vmi := newVMIWithDataVolumeForMigration(cd.ContainerDiskAlpine, k8sv1.ReadWriteMany, sc, libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()))
+				vmi.Spec.Hostname = fmt.Sprintf("%s", cd.ContainerDiskAlpine)
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 180)
 
 				By("Checking that the VirtualMachineInstance console has expected output")
-				Expect(console.LoginToCirros(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 				By("Checking that MigrationMethod is set to BlockMigration")
 				Expect(vmi.Status.MigrationMethod).To(Equal(v1.BlockMigration))
@@ -1058,7 +1056,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				By("Creating the DV")
 				createDV(testsuite.GetTestNamespace(nil))
 				By("Creating the VMI")
-				vmi = libvmi.New(
+				vmi = libvmifact.NewAlpine(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					libvmi.WithPersistentVolumeClaim("disk0", dv.Name),
@@ -1175,7 +1173,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				Entry("[test_id:8610] with DataVolume", func() *v1.VirtualMachineInstance {
 					dv = createDataVolumePVCAndChangeDiskImgPermissions(testsuite.NamespacePrivileged, size)
 					// Use the DataVolume
-					return libvmi.New(
+					return libvmifact.NewAlpine(
 						libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 						libvmi.WithNetwork(v1.DefaultPodNetwork()),
 						libvmi.WithDataVolume("disk0", dv.Name),
@@ -1190,7 +1188,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				Entry("[test_id:8612] with PVC", func() *v1.VirtualMachineInstance {
 					dv = createDataVolumePVCAndChangeDiskImgPermissions(testsuite.NamespacePrivileged, size)
 					// Use the Underlying PVC
-					return libvmi.New(
+					return libvmifact.NewAlpine(
 						libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 						libvmi.WithNetwork(v1.DefaultPodNetwork()),
 						libvmi.WithPersistentVolumeClaim("disk0", dv.Name),
@@ -1265,7 +1263,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				Entry("with DataVolume", func() *v1.VirtualMachineInstance {
 					dv = createDataVolumePVCAndChangeDiskImgPermissions(testsuite.NamespacePrivileged, size)
 					// Use the DataVolume
-					return libvmi.New(
+					return libvmifact.NewAlpine(
 						libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 						libvmi.WithNetwork(v1.DefaultPodNetwork()),
 						libvmi.WithDataVolume("disk0", dv.Name),
@@ -1280,7 +1278,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				Entry("with PVC", func() *v1.VirtualMachineInstance {
 					dv = createDataVolumePVCAndChangeDiskImgPermissions(testsuite.NamespacePrivileged, size)
 					// Use the underlying PVC
-					return libvmi.New(
+					return libvmifact.NewAlpine(
 						libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 						libvmi.WithNetwork(v1.DefaultPodNetwork()),
 						libvmi.WithPersistentVolumeClaim("disk0", dv.Name),
@@ -2048,7 +2046,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 
 				It("should be able to properly abort migration", func() {
 					By("Starting a VirtualMachineInstance")
-					vmi := libvmifact.NewGuestless(
+					vmi := libvmifact.NewAlpine(
 						libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 						libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					)
@@ -2324,7 +2322,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 			const numberOfMigrationThreads uint = 4
 
 			It("should run successfully when configured through a VMI annotation", func() {
-				vmi := libvmifact.NewCirros(
+				vmi := libvmifact.NewFedora(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					libvmi.WithAnnotation(cmdclient.MultiThreadedQemuMigrationAnnotation, fmt.Sprintf("%d", numberOfMigrationThreads)),
@@ -2956,7 +2954,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 	Context("with a live-migration in flight", func() {
 		It("there should always be a single active migration per VMI", decorators.Conformance, func() {
 			By("Starting a VMI")
-			vmi := libvmifact.NewGuestless(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			)
@@ -3005,8 +3003,8 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 			}
 
 			It("invtsc feature exists", decorators.Invtsc, func() {
-				vmi := libvmi.New(
-					libvmi.WithResourceMemory("1Mi"),
+				vmi := libvmifact.NewAlpine(
+					libvmi.WithResourceMemory("128Mi"),
 					libvmi.WithCPUFeature("invtsc", "require"),
 				)
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 240)
@@ -3040,7 +3038,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 		}
 
 		It("should add eviction-in-progress annotation to source virt-launcher pod", func() {
-			vmi = libvmifact.NewCirros(
+			vmi = libvmifact.NewFedora(
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			)
@@ -3060,7 +3058,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 
 		Context("when evacuating fails", func() {
 			BeforeEach(func() {
-				vmi = libvmifact.NewCirros(
+				vmi = libvmifact.NewFedora(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					libvmi.WithAnnotation(v1.FuncTestForceLauncherMigrationFailureAnnotation, ""),
@@ -3146,7 +3144,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 	Context("ResourceQuota rejection", func() {
 		It("Should contain condition when migrating with quota that doesn't have resources for both source and target", decorators.Conformance, func() {
 			vmiRequest := resource.MustParse("200Mi")
-			vmi := libvmifact.NewCirros(
+			vmi := libvmifact.NewFedora(
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithResourceMemory(vmiRequest.String()),

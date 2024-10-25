@@ -30,6 +30,7 @@ import (
 	v1 "kubevirt.io/api/core/v1"
 
 	"kubevirt.io/kubevirt/pkg/libvmi"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("ConfigMap", func() {
@@ -53,7 +54,7 @@ var _ = Describe("ConfigMap", func() {
 	})
 
 	It("Should create a new config map iso disk", func() {
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithConfigMapDisk("test-config", "configmap-volume"),
 		)
 

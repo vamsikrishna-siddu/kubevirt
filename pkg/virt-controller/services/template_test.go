@@ -48,6 +48,7 @@ import (
 	fakenetworkclient "kubevirt.io/client-go/networkattachmentdefinitionclient/fake"
 
 	"kubevirt.io/kubevirt/pkg/pointer"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 
 	k6tconfig "kubevirt.io/kubevirt/pkg/config"
 	"kubevirt.io/kubevirt/pkg/hooks"
@@ -4959,7 +4960,7 @@ var _ = Describe("Template", func() {
 			testutils.UpdateFakeKubeVirtClusterConfig(kvStore, kvConfig)
 		})
 		It("has no downward-api for network-info when missing supported network-binding", func() {
-			vmi := libvmi.New(libvmi.WithNamespace("default"),
+			vmi := libvmifact.NewAlpine(libvmi.WithNamespace("default"),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 				libvmi.WithInterface(*v1.DefaultBridgeNetworkInterface()),
 				libvmi.WithNetwork(libvmi.MultusNetwork("network1", "default/default")),
@@ -4978,7 +4979,7 @@ var _ = Describe("Template", func() {
 
 		DescribeTable("downward api for network-info is defined",
 			func(interfaces []v1.Interface, networks []v1.Network) {
-				vmi := libvmi.New(libvmi.WithNamespace("default"))
+				vmi := libvmifact.NewAlpine(libvmi.WithNamespace("default"))
 				vmi.Spec.Domain.Devices.Interfaces = interfaces
 				vmi.Spec.Networks = networks
 
@@ -5059,7 +5060,7 @@ var _ = Describe("Template", func() {
 				WithNetBindingPluginMemoryCalculator(netBindingPluginMemoryOverheadCalculator),
 			)
 
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace("default"),
 				libvmi.WithInterface(v1.Interface{Name: iface1name, Binding: &v1.PluginBinding{Name: plugin1name}}),
 				libvmi.WithNetwork(&v1.Network{Name: iface1name}),
@@ -5129,7 +5130,7 @@ var _ = Describe("Template", func() {
 				WithAnnotationsGenerators(generator1, generator2),
 			)
 
-			vmi := libvmi.New(libvmi.WithNamespace(testNamespace))
+			vmi := libvmifact.NewAlpine(libvmi.WithNamespace(testNamespace))
 
 			pod, err := svc.RenderLaunchManifest(vmi)
 			Expect(err).ToNot(HaveOccurred())
@@ -5159,7 +5160,7 @@ var _ = Describe("Template", func() {
 				WithAnnotationsGenerators(generator1, generator2),
 			)
 
-			vmi := libvmi.New(libvmi.WithNamespace(testNamespace))
+			vmi := libvmifact.NewAlpine(libvmi.WithNamespace(testNamespace))
 
 			_, err := svc.RenderLaunchManifest(vmi)
 			Expect(err).To(MatchError(expectedErr))
@@ -5220,7 +5221,7 @@ var _ = Describe("Template", func() {
 				WithAnnotationsGenerators(generator1, generator2),
 			)
 
-			vmi := libvmi.New(libvmi.WithNamespace(testNamespace))
+			vmi := libvmifact.NewAlpine(libvmi.WithNamespace(testNamespace))
 
 			pod, err := svc.RenderLaunchManifest(vmi)
 			Expect(err).ToNot(HaveOccurred())
@@ -5262,7 +5263,7 @@ var _ = Describe("Template", func() {
 				WithNetTargetAnnotationsGenerator(generator),
 			)
 
-			vmi := libvmi.New(libvmi.WithNamespace(testNamespace))
+			vmi := libvmifact.NewAlpine(libvmi.WithNamespace(testNamespace))
 
 			sourcePod, err := svc.RenderLaunchManifest(vmi)
 			Expect(err).ToNot(HaveOccurred())
@@ -5301,7 +5302,7 @@ var _ = Describe("Template", func() {
 				WithNetTargetAnnotationsGenerator(generator),
 			)
 
-			vmi := libvmi.New(libvmi.WithNamespace(testNamespace))
+			vmi := libvmifact.NewAlpine(libvmi.WithNamespace(testNamespace))
 
 			sourcePod, err := svc.RenderLaunchManifest(vmi)
 			Expect(err).ToNot(HaveOccurred())

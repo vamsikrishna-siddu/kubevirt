@@ -24,6 +24,7 @@ import (
 	"kubevirt.io/kubevirt/tests/decorators"
 	"kubevirt.io/kubevirt/tests/framework/checks"
 	"kubevirt.io/kubevirt/tests/framework/kubevirt"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 	"kubevirt.io/kubevirt/tests/libwait"
 	"kubevirt.io/kubevirt/tests/testsuite"
 )
@@ -60,7 +61,7 @@ var _ = SIGDescribe("CPU latency tests for measuring realtime VMs performance", 
 	It("running cyclictest and collecting results directly from VM", func() {
 		const memory = "512Mi"
 		const noMask = ""
-		vmi = libvmi.New(
+		vmi = libvmifact.NewAlpine(
 			libvmi.WithRng(),
 			libvmi.WithContainerDisk("disk0", cd.ContainerDiskFor(cd.ContainerDiskFedoraRealtime)),
 			libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudEncodedUserData(tuneAdminRealtimeCloudInitData)),

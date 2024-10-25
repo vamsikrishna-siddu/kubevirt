@@ -49,6 +49,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/libvmi"
 	"kubevirt.io/kubevirt/pkg/pointer"
 	"kubevirt.io/kubevirt/pkg/testutils"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 const (
@@ -181,7 +182,7 @@ var _ = Describe("Clone", func() {
 	}
 
 	setupResources := func() {
-		sourceVMI := libvmi.New(
+		sourceVMI := libvmifact.NewAlpine(
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 			libvmi.WithNetwork(virtv1.DefaultPodNetwork()),
 		)

@@ -35,6 +35,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/network/multus"
 	"kubevirt.io/kubevirt/pkg/network/vmicontroller"
 	"kubevirt.io/kubevirt/pkg/network/vmispec"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 )
 
 var _ = Describe("Status Update", func() {
@@ -91,7 +92,7 @@ var _ = Describe("Status Update", func() {
 	)
 
 	DescribeTable("Shouldn't generate interface status for a VMI without interfaces", func(podAnnotations map[string]string) {
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithNamespace(testNamespace),
 			libvmi.WithAutoAttachPodInterface(false),
 		)
@@ -106,7 +107,7 @@ var _ = Describe("Status Update", func() {
 	)
 
 	DescribeTable("Should generate interface status for primary network (not matched on status)", func(podAnnotations map[string]string) {
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithNamespace(testNamespace),
 			libvmi.WithInterface(*v1.DefaultBridgeNetworkInterface()),
 			libvmi.WithNetwork(v1.DefaultPodNetwork()),
@@ -134,7 +135,7 @@ var _ = Describe("Status Update", func() {
 			{Name: defaultNetworkName, PodInterfaceName: "", InfoSource: vmispec.InfoSourceDomainAndGA},
 		}
 
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithNamespace(testNamespace),
 			libvmi.WithInterface(*v1.DefaultBridgeNetworkInterface()),
 			libvmi.WithNetwork(v1.DefaultPodNetwork()),
@@ -159,7 +160,7 @@ var _ = Describe("Status Update", func() {
 	)
 
 	It("Should report custom pod primary interface name when Multus network status reports it", func() {
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithNamespace(testNamespace),
 			libvmi.WithInterface(*v1.DefaultBridgeNetworkInterface()),
 			libvmi.WithNetwork(v1.DefaultPodNetwork()),
@@ -177,7 +178,7 @@ var _ = Describe("Status Update", func() {
 
 	DescribeTable("Should generate interface status for Multus default network (not matched on status)",
 		func(podAnnotations map[string]string) {
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(testNamespace),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(alternativeNetworkName)),
 				libvmi.WithNetwork(&v1.Network{
@@ -221,7 +222,7 @@ var _ = Describe("Status Update", func() {
 			{Name: alternativeNetworkName, PodInterfaceName: "", InfoSource: vmispec.InfoSourceDomainAndGA},
 		}
 
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithNamespace(testNamespace),
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(alternativeNetworkName)),
 			libvmi.WithNetwork(&v1.Network{
@@ -264,7 +265,7 @@ var _ = Describe("Status Update", func() {
 	)
 
 	It("Shouldn't generate interface status for secondary interface (not matched on status) when Multus network status is absent", func() {
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithNamespace(testNamespace),
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(secondaryNetworkName)),
 			libvmi.WithNetwork(libvmi.MultusNetwork(secondaryNetworkName, secondaryNetworkAttachmentDefinitionName)),
@@ -279,7 +280,7 @@ var _ = Describe("Status Update", func() {
 
 	DescribeTable("Should generate interface status for secondary interface (not matched on status) when Multus network status is reported",
 		func(podAnnotations map[string]string) {
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(testNamespace),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(secondaryNetworkName)),
 				libvmi.WithNetwork(libvmi.MultusNetwork(secondaryNetworkName, secondaryNetworkAttachmentDefinitionName)),
@@ -309,7 +310,7 @@ var _ = Describe("Status Update", func() {
 
 	DescribeTable("Interface status should be reported correctly for VMI with primary and secondary networks",
 		func(podAnnotations map[string]string, expectedPrimaryInterfaceName string) {
-			vmi := libvmi.New(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(testNamespace),
 				libvmi.WithInterface(*v1.DefaultBridgeNetworkInterface()),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(secondaryNetworkName)),
@@ -347,7 +348,7 @@ var _ = Describe("Status Update", func() {
 			{Name: secondaryNetworkName, PodInterfaceName: "", InfoSource: vmispec.InfoSourceMultusStatus},
 		}
 
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithNamespace(testNamespace),
 			libvmi.WithInterface(*v1.DefaultBridgeNetworkInterface()),
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(secondaryNetworkName)),
@@ -375,7 +376,7 @@ var _ = Describe("Status Update", func() {
 			{Name: secondaryNetworkName, InfoSource: vmispec.InfoSourceMultusStatus},
 		}
 
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithNamespace(testNamespace),
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(secondaryNetworkName)),
 			libvmi.WithNetwork(libvmi.MultusNetwork(secondaryNetworkName, secondaryNetworkAttachmentDefinitionName)),
@@ -401,7 +402,7 @@ var _ = Describe("Status Update", func() {
 			{Name: secondaryNetworkName, InfoSource: vmispec.InfoSourceMultusStatus},
 		}
 
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithNamespace(testNamespace),
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(secondaryNetworkName)),
 			libvmi.WithNetwork(libvmi.MultusNetwork(secondaryNetworkName, secondaryNetworkAttachmentDefinitionName)),
@@ -426,7 +427,7 @@ var _ = Describe("Status Update", func() {
 			{Name: secondaryNetworkName, InfoSource: vmispec.InfoSourceGuestAgent},
 		}
 
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithNamespace(testNamespace),
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(secondaryNetworkName)),
 			libvmi.WithNetwork(libvmi.MultusNetwork(secondaryNetworkName, secondaryNetworkAttachmentDefinitionName)),
@@ -478,7 +479,7 @@ var _ = Describe("Status Update", func() {
 			{Name: secondaryNetworkName},
 		}
 
-		vmi := libvmi.New(
+		vmi := libvmifact.NewAlpine(
 			libvmi.WithNamespace(testNamespace),
 			libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(secondaryNetworkName)),
 			libvmi.WithNetwork(libvmi.MultusNetwork(secondaryNetworkName, secondaryNetworkAttachmentDefinitionName)),
