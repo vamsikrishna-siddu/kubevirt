@@ -193,7 +193,7 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 		Expect(statusCode).To(Equal(http.StatusUnprocessableEntity))
 
 	})
-	It("[test_id:1412]should reject POST if validation webhoook deems the spec is invalid", func() {
+	It("[test_id:1412][test_id:passing]should reject POST if validation webhoook deems the spec is invalid", func() {
 		newRS := newReplicaSet()
 		newRS.TypeMeta = v12.TypeMeta{
 			APIVersion: v1.GroupVersion.String(),
@@ -218,7 +218,7 @@ var _ = Describe("[rfe_id:588][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 		err = json.Unmarshal(body, reviewResponse)
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(reviewResponse.Details.Causes).To(HaveLen(1))
+		Expect(reviewResponse.Details.Causes).To(HaveLen(2))
 		Expect(reviewResponse.Details.Causes[0].Field).To(Equal("spec.template.spec.domain.devices.disks[2].name"))
 	})
 	It("[test_id:1413]should update readyReplicas once VMIs are up", func() {

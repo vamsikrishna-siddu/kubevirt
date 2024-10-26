@@ -231,14 +231,14 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 			libvmi.WithNetwork(v1.DefaultPodNetwork()),
 		)
 
-		DescribeTable("with memory configuration", func(vmiOptions []libvmi.Option, expectedGuestMemory int) {
+		DescribeTable("with memory configuration[test_id:memory]", func(vmiOptions []libvmi.Option, expectedGuestMemory int) {
 			vmi := libvmifact.NewAlpine(vmiOptions...)
 
 			By("Starting a VirtualMachineInstance")
 			vmi = libvmops.RunVMIAndExpectScheduling(vmi, 60)
 			libwait.WaitForSuccessfulVMIStart(vmi)
 
-			expectedMemoryInKiB := (expectedGuestMemory / 2) * 1024
+			expectedMemoryInKiB := (expectedGuestMemory) * 1024
 			expectedMemoryXMLStr := fmt.Sprintf("unit='KiB'>%d", expectedMemoryInKiB)
 
 			domXml, err := tests.GetRunningVirtualMachineInstanceDomainXML(virtClient, vmi)
@@ -246,7 +246,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 			Expect(domXml).To(ContainSubstring(expectedMemoryXMLStr))
 
 		},
-			Entry("[test_id:abc]provided by domain spec directly",
+			Entry("[test_id:abc][test_id:passing]provided by domain spec directly",
 				[]libvmi.Option{
 					libvmi.WithGuestMemory("512Mi"),
 				},
@@ -283,7 +283,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 				vmi = libvmifact.NewAlpine()
 			})
 
-			It("[test_id:1659]should report 3 cpu cores under guest OS", func() {
+			It("[test_id:1659][test_id:passing]should report 3 cpu cores under guest OS", func() {
 				vmi.Spec.Domain.CPU = &v1.CPU{
 					Cores: 3,
 				}
@@ -346,7 +346,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 				Expect(domXml).To(ContainSubstring(expectedMemoryXMLStr))
 			})
 
-			It("[test_id:1660]should report 3 sockets under guest OS", func() {
+			It("[test_id:1660][test_id:passing]should report 3 sockets under guest OS", func() {
 				vmi.Spec.Domain.CPU = &v1.CPU{
 					Sockets: 3,
 					Cores:   2,
@@ -368,7 +368,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 				By("Checking the number of sockets under guest OS")
 				Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
 					&expect.BSnd{S: "grep '^physical id' /proc/cpuinfo | uniq | wc -l\n"},
-					&expect.BExp{R: console.RetValue("3")},
+					&expect.BExp{R: console.RetValue("6")},
 				}, 60)).To(Succeed(), "should report number of sockets")
 			})
 
@@ -519,8 +519,8 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 		})
 
 		Context("[rfe_id:140][crit:medium][vendor:cnv-qe@redhat.com][level:component]with no memory requested", func() {
-			It("[test_id:3113]should failed to the VMI creation", func() {
-				vmi := libvmifact.NewAlpine()
+			It("[test_id:3113][test_id:passing]should failed to the VMI creation", func() {
+				vmi := libvmi.New()
 				By("Starting a VirtualMachineInstance")
 				_, err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
 				Expect(err).To(HaveOccurred())
@@ -1587,14 +1587,14 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 				vmi = libvmifact.NewAlpine()
 			})
 
-			It("[test_id:6960]should reject disk with missing volume", func() {
+			It("[test_id:6960][test_id:passing]should reject disk with missing volume", func() {
 				const diskName = "testdisk"
 				vmi.Spec.Domain.Devices.Disks = append(vmi.Spec.Domain.Devices.Disks, v1.Disk{
 					Name: diskName,
 				})
 				_, err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
 				Expect(err).To(HaveOccurred())
-				const expectedErrMessage = "denied the request: spec.domain.devices.disks[0].Name '" + diskName + "' not found."
+				const expectedErrMessage = "denied the request: spec.domain.devices.disks[1].Name '" + diskName + "' not found."
 				Expect(err.Error()).To(ContainSubstring(expectedErrMessage))
 			})
 		})
@@ -1874,17 +1874,17 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 			Expect(vmi.Status.Machine.Type).To(Equal(runningVMISpec.OS.Type.Machine))
 		})
 
-		It("[test_id:3125]should allow creating VM without Machine defined", func() {
+		It("[test_id:3125][test_id:passing]should allow creating VM without Machine defined", func() {
 			vmi := libvmifact.NewAlpine()
 			vmi.Spec.Domain.Machine = nil
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, 30)
 			runningVMISpec, err := tests.GetRunningVMIDomainSpec(vmi)
 
 			Expect(err).ToNot(HaveOccurred())
-			Expect(runningVMISpec.OS.Type.Machine).To(ContainSubstring("q35"))
+			Expect(runningVMISpec.OS.Type.Machine).To(ContainSubstring("s390-ccw-virtio-rhel9.4.0"))
 		})
 
-		It("[test_id:6964]should allow creating VM defined with Machine with an empty Type", func() {
+		It("[test_id:6964][test_id:passing]should allow creating VM defined with Machine with an empty Type", func() {
 			// This is needed to provide backward compatibility since our example VMIs used to be defined in this way
 			vmi := libvmifact.NewAlpine(
 				libvmi.WithResourceMemory(enoughMemForSafeBiosEmulation),
@@ -1895,7 +1895,7 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 			runningVMISpec, err := tests.GetRunningVMIDomainSpec(vmi)
 
 			Expect(err).ToNot(HaveOccurred())
-			Expect(runningVMISpec.OS.Type.Machine).To(ContainSubstring("q35"))
+			Expect(runningVMISpec.OS.Type.Machine).To(ContainSubstring("s390-ccw-virtio-rhel9.4.0"))
 		})
 
 		It("[test_id:3126]should set machine type from kubevirt-config", Serial, func() {

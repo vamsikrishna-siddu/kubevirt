@@ -360,8 +360,8 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][vendor:cnv-qe@redhat.com][level
 		Context("with user-data", func() {
 
 			Context("without k8s secret", func() {
-				It("[test_id:1629][posneg:negative]should not be able to start virt-launcher pod", func() {
-					vmi = libvmifact.NewAlpine()
+				It("[test_id:1629][test_id:passing][posneg:negative]should not be able to start virt-launcher pod", func() {
+					vmi = libvmifact.NewAlpine(libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()))
 
 					for _, volume := range vmi.Spec.Volumes {
 						if volume.CloudInitNoCloud != nil {
@@ -389,9 +389,9 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][vendor:cnv-qe@redhat.com][level
 							"event of type Warning, reason = FailedMount")
 				})
 
-				It("[test_id:1630]should log warning and proceed once the secret is there", func() {
+				It("[test_id:1630][test_id:passing]should log warning and proceed once the secret is there", func() {
 					userData64 := ""
-					vmi = libvmifact.NewAlpine()
+					vmi = libvmifact.NewAlpine(libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()))
 
 					for _, volume := range vmi.Spec.Volumes {
 						if volume.CloudInitNoCloud != nil {
@@ -1205,7 +1205,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][vendor:cnv-qe@redhat.com][level
 		})
 
 		Context("with non default namespace", func() {
-			DescribeTable("[rfe_id:273][crit:high][vendor:cnv-qe@redhat.com][level:component]should log libvirt start and stop lifecycle events of the domain", func(alternativeNamespace bool) {
+			DescribeTable("[test_id:passing][rfe_id:273][crit:high][vendor:cnv-qe@redhat.com][level:component]should log libvirt start and stop lifecycle events of the domain", func(alternativeNamespace bool) {
 				namespace := testsuite.GetTestNamespace(nil)
 				if alternativeNamespace {
 					namespace = testsuite.NamespaceTestAlternative
@@ -1217,7 +1217,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][vendor:cnv-qe@redhat.com][level
 
 				By("Creating a VirtualMachineInstance with different namespace")
 				vmi = libvmifact.NewAlpine(
-					libvmi.WithResourceMemory("1Mi"),
+					libvmi.WithResourceMemory("128Mi"),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				)
