@@ -91,7 +91,7 @@ var _ = SIGDescribe("[Serial] VirtualMachineInstance with passt network binding 
 		passtIface.Ports = []v1.Port{{Port: 1234, Protocol: "TCP"}}
 		passtIface.MacAddress = testMACAddr
 		passtIface.PciAddress = testPCIAddr
-		vmi := libvmifact.NewAlpineWithTestTooling(
+		vmi := libvmifact.NewFedora(
 			libvmi.WithInterface(passtIface),
 			libvmi.WithNetwork(v1.DefaultPodNetwork()),
 		)
@@ -100,7 +100,7 @@ var _ = SIGDescribe("[Serial] VirtualMachineInstance with passt network binding 
 		Expect(err).ToNot(HaveOccurred())
 		vmi = libwait.WaitUntilVMIReady(
 			vmi,
-			console.LoginToAlpine,
+			console.LoginToFedora,
 			libwait.WithFailOnWarnings(false),
 			libwait.WithTimeout(180),
 		)
@@ -122,7 +122,7 @@ var _ = SIGDescribe("[Serial] VirtualMachineInstance with passt network binding 
 
 			startServerVMI := func(ports []v1.Port) {
 				passtIface := libvmi.InterfaceWithPasstBindingPlugin(ports...)
-				serverVMI = libvmifact.NewAlpineWithTestTooling(
+				serverVMI = libvmifact.NewFedora(
 					libvmi.WithInterface(passtIface),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 				)
@@ -131,7 +131,7 @@ var _ = SIGDescribe("[Serial] VirtualMachineInstance with passt network binding 
 				Expect(err).ToNot(HaveOccurred())
 				serverVMI = libwait.WaitUntilVMIReady(
 					serverVMI,
-					console.LoginToAlpine,
+					console.LoginToFedora,
 					libwait.WithFailOnWarnings(false),
 					libwait.WithTimeout(180),
 				)
@@ -155,7 +155,7 @@ var _ = SIGDescribe("[Serial] VirtualMachineInstance with passt network binding 
 				}
 
 				startClientVMI := func() {
-					clientVMI = libvmifact.NewAlpineWithTestTooling(
+					clientVMI = libvmifact.NewFedora(
 						libvmi.WithPasstInterfaceWithPort(),
 						libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					)
@@ -163,7 +163,7 @@ var _ = SIGDescribe("[Serial] VirtualMachineInstance with passt network binding 
 					clientVMI, err = kubevirt.Client().VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), clientVMI, metav1.CreateOptions{})
 					Expect(err).ToNot(HaveOccurred())
 					clientVMI = libwait.WaitUntilVMIReady(clientVMI,
-						console.LoginToAlpine,
+						console.LoginToFedora,
 						libwait.WithFailOnWarnings(false),
 						libwait.WithTimeout(180),
 					)
@@ -178,7 +178,7 @@ var _ = SIGDescribe("[Serial] VirtualMachineInstance with passt network binding 
 					startServerVMI(ports)
 
 					By("starting a TCP server")
-					vmnetserver.StartTCPServer(serverVMI, tcpPort, console.LoginToAlpine)
+					vmnetserver.StartTCPServer(serverVMI, tcpPort, console.LoginToFedora)
 
 					Expect(verifyClientServerConnectivity(clientVMI, serverVMI, tcpPort, ipFamily)).To(Succeed())
 
@@ -187,7 +187,7 @@ var _ = SIGDescribe("[Serial] VirtualMachineInstance with passt network binding 
 						vmPort := int(ports[0].Port)
 						serverIP := libnet.GetVmiPrimaryIPByFamily(serverVMI, ipFamily)
 
-						vmnetserver.StartTCPServer(serverVMI, vmPort+1, console.LoginToAlpine)
+						vmnetserver.StartTCPServer(serverVMI, vmPort+1, console.LoginToFedora)
 
 						By("Connecting from the client VM to a port not specified on the VM spec")
 						Expect(console.RunCommand(clientVMI, connectToServerCmd(serverIP, tcpPort+1), 30)).NotTo(Succeed())
@@ -238,7 +238,7 @@ EOL`, inetSuffix, serverIP, serverPort)
 					By("Starting server VMI")
 					startServerVMI([]v1.Port{{Port: SERVER_PORT, Protocol: "UDP"}})
 					serverVMI = libwait.WaitUntilVMIReady(serverVMI,
-						console.LoginToAlpine,
+						console.LoginToFedora,
 						libwait.WithFailOnWarnings(false),
 						libwait.WithTimeout(180),
 					)
@@ -247,14 +247,14 @@ EOL`, inetSuffix, serverIP, serverPort)
 					vmnetserver.StartPythonUDPServer(serverVMI, SERVER_PORT, ipFamily)
 
 					By("Starting client VMI")
-					clientVMI = libvmifact.NewAlpineWithTestTooling(
+					clientVMI = libvmifact.NewFedora(
 						libvmi.WithInterface(libvmi.InterfaceWithPasstBindingPlugin()),
 						libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					)
 					clientVMI, err = kubevirt.Client().VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), clientVMI, metav1.CreateOptions{})
 					Expect(err).ToNot(HaveOccurred())
 					clientVMI = libwait.WaitUntilVMIReady(clientVMI,
-						console.LoginToAlpine,
+						console.LoginToFedora,
 						libwait.WithFailOnWarnings(false),
 						libwait.WithTimeout(180),
 					)
@@ -286,14 +286,14 @@ EOL`, inetSuffix, serverIP, serverPort)
 				dns = flags.ConnectivityCheckDNS
 			}
 
-			vmi := libvmifact.NewAlpineWithTestTooling(
+			vmi := libvmifact.NewFedora(
 				libvmi.WithPasstInterfaceWithPort(),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			)
 			vmi, err = kubevirt.Client().VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), vmi, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 			vmi = libwait.WaitUntilVMIReady(vmi,
-				console.LoginToAlpine,
+				console.LoginToFedora,
 				libwait.WithFailOnWarnings(false),
 				libwait.WithTimeout(180),
 			)
@@ -313,7 +313,7 @@ EOL`, inetSuffix, serverIP, serverPort)
 				ipv6Address = flags.IPV6ConnectivityCheckAddress
 			}
 
-			vmi := libvmifact.NewAlpineWithTestTooling(
+			vmi := libvmifact.NewFedora(
 				libvmi.WithPasstInterfaceWithPort(),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 				libvmi.WithAnnotation("kubevirt.io/libvirt-log-filters", "3:remote 4:event 3:util.json 3:util.object 3:util.dbus 3:util.netlink 3:node_device 3:rpc 3:access 1:*"),
@@ -322,7 +322,7 @@ EOL`, inetSuffix, serverIP, serverPort)
 			vmi, err = kubevirt.Client().VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), vmi, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 			vmi = libwait.WaitUntilVMIReady(vmi,
-				console.LoginToAlpine,
+				console.LoginToFedora,
 				libwait.WithFailOnWarnings(false),
 				libwait.WithTimeout(180),
 			)

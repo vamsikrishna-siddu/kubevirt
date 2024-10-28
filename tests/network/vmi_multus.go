@@ -207,7 +207,7 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 			})
 			It("[test_id:1751]should create a virtual machine with one interface", func() {
 				By("checking virtual machine instance can ping using ptp cni plugin")
-				detachedVMI := libvmifact.NewAlpineWithTestTooling(
+				detachedVMI := libvmifact.NewFedora(
 					libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudNetworkData(networkData)),
 				)
 				detachedVMI.Spec.Domain.Devices.Interfaces = []v1.Interface{{Name: "ptp", InterfaceBindingMethod: v1.InterfaceBindingMethod{Bridge: &v1.InterfaceBridge{}}}}
@@ -219,7 +219,7 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 
 				detachedVMI, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), detachedVMI, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
-				libwait.WaitUntilVMIReady(detachedVMI, console.LoginToAlpine)
+				libwait.WaitUntilVMIReady(detachedVMI, console.LoginToFedora)
 
 				Expect(libnet.PingFromVMConsole(detachedVMI, ptpGateway)).To(Succeed())
 			})
@@ -227,7 +227,7 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 			It("[test_id:1752]should create a virtual machine with one interface with network definition from different namespace", func() {
 				checks.SkipIfOpenShift4("OpenShift 4 does not support usage of the network definition from the different namespace")
 				By("checking virtual machine instance can ping using ptp cni plugin")
-				detachedVMI := libvmifact.NewAlpineWithTestTooling(
+				detachedVMI := libvmifact.NewFedora(
 					libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudNetworkData(networkData)),
 				)
 				detachedVMI.Spec.Domain.Devices.Interfaces = []v1.Interface{{Name: "ptp", InterfaceBindingMethod: v1.InterfaceBindingMethod{Bridge: &v1.InterfaceBridge{}}}}
@@ -239,14 +239,14 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 
 				detachedVMI, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), detachedVMI, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
-				libwait.WaitUntilVMIReady(detachedVMI, console.LoginToAlpine)
+				libwait.WaitUntilVMIReady(detachedVMI, console.LoginToFedora)
 
 				Expect(libnet.PingFromVMConsole(detachedVMI, ptpGateway)).To(Succeed())
 			})
 
 			It("[test_id:1753]should create a virtual machine with two interfaces", func() {
 				By("checking virtual machine instance can ping using ptp cni plugin")
-				detachedVMI := libvmifact.NewCirros()
+				detachedVMI := libvmifact.NewFedora()
 
 				detachedVMI.Spec.Domain.Devices.Interfaces = []v1.Interface{
 					defaultInterface,
@@ -260,9 +260,9 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 
 				detachedVMI, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), detachedVMI, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
-				libwait.WaitUntilVMIReady(detachedVMI, console.LoginToCirros)
+				libwait.WaitUntilVMIReady(detachedVMI, console.LoginToFedora)
 
-				cmdCheck := "sudo /sbin/cirros-dhcpc up eth1 > /dev/null\n"
+				cmdCheck := "sudo dhclient eth1 > /dev/null\n"
 				err = console.SafeExpectBatch(detachedVMI, []expect.Batcher{
 					&expect.BSnd{S: "\n"},
 					&expect.BExp{R: console.PromptExpression},
@@ -291,7 +291,7 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 					),
 				)
 				Expect(err).NotTo(HaveOccurred())
-				detachedVMI := libvmifact.NewAlpineWithTestTooling(
+				detachedVMI := libvmifact.NewFedora(
 					libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudNetworkData(networkData)),
 				)
 				detachedVMI.Spec.Domain.Devices.Interfaces = []v1.Interface{{Name: "ptp", InterfaceBindingMethod: v1.InterfaceBindingMethod{Bridge: &v1.InterfaceBridge{}}}}
@@ -305,7 +305,7 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 
 				detachedVMI, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), detachedVMI, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
-				libwait.WaitUntilVMIReady(detachedVMI, console.LoginToAlpine)
+				libwait.WaitUntilVMIReady(detachedVMI, console.LoginToFedora)
 
 				By("checking virtual machine instance can ping using ptp cni plugin")
 				Expect(libnet.PingFromVMConsole(detachedVMI, ptpGateway)).To(Succeed())
@@ -352,7 +352,7 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 				interfaces[0].MacAddress = customMacAddress
 
 				vmiOne := createVMIOnNode(interfaces, networks)
-				libwait.WaitUntilVMIReady(vmiOne, console.LoginToAlpine)
+				libwait.WaitUntilVMIReady(vmiOne, console.LoginToFedora)
 
 				By("Configuring static IP address to ptp interface.")
 				Expect(libnet.AddIPAddress(vmiOne, "eth0", ptpSubnetIP1+ptpSubnetMask)).To(Succeed())
@@ -409,8 +409,8 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 				vmiOne := createVMIOnNode(interfaces, networks)
 				vmiTwo := createVMIOnNode(interfaces, networks)
 
-				libwait.WaitUntilVMIReady(vmiOne, console.LoginToAlpine)
-				libwait.WaitUntilVMIReady(vmiTwo, console.LoginToAlpine)
+				libwait.WaitUntilVMIReady(vmiOne, console.LoginToFedora)
+				libwait.WaitUntilVMIReady(vmiTwo, console.LoginToFedora)
 
 				Expect(configureAlpineInterfaceIP(vmiOne, ifaceName, staticIPVm1)).To(Succeed())
 				By(fmt.Sprintf("checking virtual machine interface %s state", ifaceName))

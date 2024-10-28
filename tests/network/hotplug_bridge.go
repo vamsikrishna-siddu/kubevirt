@@ -71,7 +71,7 @@ var _ = SIGDescribe("bridge nic-hotplug", func() {
 
 		BeforeEach(func() {
 			By("Creating a VM")
-			vmi := libvmifact.NewAlpineWithTestTooling(
+			vmi := libvmifact.NewFedora(
 				libvmi.WithInterface(*v1.DefaultMasqueradeNetworkInterface()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			)
@@ -84,7 +84,7 @@ var _ = SIGDescribe("bridge nic-hotplug", func() {
 				hotPluggedVMI, err = kubevirt.Client().VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Get(context.Background(), hotPluggedVM.GetName(), metav1.GetOptions{})
 				return err
 			}, 120*time.Second, 1*time.Second).ShouldNot(HaveOccurred())
-			libwait.WaitUntilVMIReady(hotPluggedVMI, console.LoginToAlpine)
+			libwait.WaitUntilVMIReady(hotPluggedVMI, console.LoginToFedora)
 
 			By("Creating a NAD")
 			Expect(createBridgeNetworkAttachmentDefinition(testsuite.GetTestNamespace(nil), nadName, linuxBridgeName)).To(Succeed())
@@ -242,7 +242,7 @@ var _ = SIGDescribe("bridge nic-hotunplug", func() {
 				testsuite.GetTestNamespace(nil), nadName, linuxBridgeName)).To(Succeed())
 
 			By("running a VM")
-			vmi = libvmifact.NewAlpineWithTestTooling(libnet.WithMasqueradeNetworking(),
+			vmi = libvmifact.NewFedora(libnet.WithMasqueradeNetworking(),
 				libvmi.WithNetwork(libvmi.MultusNetwork(linuxBridgeNetworkName1, nadName)),
 				libvmi.WithNetwork(libvmi.MultusNetwork(linuxBridgeNetworkName2, nadName)),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithBridgeBinding(linuxBridgeNetworkName1)),
@@ -257,7 +257,7 @@ var _ = SIGDescribe("bridge nic-hotunplug", func() {
 				return err
 			}, 120*time.Second, 1*time.Second).ShouldNot(HaveOccurred())
 
-			libwait.WaitUntilVMIReady(vmi, console.LoginToAlpine)
+			libwait.WaitUntilVMIReady(vmi, console.LoginToFedora)
 		})
 
 		DescribeTable("hot-unplug network interface succeed", func(plugMethod hotplugMethod) {

@@ -66,7 +66,7 @@ var _ = SIGDescribe("[Serial] SRIOV nic-hotplug", Serial, decorators.SRIOV, func
 
 		BeforeEach(func() {
 			By("Creating a VM")
-			vmi := libvmifact.NewAlpineWithTestTooling(
+			vmi := libvmifact.NewFedora(
 				libvmi.WithInterface(*v1.DefaultMasqueradeNetworkInterface()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
 			)
@@ -79,7 +79,7 @@ var _ = SIGDescribe("[Serial] SRIOV nic-hotplug", Serial, decorators.SRIOV, func
 				hotPluggedVMI, err = kubevirt.Client().VirtualMachineInstance(hotPluggedVM.Namespace).Get(context.Background(), hotPluggedVM.GetName(), metav1.GetOptions{})
 				return err
 			}, 120*time.Second, 1*time.Second).ShouldNot(HaveOccurred())
-			libwait.WaitUntilVMIReady(hotPluggedVMI, console.LoginToAlpine)
+			libwait.WaitUntilVMIReady(hotPluggedVMI, console.LoginToFedora)
 
 			By("Creating a NAD")
 			Expect(createSRIOVNetworkAttachmentDefinition(testsuite.GetTestNamespace(nil), nadName, sriovResourceName)).To(Succeed())

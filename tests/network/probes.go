@@ -95,10 +95,10 @@ var _ = SIGDescribe("[ref_id:1182]Probes", func() {
 				Expect(err).ToNot(HaveOccurred(), "should attach the backend pod with readiness probe")
 
 				By(specifyingVMReadinessProbe)
-				vmi = createReadyAlpineVMIWithReadinessProbe(readinessProbe)
+				vmi = createReadyFedoraVMIWithReadinessProbe(readinessProbe)
 			} else if !isExecProbe(readinessProbe) {
 				By(specifyingVMReadinessProbe)
-				vmi = createReadyAlpineVMIWithReadinessProbe(readinessProbe)
+				vmi = createReadyFedoraVMIWithReadinessProbe(readinessProbe)
 
 				Expect(matcher.ThisVMI(vmi)()).To(matcher.HaveConditionMissingOrFalse(v1.VirtualMachineInstanceReady))
 
@@ -194,10 +194,10 @@ var _ = SIGDescribe("[ref_id:1182]Probes", func() {
 				Expect(err).ToNot(HaveOccurred(), "should attach the backend pod with liveness probe")
 
 				By(specifyingVMLivenessProbe)
-				vmi = createReadyAlpineVMIWithLivenessProbe(livenessProbe)
+				vmi = createReadyFedoraVMIWithLivenessProbe(livenessProbe)
 			} else if !isExecProbe(livenessProbe) {
 				By(specifyingVMLivenessProbe)
-				vmi = createReadyAlpineVMIWithLivenessProbe(livenessProbe)
+				vmi = createReadyFedoraVMIWithLivenessProbe(livenessProbe)
 
 				By("Starting the server inside the VMI")
 				serverStarter(vmi, livenessProbe, 1500)
@@ -255,8 +255,8 @@ var _ = SIGDescribe("[ref_id:1182]Probes", func() {
 				return vmi.IsFinal()
 			}, 120, 1).Should(BeTrue())
 		},
-			Entry("[test_id:1217][posneg:negative]with working TCP probe and no running server", tcpProbe, libvmifact.NewCirros),
-			Entry("[test_id:1218][posneg:negative]with working HTTP probe and no running server", httpProbe, libvmifact.NewCirros),
+			Entry("[test_id:1217][posneg:negative]with working TCP probe and no running server", tcpProbe, libvmifact.NewFedora()),
+			Entry("[test_id:1218][posneg:negative]with working HTTP probe and no running server", httpProbe, libvmifact.NewFedora()),
 			Entry("[test_id:5880]with working Exec probe and invalid command", createExecProbe(period, initialSeconds, timeoutSeconds, "exit", "1"), libvmifact.NewFedora),
 		)
 	})
@@ -285,13 +285,13 @@ func guestAgentOperation(vmi *v1.VirtualMachineInstance, startStopOperation stri
 	}, 120)
 }
 
-func createReadyAlpineVMIWithReadinessProbe(probe *v1.Probe) *v1.VirtualMachineInstance {
-	vmi := libvmifact.NewAlpineWithTestTooling(libnet.WithMasqueradeNetworking(), withReadinessProbe(probe))
+func createReadyFedoraVMIWithReadinessProbe(probe *v1.Probe) *v1.VirtualMachineInstance {
+	vmi := libvmifact.NewFedora(libnet.WithMasqueradeNetworking(), withReadinessProbe(probe))
 	return libvmops.RunVMIAndExpectLaunchIgnoreWarnings(vmi, 180)
 }
 
-func createReadyAlpineVMIWithLivenessProbe(probe *v1.Probe) *v1.VirtualMachineInstance {
-	vmi := libvmifact.NewAlpineWithTestTooling(libnet.WithMasqueradeNetworking(), withLivelinessProbe(probe))
+func createReadyFedoraVMIWithLivenessProbe(probe *v1.Probe) *v1.VirtualMachineInstance {
+	vmi := libvmifact.NewFedora(libnet.WithMasqueradeNetworking(), withLivelinessProbe(probe))
 
 	return libvmops.RunVMIAndExpectLaunchIgnoreWarnings(vmi, 180)
 }
@@ -348,9 +348,9 @@ func isHTTPProbe(probe v1.Probe) bool {
 
 func serverStarter(vmi *v1.VirtualMachineInstance, probe *v1.Probe, port int) {
 	if isHTTPProbe(*probe) {
-		vmnetserver.StartHTTPServer(vmi, port, console.LoginToAlpine)
+		vmnetserver.StartHTTPServer(vmi, port, console.LoginToFedora)
 	} else {
-		vmnetserver.StartTCPServer(vmi, port, console.LoginToAlpine)
+		vmnetserver.StartTCPServer(vmi, port, console.LoginToFedora)
 	}
 }
 

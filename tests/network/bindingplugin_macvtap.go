@@ -99,8 +99,8 @@ var _ = SIGDescribe("VirtualMachineInstance with macvtap network binding plugin"
 			libvmi.WithNetwork(libvmi.MultusNetwork(macvtapNetworkName, macvtapNetworkName)),
 			libvmi.WithNodeAffinityFor(nodeName),
 		}
-		serverVMI := libvmifact.NewAlpineWithTestTooling(opts...)
-		clientVMI := libvmifact.NewAlpineWithTestTooling(opts...)
+		serverVMI := libvmifact.NewFedora(opts...)
+		clientVMI := libvmifact.NewFedora(opts...)
 
 		var err error
 		ns := testsuite.GetTestNamespace(nil)
@@ -109,8 +109,8 @@ var _ = SIGDescribe("VirtualMachineInstance with macvtap network binding plugin"
 		clientVMI, err = kubevirt.Client().VirtualMachineInstance(ns).Create(context.Background(), clientVMI, metav1.CreateOptions{})
 		Expect(err).ToNot(HaveOccurred())
 
-		serverVMI = libwait.WaitUntilVMIReady(serverVMI, console.LoginToAlpine)
-		clientVMI = libwait.WaitUntilVMIReady(clientVMI, console.LoginToAlpine)
+		serverVMI = libwait.WaitUntilVMIReady(serverVMI, console.LoginToFedora)
+		clientVMI = libwait.WaitUntilVMIReady(clientVMI, console.LoginToFedora)
 
 		Expect(libnet.AddIPAddress(serverVMI, guestIfaceName, serverCIDR)).To(Succeed())
 		Expect(libnet.AddIPAddress(clientVMI, guestIfaceName, clientCIDR)).To(Succeed())
@@ -124,7 +124,7 @@ var _ = SIGDescribe("VirtualMachineInstance with macvtap network binding plugin"
 		BeforeEach(checks.SkipIfMigrationIsNotPossible)
 
 		BeforeEach(func() {
-			clientVMI = libvmifact.NewAlpineWithTestTooling(
+			clientVMI = libvmifact.NewFedora(
 				libvmi.WithInterface(*libvmi.InterfaceWithMac(
 					libvmi.InterfaceWithMacvtapBindingPlugin("test"), clientMAC)),
 				libvmi.WithNetwork(libvmi.MultusNetwork("test", macvtapNetworkName)),
@@ -132,7 +132,7 @@ var _ = SIGDescribe("VirtualMachineInstance with macvtap network binding plugin"
 			var err error
 			clientVMI, err = kubevirt.Client().VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Create(context.Background(), clientVMI, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred(), "should create VMI successfully")
-			clientVMI = libwait.WaitUntilVMIReady(clientVMI, console.LoginToAlpine)
+			clientVMI = libwait.WaitUntilVMIReady(clientVMI, console.LoginToFedora)
 		})
 
 		It("should be successful when the VMI MAC address is defined in its spec", func() {
