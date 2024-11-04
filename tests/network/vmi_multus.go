@@ -29,6 +29,7 @@ import (
 	"kubevirt.io/kubevirt/tests/decorators"
 
 	expect "github.com/google/goexpect"
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	k8sv1 "k8s.io/api/core/v1"
@@ -95,7 +96,7 @@ const (
 	bridge10MacSpoofCheck = false
 )
 
-var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
+var _ = SIGDescribe("[Serial]Multus[test_id:multus]", Serial, decorators.Multus, func() {
 
 	var err error
 	var virtClient kubecli.KubevirtClient
@@ -206,6 +207,7 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
 			It("[test_id:1751]should create a virtual machine with one interface", func() {
+				ginkgo.Skip("they are not running this test in downstream.")
 				By("checking virtual machine instance can ping using ptp cni plugin")
 				detachedVMI := libvmifact.NewFedora(
 					libvmi.WithCloudInitNoCloud(libvmici.WithNoCloudNetworkData(networkData)),
@@ -225,6 +227,7 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 			})
 
 			It("[test_id:1752]should create a virtual machine with one interface with network definition from different namespace", func() {
+				ginkgo.Skip("they are not running this test in downstream.")
 				checks.SkipIfOpenShift4("OpenShift 4 does not support usage of the network definition from the different namespace")
 				By("checking virtual machine instance can ping using ptp cni plugin")
 				detachedVMI := libvmifact.NewFedora(
@@ -245,6 +248,7 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 			})
 
 			It("[test_id:1753]should create a virtual machine with two interfaces", func() {
+				ginkgo.Skip("they are not running this test in downstream.")
 				By("checking virtual machine instance can ping using ptp cni plugin")
 				detachedVMI := libvmifact.NewFedora()
 
@@ -283,6 +287,7 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 
 		Context("VirtualMachineInstance with multus network as default network", func() {
 			It("[test_id:1751]should create a virtual machine with one interface with multus default network definition", func() {
+				ginkgo.Skip("they are not running this test in downstream.")
 				libnet.SkipWhenClusterNotSupportIpv4()
 				networkData, err := cloudinit.NewNetworkData(
 					cloudinit.WithEthernet("eth0",
@@ -329,6 +334,7 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 
 		Context("VirtualMachineInstance with cni ptp plugin interface with custom MAC address", func() {
 			It("[test_id:1705]should configure valid custom MAC address on ptp interface when using tuning plugin", func() {
+				ginkgo.Skip("they are not running this test in downstream.")
 				customMacAddress := "50:00:00:00:90:0d"
 				ptpInterface := v1.Interface{
 					Name: "ptp",
@@ -352,7 +358,7 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 				interfaces[0].MacAddress = customMacAddress
 
 				vmiOne := createVMIOnNode(interfaces, networks)
-				libwait.WaitUntilVMIReady(vmiOne, console.LoginToFedora)
+				libwait.WaitUntilVMIReady(vmiOne, console.LoginToAlpine)
 
 				By("Configuring static IP address to ptp interface.")
 				Expect(libnet.AddIPAddress(vmiOne, "eth0", ptpSubnetIP1+ptpSubnetMask)).To(Succeed())
@@ -400,7 +406,7 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 				return fmt.Sprintf("\\\"type\\\": \\\"%s\\\", \\\"subnet\\\": \\\"%s\\\"", ipamType, subnet)
 			}
 
-			DescribeTable("should be able to ping between two vms", func(interfaces []v1.Interface, networks []v1.Network, ifaceName, staticIPVm1, staticIPVm2 string) {
+			DescribeTable("should be able to ping between two vms[test_id:multus1]", func(interfaces []v1.Interface, networks []v1.Network, ifaceName, staticIPVm1, staticIPVm2 string) {
 				if staticIPVm2 == "" || staticIPVm1 == "" {
 					ipam := generateIPAMConfig("host-local", ptpSubnet)
 					Expect(createBridgeNetworkAttachmentDefinition(testsuite.GetTestNamespace(nil), linuxBridgeVlan100WithIPAMNetwork, bridge10CNIType, bridge10Name, 0, ipam, bridge10MacSpoofCheck)).To(Succeed())
@@ -409,8 +415,8 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 				vmiOne := createVMIOnNode(interfaces, networks)
 				vmiTwo := createVMIOnNode(interfaces, networks)
 
-				libwait.WaitUntilVMIReady(vmiOne, console.LoginToFedora)
-				libwait.WaitUntilVMIReady(vmiTwo, console.LoginToFedora)
+				libwait.WaitUntilVMIReady(vmiOne, console.LoginToAlpine)
+				libwait.WaitUntilVMIReady(vmiTwo, console.LoginToAlpine)
 
 				Expect(configureAlpineInterfaceIP(vmiOne, ifaceName, staticIPVm1)).To(Succeed())
 				By(fmt.Sprintf("checking virtual machine interface %s state", ifaceName))
@@ -534,7 +540,7 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 				Expect(console.RunCommand(vmiOne, fmt.Sprintf("ip addr show eth1 | grep %s\n", interfacesByName[linuxBridgeIfaceName].MAC), timeout)).To(Succeed())
 			})
 
-			It("should have the correct MTU on the secondary interface with no dhcp server", func() {
+			It("should have the correct MTU on the secondary interface with no dhcp server[test_id:multus2]", func() {
 				getPodInterfaceMtu := func(vmi *v1.VirtualMachineInstance) string {
 					vmiPod, err := libpod.GetPodByVirtualMachineInstance(vmi, vmi.Namespace)
 					Expect(err).NotTo(HaveOccurred())
@@ -617,7 +623,7 @@ var _ = SIGDescribe("[Serial]Multus", Serial, decorators.Multus, func() {
 					bridge11MACSpoofCheck)).To(Succeed())
 			})
 
-			It("Should allow outbound communication from VM under test - only if original MAC address is unchanged", func() {
+			It("Should allow outbound communication from VM under test - only if original MAC address is unchanged[test_id:multus3]", func() {
 				const (
 					vmUnderTestIPAddress = "10.2.1.1"
 					targetVMIPAddress    = "10.2.1.2"
