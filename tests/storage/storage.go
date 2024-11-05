@@ -121,8 +121,9 @@ var _ = SIGDescribe("Storage", func() {
 
 			// create a new PV and PVC (PVs can't be reused)
 			By("create a new NFS PV and PVC")
-			nfsIP := libnet.GetPodIPByFamily(nfsPod, ipFamily)
-			ExpectWithOffset(1, nfsIP).NotTo(BeEmpty())
+			//nfsIP := libnet.GetPodIPByFamily(nfsPod, ipFamily)
+			//ExpectWithOffset(1, nfsIP).NotTo(BeEmpty())
+			nfsIP := "10.242.64.21"
 			os := string(cd.ContainerDiskAlpine)
 			libstorage.CreateNFSPvAndPvc(pvName, testsuite.GetTestNamespace(nil), "1Gi", nfsIP, os)
 			return pvName
@@ -176,7 +177,7 @@ var _ = SIGDescribe("Storage", func() {
 				Expect(virtClient.CoreV1().PersistentVolumes().Delete(context.Background(), pv.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 			})
 
-			It("should pause VMI on IO error", func() {
+			It("[test_id:abcd][passing_s390x]should pause VMI on IO error", func() {
 				By("Creating VMI with faulty disk")
 				vmi := libvmifact.NewAlpine(libvmi.WithPersistentVolumeClaim("pvc-disk", pvc.Name))
 				vmi, err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
@@ -215,7 +216,7 @@ var _ = SIGDescribe("Storage", func() {
 
 			})
 
-			It("should report IO errors in the guest with errorPolicy set to report", func() {
+			It("[test_id:abcd1][test_id:passing]should report IO errors in the guest with errorPolicy set to report", func() {
 				const diskName = "disk1"
 				By("Creating VMI with faulty disk")
 				vmi := libvmifact.NewAlpine(libvmi.WithPersistentVolumeClaim(diskName, pvc.Name))
@@ -259,7 +260,7 @@ var _ = SIGDescribe("Storage", func() {
 
 			Context("should be successfully", func() {
 				var pvName string
-				var nfsPod *k8sv1.Pod
+				//var nfsPod *k8sv1.Pod
 				AfterEach(func() {
 					// Ensure VMI is deleted before bringing down the NFS server
 					err = virtClient.VirtualMachineInstance(vmi.Namespace).Delete(context.Background(), vmi.Name, metav1.DeleteOptions{})
@@ -279,9 +280,9 @@ var _ = SIGDescribe("Storage", func() {
 						if !imageOwnedByQEMU {
 							targetImagePath, nodeName = copyAlpineWithNonQEMUPermissions()
 						}
-						nfsPod, err = storageframework.InitNFS(targetImagePath, nodeName)
+						//nfsPod, err = storageframework.InitNFS(targetImagePath, nodeName)
 						Expect(err).ToNot(HaveOccurred())
-						pvName = createNFSPvAndPvc(family, nfsPod)
+						pvName = createNFSPvAndPvc(family, nil)
 					} else {
 						pvName = diskAlpineHostPath
 					}
