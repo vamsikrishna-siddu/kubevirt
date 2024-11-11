@@ -87,7 +87,7 @@ const (
 
 const InvalidDataVolumeUrl = "docker://127.0.0.1/invalid:latest"
 
-var _ = SIGDescribe("DataVolume Integration", func() {
+var _ = SIGDescribe("[test_id:datavolume]DataVolume Integration", func() {
 
 	var virtClient kubecli.KubevirtClient
 	var err error
@@ -177,12 +177,12 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 				Skip("Skip when volume expansion storage class not available")
 			}
 
-			imageUrl := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)
+			imageUrl := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling)
 			dataVolume := libdv.NewDataVolume(
 				libdv.WithRegistryURLSourceAndPullMethod(imageUrl, cdiv1.RegistryPullNode),
 				libdv.WithStorage(
 					libdv.StorageWithStorageClass(sc),
-					libdv.StorageWithVolumeSize(cd.CirrosVolumeSize),
+					libdv.StorageWithVolumeSize(cd.FedoraVolumeSize),
 					libdv.StorageWithAccessMode(k8sv1.ReadWriteOnce),
 					libdv.StorageWithVolumeMode(volumeMode),
 				),
@@ -194,11 +194,11 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, 500)
 
 			By("Expecting the VirtualMachineInstance console")
-			Expect(console.LoginToCirros(vmi)).To(Succeed())
+			Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 			By("Expanding PVC")
 			patchSet := patch.New(
-				patch.WithAdd("/spec/resources/requests/storage", resource.MustParse("2Gi")),
+				patch.WithAdd("/spec/resources/requests/storage", resource.MustParse("8Gi")),
 			)
 			patchData, err := patchSet.GeneratePayload()
 			Expect(err).ToNot(HaveOccurred())
@@ -213,14 +213,14 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 					&expect.BExp{R: console.PromptExpression},
 					&expect.BSnd{S: "dmesg |grep 'new size'\n"},
 					&expect.BExp{R: console.PromptExpression},
-					&expect.BSnd{S: "dmesg |grep -c 'new size: [34]'\n"},
+					&expect.BSnd{S: "dmesg |grep -c 'new size: [1][0-9]*'\n"},
 					&expect.BExp{R: "1"},
 				}, 10)
 				return err
 			}, 360).Should(BeNil())
 
 			Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
-				&expect.BSnd{S: "sudo /sbin/resize-filesystem /dev/root /run/resize.rootfs /dev/console && echo $?\n"},
+				&expect.BSnd{S: "sudo /usr/sbin/resize2fs /dev/root /run/resize.rootfs /dev/console && echo $?\n"},
 				&expect.BExp{R: "0"},
 			}, 30)).To(Succeed(), "failed to resize root")
 
@@ -232,8 +232,8 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 				&expect.BExp{R: "0"},
 			}, 360)).To(Succeed(), "can use more space after expansion and resize")
 		},
-			Entry("with Block PVC", k8sv1.PersistentVolumeBlock),
-			Entry("with Filesystem PVC", k8sv1.PersistentVolumeFilesystem),
+			Entry("[test_id:pvc_expand]with Block PVC", k8sv1.PersistentVolumeBlock),
+			Entry("[test_id:pvc_expand2]with Filesystem PVC", k8sv1.PersistentVolumeFilesystem),
 		)
 
 		It("Check disk expansion accounts for actual usable size", func() {
@@ -249,7 +249,7 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 				Skip("Skip when volume expansion storage class not available")
 			}
 
-			imageUrl := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)
+			imageUrl := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)
 			dataVolume := libdv.NewDataVolume(
 				libdv.WithRegistryURLSourceAndPullMethod(imageUrl, cdiv1.RegistryPullNode),
 				libdv.WithStorage(
@@ -266,7 +266,7 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, 500)
 
 			By("Expecting the VirtualMachineInstance console")
-			Expect(console.LoginToCirros(vmi)).To(Succeed())
+			Expect(console.LoginToAlpine(vmi)).To(Succeed())
 
 			pvc, err := virtClient.CoreV1().PersistentVolumeClaims(testsuite.GetTestNamespace(nil)).Get(context.Background(), dataVolume.Name, metav1.GetOptions{})
 			Expect(err).ToNot(HaveOccurred())
@@ -310,7 +310,7 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 		Context("without fsgroup support", Serial, func() {
 			size := "1Gi"
 
-			It("should succesfully start", func() {
+			It("[test_id:nfs_test]should succesfully start", func() {
 				// Create DV and alter permission of disk.img
 				sc, foundSC := libstorage.GetRWXFileSystemStorageClass()
 				if !foundSC {
@@ -647,7 +647,7 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 					fakeRegistryWithPort = fmt.Sprintf("%s:%s", fakeRegistryName, realRegistryPort)
 				}
 
-				imageUrl := cd.DataVolumeImportUrlFromRegistryForContainerDisk(fakeRegistryWithPort, cd.ContainerDiskCirros)
+				imageUrl := cd.DataVolumeImportUrlFromRegistryForContainerDisk(fakeRegistryWithPort, cd.ContainerDiskAlpine)
 
 				dataVolume := libdv.NewDataVolume(
 					libdv.WithRegistryURLSourceAndPullMethod(imageUrl, cdiv1.RegistryPullPod),

@@ -60,7 +60,7 @@ const (
 	notReady                 = "Not ready"
 )
 
-var _ = SIGDescribe("VirtualMachineSnapshot Tests", func() {
+var _ = SIGDescribe("[test_id:snapshot]VirtualMachineSnapshot Tests", func() {
 
 	var (
 		err        error
@@ -195,7 +195,7 @@ var _ = SIGDescribe("VirtualMachineSnapshot Tests", func() {
 	Context("With simple VM", func() {
 		BeforeEach(func() {
 			var err error
-			vm = libvmi.NewVirtualMachine(libvmifact.NewCirros())
+			vm = libvmi.NewVirtualMachine(libvmifact.NewAlpine())
 			vm, err = virtClient.VirtualMachine(testsuite.GetTestNamespace(nil)).Create(context.Background(), vm, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 		})
@@ -265,7 +265,7 @@ var _ = SIGDescribe("VirtualMachineSnapshot Tests", func() {
 			createAndVerifyVMSnapshot(vm)
 		})
 
-		It("VM should contain snapshot status for all volumes", func() {
+		It("[test_id:failing]VM should contain snapshot status for all volumes", func() {
 			patch, err := patch.New(patch.WithReplace("/spec/runStrategy", v1.RunStrategyAlways)).GeneratePayload()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -1566,7 +1566,7 @@ var _ = SIGDescribe("VirtualMachineSnapshot Tests", func() {
 
 				waitSnapshotReady()
 			},
-				Entry("with running source VM", true),
+				Entry("[test_id:passing2]with running source VM", true),
 				Entry("with stopped source VM", false),
 			)
 		})

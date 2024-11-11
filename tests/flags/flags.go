@@ -38,7 +38,7 @@ var KubeVirtOcPath = ""
 var KubeVirtVirtctlPath = ""
 var KubeVirtExampleGuestAgentPath = ""
 var KubeVirtGoCliPath = ""
-var KubeVirtInstallNamespace string
+var KubeVirtInstallNamespace string = "openshift-cnv"
 var PreviousReleaseTag = ""
 var PreviousReleaseRegistry = ""
 var PreviousUtilityRegistry = ""

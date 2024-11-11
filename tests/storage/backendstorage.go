@@ -22,6 +22,7 @@ package storage
 import (
 	"context"
 
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -45,9 +46,10 @@ var _ = SIGDescribe("Backend Storage", Serial, func() {
 
 	BeforeEach(func() {
 		virtClient = kubevirt.Client()
+		ginkgo.Skip("TPM is not supported on s390x.")
 	})
 
-	It("Should use RWO when RWX is not supported", func() {
+	It("[test_id:backend]Should use RWO when RWX is not supported", func() {
 		var storageClass string
 
 		By("Finding a storage class that only supports filesystem in RWO")

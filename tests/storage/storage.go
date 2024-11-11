@@ -88,7 +88,7 @@ const (
 
 type VMICreationFunc func(string) *v1.VirtualMachineInstance
 
-var _ = SIGDescribe("Storage", func() {
+var _ = SIGDescribe("[test_id:storage]Storage", func() {
 	var err error
 	var virtClient kubecli.KubevirtClient
 
@@ -123,7 +123,7 @@ var _ = SIGDescribe("Storage", func() {
 			By("create a new NFS PV and PVC")
 			//nfsIP := libnet.GetPodIPByFamily(nfsPod, ipFamily)
 			//ExpectWithOffset(1, nfsIP).NotTo(BeEmpty())
-			nfsIP := "10.242.64.21"
+			nfsIP := "nfs-service.nfs-csi.svc.cluster.local"
 			os := string(cd.ContainerDiskAlpine)
 			libstorage.CreateNFSPvAndPvc(pvName, testsuite.GetTestNamespace(nil), "1Gi", nfsIP, os)
 			return pvName
@@ -246,13 +246,13 @@ var _ = SIGDescribe("Storage", func() {
 
 		Context("[rfe_id:3106][crit:medium][vendor:cnv-qe@redhat.com][level:component]with Alpine PVC", func() {
 			newRandomVMIWithPVC := func(claimName string) *v1.VirtualMachineInstance {
-				return libvmifact.NewAlpine(
+				return libvmi.New(
 					libvmi.WithPersistentVolumeClaim("disk0", claimName),
 					libvmi.WithResourceMemory("256Mi"),
 					libvmi.WithRng())
 			}
 			newRandomVMIWithCDRom := func(claimName string) *v1.VirtualMachineInstance {
-				return libvmifact.NewAlpine(
+				return libvmi.New(
 					libvmi.WithCDRom("disk0", v1.DiskBusSATA, claimName),
 					libvmi.WithResourceMemory("256Mi"),
 					libvmi.WithRng())
@@ -274,11 +274,12 @@ var _ = SIGDescribe("Storage", func() {
 				DescribeTable("started", func(newVMI VMICreationFunc, storageEngine string, family k8sv1.IPFamily, imageOwnedByQEMU bool) {
 					libnet.SkipWhenClusterNotSupportIPFamily(family)
 
-					var nodeName string
+					//var nodeName string
 					// Start the VirtualMachineInstance with the PVC attached
 					if storageEngine == "nfs" {
+						fmt.Println("****storageEngine*****", storageEngine)
 						if !imageOwnedByQEMU {
-							targetImagePath, nodeName = copyAlpineWithNonQEMUPermissions()
+							targetImagePath, _ = copyAlpineWithNonQEMUPermissions()
 						}
 						//nfsPod, err = storageframework.InitNFS(targetImagePath, nodeName)
 						Expect(err).ToNot(HaveOccurred())
@@ -449,7 +450,7 @@ var _ = SIGDescribe("Storage", func() {
 						pvName = diskAlpineHostPath
 					}
 
-					vmi = libvmifact.NewAlpine(
+					vmi = libvmi.New(
 						libvmi.WithResourceMemory("256Mi"),
 						libvmi.WithEphemeralPersistentVolumeClaim("disk0", pvName),
 					)
@@ -490,7 +491,7 @@ var _ = SIGDescribe("Storage", func() {
 
 				Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
 					// Because "/" is mounted on tmpfs, we need something that normally persists writes - /dev/sda2 is the EFI partition formatted as vFAT.
-					&expect.BSnd{S: "mount /dev/sda2 /mnt\n"},
+					&expect.BSnd{S: "mount /dev/vda2 /mnt\n"},
 					&expect.BExp{R: console.PromptExpression},
 					&expect.BSnd{S: console.EchoLastReturnValue},
 					&expect.BExp{R: console.RetValue("0")},
@@ -518,7 +519,7 @@ var _ = SIGDescribe("Storage", func() {
 
 				Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
 					// Same story as when first starting the VirtualMachineInstance - the checkpoint, if persisted, is located at /dev/sda2.
-					&expect.BSnd{S: "mount /dev/sda2 /mnt\n"},
+					&expect.BSnd{S: "mount /dev/vda2 /mnt\n"},
 					&expect.BExp{R: console.PromptExpression},
 					&expect.BSnd{S: console.EchoLastReturnValue},
 					&expect.BExp{R: console.RetValue("0")},
@@ -539,7 +540,7 @@ var _ = SIGDescribe("Storage", func() {
 
 			// Not a candidate for testing on NFS because the VMI is restarted and NFS PVC can't be re-used
 			It("[test_id:3138]should start vmi multiple times", func() {
-				vmi = libvmifact.NewAlpine(
+				vmi = libvmi.New(
 					libvmi.WithPersistentVolumeClaim("disk0", diskAlpineHostPath),
 					libvmi.WithPersistentVolumeClaim("disk1", diskCustomHostPath),
 					libvmi.WithResourceMemory("256Mi"),
@@ -572,7 +573,7 @@ var _ = SIGDescribe("Storage", func() {
 		Context("With feature gates disabled for", Serial, func() {
 			It("[test_id:4620]HostDisk, it should fail to start a VMI", func() {
 				config.DisableFeatureGate(virtconfig.HostDiskGate)
-				vmi = libvmifact.NewAlpine(
+				vmi = libvmi.New(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					libvmi.WithResourceMemory("128Mi"),
@@ -628,7 +629,7 @@ var _ = SIGDescribe("Storage", func() {
 
 					DescribeTable("Should create a disk image and start", func(driver v1.DiskBus) {
 						By(startingVMInstance)
-						vmi = libvmifact.NewAlpine(
+						vmi = libvmi.New(
 							libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 							libvmi.WithNetwork(v1.DefaultPodNetwork()),
 							libvmi.WithResourceMemory("128Mi"),
@@ -659,7 +660,7 @@ var _ = SIGDescribe("Storage", func() {
 
 					It("[test_id:3107]should start with multiple hostdisks in the same directory", func() {
 						By(startingVMInstance)
-						vmi = libvmifact.NewAlpine(
+						vmi = libvmi.New(
 							libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 							libvmi.WithNetwork(v1.DefaultPodNetwork()),
 							libvmi.WithResourceMemory("128Mi"),
@@ -714,7 +715,7 @@ var _ = SIGDescribe("Storage", func() {
 
 					It("[test_id:2306]Should use existing disk image and start", func() {
 						By(startingVMInstance)
-						vmi = libvmifact.NewAlpine(
+						vmi = libvmi.New(
 							libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 							libvmi.WithNetwork(v1.DefaultPodNetwork()),
 							libvmi.WithResourceMemory("128Mi"),
@@ -740,7 +741,7 @@ var _ = SIGDescribe("Storage", func() {
 
 					It("[test_id:847]Should fail with a capacity option", func() {
 						By(startingVMInstance)
-						vmi = libvmifact.NewAlpine(
+						vmi = libvmi.New(
 							libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 							libvmi.WithNetwork(v1.DefaultPodNetwork()),
 							libvmi.WithResourceMemory("128Mi"),
@@ -763,7 +764,7 @@ var _ = SIGDescribe("Storage", func() {
 				Context("With unknown hostDisk type", func() {
 					It("[test_id:852]Should fail to start VMI", func() {
 						By(startingVMInstance)
-						vmi = libvmifact.NewAlpine(
+						vmi = libvmi.New(
 							libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 							libvmi.WithNetwork(v1.DefaultPodNetwork()),
 							libvmi.WithResourceMemory("128Mi"),
@@ -804,7 +805,7 @@ var _ = SIGDescribe("Storage", func() {
 				It("[test_id:868] Should initialize an empty PVC by creating a disk.img", func() {
 					for _, pvc := range pvcs {
 						By(startingVMInstance)
-						vmi = libvmifact.NewAlpine(
+						vmi = libvmi.New(
 							libvmi.WithPersistentVolumeClaim("disk0", fmt.Sprintf("disk-%s", pvc)),
 							libvmi.WithResourceMemory("256Mi"),
 							libvmi.WithNetwork(v1.DefaultPodNetwork()),
@@ -893,7 +894,7 @@ var _ = SIGDescribe("Storage", func() {
 					configureToleration(10)
 
 					By(startingVMInstance)
-					vmi = libvmifact.NewAlpine(
+					vmi = libvmi.New(
 						libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 						libvmi.WithNetwork(v1.DefaultPodNetwork()),
 						libvmi.WithResourceMemory("128Mi"),
@@ -920,7 +921,7 @@ var _ = SIGDescribe("Storage", func() {
 					configureToleration(30)
 
 					By(startingVMInstance)
-					vmi = libvmifact.NewAlpine(
+					vmi = libvmi.New(
 						libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 						libvmi.WithNetwork(v1.DefaultPodNetwork()),
 						libvmi.WithResourceMemory("128Mi"),
@@ -955,7 +956,7 @@ var _ = SIGDescribe("Storage", func() {
 				}
 
 				dataVolume = libdv.NewDataVolume(
-					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 					libdv.WithStorage(libdv.StorageWithStorageClass(sc), libdv.StorageWithBlockVolumeMode()),
 				)
 				dataVolume, err = virtClient.CdiClient().CdiV1beta1().DataVolumes(testsuite.GetTestNamespace(nil)).Create(context.Background(), dataVolume, metav1.CreateOptions{})
@@ -968,10 +969,10 @@ var _ = SIGDescribe("Storage", func() {
 			})
 
 			// Not a candidate for NFS because local volumes are used in test
-			It("[test_id:1015]should be successfully started", func() {
+			It("[test_id:1015][block_1]should be successfully started", func() {
 				// Start the VirtualMachineInstance with the PVC attached
 				// Without userdata the hostname isn't set correctly and the login expecter fails...
-				vmi = libvmifact.NewAlpine(
+				vmi = libvmi.New(
 					libvmi.WithResourceMemory("256Mi"),
 					libvmi.WithPersistentVolumeClaim("disk0", dataVolume.Name),
 					libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()),
@@ -985,7 +986,7 @@ var _ = SIGDescribe("Storage", func() {
 
 		Context("[storage-req][rfe_id:2288][crit:high][vendor:cnv-qe@redhat.com][level:component]With Alpine block volume PVC", decorators.StorageReq, func() {
 
-			It("[test_id:3139]should be successfully started", func() {
+			It("[test_id:3139][block_2]should be successfully started", func() {
 				By("Create a VMIWithPVC")
 				sc, exists := libstorage.GetRWXBlockStorageClass()
 				if !exists {
@@ -1018,7 +1019,7 @@ var _ = SIGDescribe("Storage", func() {
 			It("[test_id:1040] should get unschedulable condition", func() {
 				// Start the VirtualMachineInstance
 				pvcName := "nonExistingPVC"
-				vmi = libvmifact.NewAlpine(
+				vmi = libvmi.New(
 					libvmi.WithResourceMemory("128Mi"),
 					libvmi.WithPersistentVolumeClaim("disk0", pvcName),
 				)
@@ -1060,7 +1061,7 @@ var _ = SIGDescribe("Storage", func() {
 		})
 
 		Context("With both SCSI and SATA devices", func() {
-			It("should successfully start with distinct device names", func() {
+			It("[test_id:sata]should successfully start with distinct device names", func() {
 
 				vmi = libvmifact.NewAlpine(
 					libvmi.WithEmptyDisk("emptydisk1", v1.DiskBusSCSI, resource.MustParse("1Gi")),
@@ -1119,7 +1120,7 @@ var _ = SIGDescribe("Storage", func() {
 				}
 
 				dataVolume = libdv.NewDataVolume(
-					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 					libdv.WithStorage(libdv.StorageWithStorageClass(sc), libdv.StorageWithBlockVolumeMode()),
 				)
 				dataVolume, err = virtClient.CdiClient().CdiV1beta1().DataVolumes(testsuite.GetTestNamespace(nil)).Create(context.Background(), dataVolume, metav1.CreateOptions{})
@@ -1132,7 +1133,7 @@ var _ = SIGDescribe("Storage", func() {
 				libstorage.DeleteDataVolume(&dataVolume)
 			})
 
-			It("should generate the pod with the volumeDevice", func() {
+			It("[block_3]should generate the pod with the volumeDevice", func() {
 				vmi = libvmifact.NewGuestless(
 					libvmi.WithEphemeralPersistentVolumeClaim("disk0", dataVolume.Name),
 				)
@@ -1161,7 +1162,7 @@ var _ = SIGDescribe("Storage", func() {
 				}
 
 				dv = libdv.NewDataVolume(
-					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 					libdv.WithStorage(libdv.StorageWithStorageClass(sc)),
 				)
 
@@ -1190,14 +1191,14 @@ var _ = SIGDescribe("Storage", func() {
 						},
 					},
 				}
-				vmi1 = libvmifact.NewAlpine(
+				vmi1 = libvmi.New(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					libvmi.WithDataVolume("disk0", dv.Name),
 					libvmi.WithResourceMemory("1Gi"),
 					libvmi.WithLabel(labelKey, ""),
 				)
-				vmi2 = libvmifact.NewAlpine(
+				vmi2 = libvmi.New(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 					libvmi.WithDataVolume("disk0", dv.Name),
@@ -1219,7 +1220,7 @@ var _ = SIGDescribe("Storage", func() {
 			})
 		})
 		Context("write and read data from a shared disk", func() {
-			It("should successfully write and read data", func() {
+			It("[block_4]should successfully write and read data", func() {
 				const diskName = "disk1"
 				const pvcClaim = "pvc-test-disk1"
 				const labelKey = "testshareablekey"
@@ -1365,7 +1366,7 @@ var _ = SIGDescribe("Storage", func() {
 				libwait.WaitForVirtualMachineToDisappearWithTimeout(vmi, 180)
 			},
 				Entry("PVC source", addPVCLunDisk),
-				Entry("DataVolume source", addDataVolumeLunDisk),
+				Entry("[test_id:dv1]DataVolume source", addDataVolumeLunDisk),
 			)
 
 			It("should run the VMI created with a DataVolume source and use the LUN disk", func() {
@@ -1383,7 +1384,7 @@ var _ = SIGDescribe("Storage", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				By("Creating VMI with LUN disk")
-				vmi := libvmifact.NewAlpine(libvmi.WithResourceMemory("512M"))
+				vmi := libvmifact.NewFedora(libvmi.WithResourceMemory("512M"))
 				addDataVolumeLunDisk(vmi, "lun0", dv.Name)
 				vmi, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred(), failedCreateVMI)
@@ -1392,7 +1393,7 @@ var _ = SIGDescribe("Storage", func() {
 					libwait.WithFailOnWarnings(false),
 					libwait.WithTimeout(240),
 				)
-				Expect(console.LoginToAlpine(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 				var lunDisk string
 				Eventually(func() string {

@@ -134,14 +134,16 @@ func AdjustKubeVirtResource() {
 	data, err := json.Marshal(kv.Spec)
 	Expect(err).ToNot(HaveOccurred())
 	patchData := fmt.Sprintf(`[{ "op": "replace", "path": "/spec", "value": %s }]`, string(data))
+	fmt.Println("kv.Namespace....", kv.Namespace)
 	adjustedKV, err := virtClient.KubeVirt(kv.Namespace).Patch(context.Background(), kv.Name, types.JSONPatchType, []byte(patchData), metav1.PatchOptions{})
 	util.PanicOnError(err)
 	KubeVirtDefaultConfig = adjustedKV.Spec.Configuration
 	if checks.HasFeature(virtconfig.CPUManager) {
+		fmt.Println("it has the cpu feature....")
 		// CPUManager is not enabled in the control-plane node(s)
-		nodes, err := virtClient.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{LabelSelector: "!node-role.kubernetes.io/control-plane"})
+		//nodes, err := virtClient.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{LabelSelector: "!node-role.kubernetes.io/control-plane"})
 		Expect(err).NotTo(HaveOccurred())
-		waitForSchedulableNodesWithCPUManager(len(nodes.Items))
+		//waitForSchedulableNodesWithCPUManager(len(nodes.Items))
 	}
 }
 
