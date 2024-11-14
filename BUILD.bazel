@@ -95,16 +95,9 @@ gazelle(
 
 bazeldnf(name = "bazeldnf")
 
-load("@buildifier_prebuilt//:rules.bzl", "buildifier")
+load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
 
-alias(
-    name = "buildozer",
-    actual = "@buildifier_prebuilt//:buildozer",
-)
-
-buildifier(
-    name = "buildifier",
-)
+buildifier(name = "buildifier")
 
 genrule(
     name = "get-version",
