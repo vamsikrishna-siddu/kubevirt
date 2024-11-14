@@ -67,6 +67,7 @@ var _ = Describe("[sig-storage][virtctl]ImageUpload", decorators.SigStorage, Ser
 		config, err := virtClient.CdiClient().CdiV1beta1().CDIConfigs().Get(context.Background(), "config", metav1.GetOptions{})
 		Expect(err).ToNot(HaveOccurred())
 		if config.Status.UploadProxyURL == nil {
+
 			By("Setting up port forwarding")
 			_, kubectlCmd, err = clientcmd.CreateCommandWithNS(flags.ContainerizedDataImporterNamespace, "kubectl", "port-forward", "svc/cdi-uploadproxy", "18443:443")
 			Expect(err).ToNot(HaveOccurred())

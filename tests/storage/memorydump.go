@@ -66,7 +66,7 @@ const (
 type memoryDumpFunction func(name, namespace, claimNames string)
 type removeMemoryDumpFunction func(name, namespace string)
 
-var _ = SIGDescribe("Memory dump", func() {
+var _ = SIGDescribe("Memory dump[test_id:memorydump]", func() {
 	var (
 		virtClient         kubecli.KubevirtClient
 		memoryDumpPVCName  string
@@ -81,7 +81,7 @@ var _ = SIGDescribe("Memory dump", func() {
 
 	createAndStartVM := func() *v1.VirtualMachine {
 		By("Creating VirtualMachine")
-		vm := libvmi.NewVirtualMachine(libvmifact.NewCirros(), libvmi.WithRunStrategy(v1.RunStrategyAlways))
+		vm := libvmi.NewVirtualMachine(libvmifact.NewAlpine(), libvmi.WithRunStrategy(v1.RunStrategyAlways))
 		vm, err := virtClient.VirtualMachine(testsuite.NamespaceTestDefault).Create(context.Background(), vm, metav1.CreateOptions{})
 		Expect(err).ToNot(HaveOccurred())
 		Eventually(func() bool {

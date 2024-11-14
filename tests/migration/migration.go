@@ -1862,7 +1862,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				return vmi
 			}
 
-			DescribeTable("should be able to cancel a migration", decorators.SigStorage, func(createVMI vmiBuilder) {
+			DescribeTable("[test_id:migration]should be able to cancel a migration", decorators.SigStorage, func(createVMI vmiBuilder) {
 				vmi := createVMI()
 				vmi.Spec.Domain.Resources.Requests[k8sv1.ResourceMemory] = resource.MustParse(fedoraVMSize)
 

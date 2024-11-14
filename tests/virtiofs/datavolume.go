@@ -63,7 +63,7 @@ const (
 	checkingVMInstanceConsoleOut = "Checking that the VirtualMachineInstance console has expected output"
 )
 
-var _ = Describe("[sig-storage] virtiofs", decorators.SigStorage, func() {
+var _ = Describe("[sig-storage][test_id:virtiofs] virtiofs", decorators.SigStorage, func() {
 	var err error
 	var virtClient kubecli.KubevirtClient
 	var vmi *virtv1.VirtualMachineInstance

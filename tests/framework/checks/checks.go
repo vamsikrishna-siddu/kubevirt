@@ -57,8 +57,8 @@ func HasFeature(feature string) bool {
 		featureGates = kv.Spec.Configuration.DeveloperConfiguration.FeatureGates
 	}
 
-	fmt.Println("featureGates....", featureGates)
-	fmt.Println("feature....", feature)
+	//fmt.Println("featureGates....", featureGates)
+	//fmt.Println("feature....", feature)
 
 	for _, fg := range featureGates {
 		if fg == feature {
