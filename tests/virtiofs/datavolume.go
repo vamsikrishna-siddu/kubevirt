@@ -148,8 +148,8 @@ var _ = Describe("[sig-storage][test_id:virtiofs] virtiofs", decorators.SigStora
 			Expect(err).ToNot(HaveOccurred())
 			Expect(strings.Trim(podVirtioFsFileExist, "\n")).To(Equal("exist"))
 		},
-			Entry("(privileged virtiofsd)", testsuite.NamespacePrivileged),
-			Entry("(unprivileged virtiofsd)", testsuite.NamespaceTestDefault),
+			Entry("[test_id:viriofsfail1](privileged virtiofsd)", testsuite.NamespacePrivileged),
+			Entry("[test_id:viriofsfail2](unprivileged virtiofsd)", testsuite.NamespaceTestDefault),
 		)
 	})
 
@@ -263,7 +263,7 @@ var _ = Describe("[sig-storage][test_id:virtiofs] virtiofs", decorators.SigStora
 			}
 			Expect(foundContainer).To(BeTrue())
 		},
-			Entry("unprivileged virtiofsd", testsuite.NamespaceTestDefault),
+			Entry("[viriofsfail3]unprivileged virtiofsd", testsuite.NamespaceTestDefault),
 			Entry("privileged virtiofsd", testsuite.NamespacePrivileged),
 		)
 	})

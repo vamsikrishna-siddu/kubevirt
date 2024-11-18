@@ -565,7 +565,7 @@ var _ = Describe("VirtualMachineClone Tests", Serial, func() {
 
 				Context("should reject source with non snapshotable volume", func() {
 					BeforeEach(func() {
-						noSnapshotStorageClass = libstorage.GetNoVolumeSnapshotStorageClass("local")
+						noSnapshotStorageClass = libstorage.GetNoVolumeSnapshotStorageClass("odf-lvs")
 						Expect(noSnapshotStorageClass).ToNot(BeEmpty(), "no storage class without snapshot support")
 
 						// create running in case storage is WFFC (local storage)
@@ -578,14 +578,14 @@ var _ = Describe("VirtualMachineClone Tests", Serial, func() {
 						Eventually(ThisVM(sourceVM), 300*time.Second, 1*time.Second).Should(Not(BeReady()))
 					})
 
-					It("with VM source", func() {
+					It("[test_id:clonefail1]with VM source", func() {
 						vmClone = generateCloneFromVM()
 						vmClone, err = virtClient.VirtualMachineClone(vmClone.Namespace).Create(context.Background(), vmClone, v1.CreateOptions{})
 						Expect(err).To(HaveOccurred())
 						Expect(err.Error()).Should(ContainSubstring("does not support snapshots"))
 					})
 
-					It("with snapshot source", func() {
+					It("[test_id:clonefail2]with snapshot source", func() {
 						By("Snapshotting VM")
 						snapshot := createSnapshot(sourceVM)
 						snapshot = waitSnapshotReady(snapshot)
@@ -729,8 +729,8 @@ var _ = Describe("VirtualMachineClone Tests", Serial, func() {
 						Expect(libinstancetype.EnsureControllerRevisionObjectsEqual(sourceVM.Spec.Instancetype.RevisionName, targetVM.Spec.Instancetype.RevisionName, virtClient)).To(BeTrue(), "source and target instance type controller revisions are expected to be equal")
 						Expect(libinstancetype.EnsureControllerRevisionObjectsEqual(sourceVM.Spec.Preference.RevisionName, targetVM.Spec.Preference.RevisionName, virtClient)).To(BeTrue(), "source and target preference controller revisions are expected to be equal")
 					},
-						Entry("with a running VM", virtv1.RunStrategyAlways),
-						Entry("with a stopped VM", virtv1.RunStrategyHalted),
+						Entry("[test_id:clonefail3]with a running VM", virtv1.RunStrategyAlways),
+						Entry("[test_id:clonefail4]with a stopped VM", virtv1.RunStrategyHalted),
 					)
 				})
 

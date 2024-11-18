@@ -230,7 +230,7 @@ var _ = SIGDescribe("SCSI persistent reservation", Serial, func() {
 
 		})
 
-		It("Should successfully start a VM with persistent reservation", func() {
+		It("[test_id:persistentfail1]Should successfully start a VM with persistent reservation", func() {
 			By("Create VMI with the SCSI disk")
 			vmi := libvmifact.NewFedora(
 				libvmi.WithNamespace(testsuite.NamespaceTestDefault),
