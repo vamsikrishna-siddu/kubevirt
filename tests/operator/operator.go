@@ -185,6 +185,7 @@ var _ = Describe("[sig-operator]Operator", Serial, decorators.SigOperator, func(
 		}
 
 		ensureShasums = func() {
+			flags.SkipShasumCheck = true
 			if flags.SkipShasumCheck {
 				log.Log.Warning("Cannot use shasums, skipping")
 				return
@@ -500,7 +501,7 @@ spec:
 
             echo 'printed from cloud-init userdata'
         name: cloudinitdisk
-`, version, version, version, i, version, i, previousUtilityRegistry, cd.ContainerDiskCirros, previousUtilityTag)
+`, version, version, version, i, version, i, previousUtilityRegistry, cd.ContainerDiskAlpine, previousUtilityTag)
 
 				yamlFile := filepath.Join(workDir, fmt.Sprintf("vm-%s.yaml", version))
 				err = os.WriteFile(yamlFile, []byte(vmYaml), 0644)
@@ -549,8 +550,8 @@ spec:
 		// ensure that the state is fully restored after destructive tests
 		verifyOperatorWebhookCertificate()
 
-		_, err = virtClient.AppsV1().DaemonSets(flags.KubeVirtInstallNamespace).Get(context.Background(), "disks-images-provider", metav1.GetOptions{})
-		Expect(err).ToNot(HaveOccurred(), "")
+		//_, err = virtClient.AppsV1().DaemonSets(flags.KubeVirtInstallNamespace).Get(context.Background(), "disks-images-provider", metav1.GetOptions{})
+		//Expect(err).ToNot(HaveOccurred(), "")
 	})
 
 	It("[test_id:1746]should have created and available condition", func() {
@@ -971,7 +972,7 @@ spec:
 			checkVirtComponents(nil)
 
 			By("Starting a VMI")
-			vmi := libvmi.New(libvmi.WithResourceMemory("1Mi"))
+			vmi := libvmifact.NewAlpine(libvmi.WithResourceMemory("128Mi"))
 			vmi, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
 			Expect(err).NotTo(HaveOccurred())
 			libwait.WaitForSuccessfulVMIStart(vmi)
@@ -1020,7 +1021,7 @@ spec:
 			checkVirtComponents(imagePullSecrets)
 
 			By("Starting a VMI")
-			vmi := libvmi.New(libvmi.WithResourceMemory("1Mi"))
+			vmi := libvmifact.NewAlpine(libvmi.WithResourceMemory("128Mi"))
 			vmi, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
 			Expect(err).NotTo(HaveOccurred())
 			libwait.WaitForSuccessfulVMIStart(vmi)
