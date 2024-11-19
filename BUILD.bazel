@@ -197,7 +197,7 @@ build_other_images_default = {
     "$(container_prefix)/$(image_prefix)sidecar-shim:$(container_tag)": "//cmd/sidecars:sidecar-shim-image",
     # container-disk images
     "$(container_prefix)/$(image_prefix)alpine-container-disk-demo:$(container_tag)": "//containerimages:alpine-container-disk-image",
-    "$(container_prefix)/$(image_prefix)alpine-custom-container-disk-demo:$(container_tag)": "//containerimages:alpine-custom-container-disk-image",
+   
     # Kernel boot container
     # -
     # Customized container-disk images
