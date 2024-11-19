@@ -35,6 +35,7 @@ default_targets="
     fedora-with-test-tooling-container-disk
     vm-killer
     sidecar-shim
+    disks-images-provider
 "
 
 case ${ARCHITECTURE} in
