@@ -485,6 +485,17 @@ if [ -z "${SINGLE_ARCH}" ] || [ "${SINGLE_ARCH}" == "s390x" ]; then
         --config=${ARCHITECTURE} \
         //:bazeldnf -- rpmtree \
         --public --nobest \
+        --name pr-helper_s390x --arch s390x \
+        --basesystem ${BASESYSTEM} \
+        ${bazeldnf_repos} \
+        $centos_main \
+        $centos_extra \
+        $pr_helper
+
+    bazel run \
+        --config=${ARCHITECTURE} \
+        //:bazeldnf -- rpmtree \
+        --public --nobest \
         --name exportserverbase_s390x --arch s390x \
         --basesystem ${BASESYSTEM} \
         ${bazeldnf_repos} \

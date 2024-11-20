@@ -6257,8 +6257,18 @@ rpm(
 )
 
 rpm(
-    name = "qemu-pr-helper-17__9.1.0-1.el9.x86_64",
-    sha256 = "c5ad0bed2114a857aae25efa204043b7eee7a98e2aff6c70e33e8b72bb0c0840",
+    name = "qemu-pr-helper-17__9.0.0-10.el9.s390x",
+    sha256 = "61a90c18b1eef1890ecdfccf36337a46a0c6df406845b266f5df567e35edfb87",
+    urls = [
+        "https://mirror.stream.centos.org/9-stream/AppStream/s390x/os/Packages/qemu-pr-helper-9.0.0-10.el9.s390x.rpm",
+        "https://storage.googleapis.com/builddeps/61a90c18b1eef1890ecdfccf36337a46a0c6df406845b266f5df567e35edfb87",
+    ],
+)
+
+
+rpm(
+    name = "qemu-pr-helper-17__9.0.0-10.el9.x86_64",
+    sha256 = "674b91d07dd72d3d60e26fd1e6e7fc8696ef6a9f58c9530afff131bb3a74161c",
     urls = [
         "http://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/Packages/qemu-pr-helper-9.1.0-1.el9.x86_64.rpm",
         "https://storage.googleapis.com/builddeps/c5ad0bed2114a857aae25efa204043b7eee7a98e2aff6c70e33e8b72bb0c0840",

@@ -33,6 +33,7 @@ default_targets="
     virt-exportproxy
     alpine-container-disk-demo
     fedora-with-test-tooling-container-disk
+    pr-helper
     vm-killer
     sidecar-shim
 "
@@ -43,7 +44,6 @@ case ${ARCHITECTURE} in
     default_targets+="
         conformance
         libguestfs-tools
-        pr-helper
         example-hook-sidecar
         example-disk-mutation-hook-sidecar
         example-cloudinit-hook-sidecar
