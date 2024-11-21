@@ -32,10 +32,12 @@ default_targets="
     virt-exportserver
     virt-exportproxy
     alpine-container-disk-demo
+    alpine-custom-container-disk-demo
     fedora-with-test-tooling-container-disk
-    pr-helper
     vm-killer
     sidecar-shim
+    disks-images-provider
+    libguestfs-tools
 "
 
 case ${ARCHITECTURE} in
@@ -43,7 +45,7 @@ case ${ARCHITECTURE} in
 *)
     default_targets+="
         conformance
-        libguestfs-tools
+        pr-helper
         example-hook-sidecar
         example-disk-mutation-hook-sidecar
         example-cloudinit-hook-sidecar
@@ -53,7 +55,6 @@ case ${ARCHITECTURE} in
         alpine-ext-kernel-boot-demo
         alpine-with-test-tooling-container-disk
         fedora-realtime-container-disk
-        disks-images-provider
         nfs-server
         winrmcli
         network-slirp-binding

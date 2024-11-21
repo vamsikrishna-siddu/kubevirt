@@ -25,7 +25,7 @@ container_image(
         ],
         "@io_bazel_rules_go//go/platform:linux_s390x": [
             ":multipath",
-            "//rpm:pr-helper_s390x"
+            "//rpm:pr-helper_s390x",
         ],
         "//conditions:default": [
             ":multipath",
