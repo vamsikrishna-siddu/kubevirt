@@ -53,7 +53,7 @@ const (
 	pvcSize = "100Mi"
 )
 
-var _ = Describe("[sig-storage][virtctl]ImageUpload", decorators.SigStorage, Serial, func() {
+var _ = Describe("[sig-storage][virtctl]ImageUpload[test_id:virtctlimgupload]", decorators.SigStorage, Serial, func() {
 	var (
 		virtClient kubecli.KubevirtClient
 		imagePath  string
@@ -66,6 +66,8 @@ var _ = Describe("[sig-storage][virtctl]ImageUpload", decorators.SigStorage, Ser
 
 		config, err := virtClient.CdiClient().CdiV1beta1().CDIConfigs().Get(context.Background(), "config", metav1.GetOptions{})
 		Expect(err).ToNot(HaveOccurred())
+		// var s string = "127.0.0.1:18443"
+		// config.Status.UploadProxyURL = &s
 		if config.Status.UploadProxyURL == nil {
 
 			By("Setting up port forwarding")
@@ -93,6 +95,7 @@ var _ = Describe("[sig-storage][virtctl]ImageUpload", decorators.SigStorage, Ser
 		stdout, stderr, err := clientcmd.RunCommand(testsuite.GetTestNamespace(nil), "virtctl", "image-upload",
 			resource, targetName,
 			"--image-path", imagePath,
+			//"--uploadproxy-url", "127.0.0.1:18443",
 			"--size", pvcSize,
 			"--storage-class", sc,
 			"--force-bind",
@@ -133,6 +136,7 @@ var _ = Describe("[sig-storage][virtctl]ImageUpload", decorators.SigStorage, Ser
 		err := runImageUploadCmd(
 			resource, targetName,
 			"--image-path", imagePath,
+			//"--uploadproxy-url", "https://127.0.0.1:18443",
 			"--storage-class", sc,
 			"--access-mode", "ReadWriteOnce",
 			"--force-bind",
@@ -142,7 +146,7 @@ var _ = Describe("[sig-storage][virtctl]ImageUpload", decorators.SigStorage, Ser
 		By("Validating uploaded image")
 		validateFn(targetName)
 	},
-		Entry("DataVolume", "dv", validateDataVolumeForceBind),
+		Entry("[test_id:abcdf]DataVolume", "dv", validateDataVolumeForceBind),
 		Entry("PVC", "pvc", validatePVCForceBind),
 	)
 
@@ -208,7 +212,7 @@ var _ = Describe("[sig-storage][virtctl]ImageUpload", decorators.SigStorage, Ser
 		validateDataVolume(targetName, sc)
 	})
 
-	Context("Create upload archive volume", func() {
+	Context("[test-id:siddu]Create upload archive volume", func() {
 		var archivePath string
 
 		BeforeEach(func() {
@@ -221,6 +225,7 @@ var _ = Describe("[sig-storage][virtctl]ImageUpload", decorators.SigStorage, Ser
 			targetName := "alpine-" + rand.String(12)
 			err := runImageUploadCmd(
 				resource, targetName,
+				//"--uploadproxy-url", "https://127.0.0.1:18443",
 				"--archive-path", archivePath,
 				"--force-bind",
 			)
@@ -248,7 +253,7 @@ var _ = Describe("[sig-storage][virtctl]ImageUpload", decorators.SigStorage, Ser
 			Entry("PVC", "pvc", false),
 		)
 
-		DescribeTable("fails when provisioning fails", func(resource, expected string) {
+		DescribeTable("[test_id:vamsi]fails when provisioning fails", func(resource, expected string) {
 			sc := "invalid-sc-" + rand.String(12)
 			libstorage.CreateStorageClass(sc, nil)
 			err := runImageUploadCmd(
