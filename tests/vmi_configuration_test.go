@@ -252,14 +252,14 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 				},
 				512,
 			),
-			Entry("[test_id:dnf]provided by resources limits",
+			Entry("[test_id:39685]provided by resources limits",
 				[]libvmi.Option{
 					libvmi.WithLimitMemory("256Mi"),
 					libvmi.WithLimitCPU("1"),
 				},
 				256,
 			),
-			Entry("provided by resources requests and limits",
+			Entry("[test_id:36778]provided by resources requests and limits",
 				[]libvmi.Option{
 					libvmi.WithResourceCPU("1"),
 					libvmi.WithLimitCPU("1"),

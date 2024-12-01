@@ -196,7 +196,7 @@ var istioTests = func(vmType VmType) {
 				migration := libmigration.New(vmi.Name, vmi.Namespace)
 				libmigration.RunMigrationAndExpectToCompleteWithDefaultTimeout(virtClient, migration)
 			})
-			It("All containers should complete in source virt-launcher pod after migration", func() {
+			It("[test_id:64549]All containers should complete in source virt-launcher pod after migration", func() {
 				const containerCompletionWaitTime = 60
 				Eventually(func() error {
 					return allContainersCompleted(sourcePodName)

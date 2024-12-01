@@ -508,7 +508,7 @@ var _ = Describe("[rfe_id:1177][crit:medium][vendor:cnv-qe@redhat.com][level:com
 			),
 			Entry(
 				"[test_id:7596] when a VM with a missing PVC is started",
-				libvmifact.NewAlpine(
+				libvmi.New(
 					libvmi.WithPersistentVolumeClaim("disk0", "missing-pvc"),
 					libvmi.WithResourceMemory("128Mi"),
 				),
@@ -516,7 +516,7 @@ var _ = Describe("[rfe_id:1177][crit:medium][vendor:cnv-qe@redhat.com][level:com
 			),
 			Entry(
 				"[test_id:7597] when a VM with a missing DV is started",
-				libvmifact.NewAlpine(
+				libvmi.New(
 					libvmi.WithDataVolume("disk0", "missing-datavolume"),
 					libvmi.WithResourceMemory("128Mi"),
 				),
@@ -525,7 +525,7 @@ var _ = Describe("[rfe_id:1177][crit:medium][vendor:cnv-qe@redhat.com][level:com
 		)
 
 		It("[test_id:6869]should report an error status when image pull error occurs", decorators.Conformance, func() {
-			vmi := libvmifact.NewAlpine(
+			vmi := libvmi.New(
 				libvmi.WithContainerDisk("disk0", "no-such-image"),
 				libvmi.WithResourceMemory("128Mi"),
 			)

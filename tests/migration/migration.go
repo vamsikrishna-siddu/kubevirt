@@ -243,7 +243,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 
 				for x := 0; x < repeat; x++ {
 					By("Checking that the VirtualMachineInstance console has expected output")
-					Expect(console.LoginToAlpine(vmi)).To(Succeed())
+					Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 					By("starting the migration")
 					migration := libmigration.New(vmi.Name, vmi.Namespace)
@@ -262,7 +262,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 			}
 
 			It("[test_id:6968]should apply them and result in different migration durations", func() {
-				vmi := libvmifact.NewAlpineWithTestTooling(libnet.WithMasqueradeNetworking())
+				vmi := libvmifact.NewFedora(libnet.WithMasqueradeNetworking())
 				migrationPolicy := CreateMigrationPolicy(virtClient, GeneratePolicyAndAlignVMI(vmi))
 
 				By("Starting the VirtualMachineInstance")
@@ -275,7 +275,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 		})
 		Context("with a Alpine disk", func() {
 			It("[test_id:6969]should be successfully migrate with a tablet device", decorators.Conformance, func() {
-				vmi := libvmifact.NewAlpineWithTestTooling(
+				vmi := libvmifact.NewFedora(
 					libnet.WithMasqueradeNetworking(),
 					libvmi.WithTablet("tablet0", v1.InputBusUSB),
 				)
@@ -284,7 +284,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 				By("Checking that the VirtualMachineInstance console has expected output")
-				Expect(console.LoginToAlpine(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 				By("starting the migration")
 				migration := libmigration.New(vmi.Name, vmi.Namespace)
@@ -293,15 +293,15 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				// check VMI, confirm migration state
 				libmigration.ConfirmVMIPostMigration(virtClient, vmi, migration)
 			})
-			It("should be successfully migrate with a WriteBack disk cache", func() {
-				vmi := libvmifact.NewAlpineWithTestTooling(libnet.WithMasqueradeNetworking())
+			It("[test_id:34233]should be successfully migrate with a WriteBack disk cache", func() {
+				vmi := libvmifact.NewFedora(libnet.WithMasqueradeNetworking())
 				vmi.Spec.Domain.Devices.Disks[0].Cache = v1.CacheWriteBack
 
 				By("Starting the VirtualMachineInstance")
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 				By("Checking that the VirtualMachineInstance console has expected output")
-				Expect(console.LoginToAlpine(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 				By("starting the migration")
 				migration := libmigration.New(vmi.Name, vmi.Namespace)
@@ -319,8 +319,8 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				Expect(disks[0].Driver.Cache).To(Equal(string(v1.CacheWriteBack)))
 			})
 
-			It("[test_id:6970]should migrate vmi with cdroms on various bus types", decorators.Conformance, func() {
-				vmi := libvmifact.NewAlpineWithTestTooling(
+			It("[test_id:6970]should migrate vmi with cdroms on various bus types", func() {
+				vmi := libvmifact.NewFedora(
 					libnet.WithMasqueradeNetworking(),
 					libvmi.WithEphemeralCDRom("cdrom-0", v1.DiskBusSATA, cd.ContainerDiskFor(cd.ContainerDiskAlpine)),
 					libvmi.WithEphemeralCDRom("cdrom-1", v1.DiskBusSCSI, cd.ContainerDiskFor(cd.ContainerDiskAlpine)),
@@ -330,7 +330,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 				By("Checking that the VirtualMachineInstance console has expected output")
-				Expect(console.LoginToAlpine(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 				// execute a migration, wait for finalized state
 				By("starting the migration")
@@ -341,8 +341,8 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				libmigration.ConfirmVMIPostMigration(virtClient, vmi, migration)
 			})
 
-			It("should migrate vmi with LiveMigrateIfPossible eviction strategy", func() {
-				vmi := libvmifact.NewAlpineWithTestTooling(
+			It("[test_id:26345]should migrate vmi with LiveMigrateIfPossible eviction strategy", func() {
+				vmi := libvmifact.NewFedora(
 					libnet.WithMasqueradeNetworking(),
 					libvmi.WithEvictionStrategy(v1.EvictionStrategyLiveMigrateIfPossible),
 				)
@@ -351,7 +351,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 				By("Checking that the VirtualMachineInstance console has expected output")
-				Expect(console.LoginToAlpine(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 				// execute a migration, wait for finalized state
 				By("starting the migration")
@@ -448,7 +448,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 
 			},
 				Entry("[test_id:6971]disk", libvmi.WithDownwardMetricsVolume("vhostmd"), libinfra.GetDownwardMetricsDisk),
-				Entry("channel", libvmi.WithDownwardMetricsChannel(), libinfra.GetDownwardMetricsVirtio),
+				Entry("[test_id:29819]channel", libvmi.WithDownwardMetricsChannel(), libinfra.GetDownwardMetricsVirtio),
 			)
 
 			It("[test_id:6842]should migrate with TSC frequency set", decorators.Invtsc, decorators.TscFrequencies, func() {
@@ -492,7 +492,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 			})
 
 			It("[test_id:4113]should be successfully migrate with cloud-init disk with devices on the root bus", func() {
-				vmi := libvmifact.NewAlpineWithTestTooling(libnet.WithMasqueradeNetworking())
+				vmi := libvmifact.NewFedora(libnet.WithMasqueradeNetworking())
 				vmi.Annotations = map[string]string{
 					v1.PlacePCIDevicesOnRootComplex: "true",
 				}
@@ -501,7 +501,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 				By("Checking that the VirtualMachineInstance console has expected output")
-				Expect(console.LoginToAlpine(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 				// execute a migration, wait for finalized state
 				By("starting the migration")
@@ -525,7 +525,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 
 			It("[test_id:9795]should migrate vmi with a usb disk", func() {
 
-				vmi := libvmifact.NewAlpineWithTestTooling(
+				vmi := libvmifact.NewFedora(
 					libvmi.WithEmptyDisk("uniqueusbdisk", v1.DiskBusUSB, resource.MustParse("128Mi")),
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
@@ -535,7 +535,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 				By("Checking that the VirtualMachineInstance console has expected output")
-				Expect(console.LoginToAlpine(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 				// execute a migration, wait for finalized state
 				By("starting the migration")
@@ -553,7 +553,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 				By("Checking that the VirtualMachineInstance console has expected output")
-				Expect(console.LoginToAlpine(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 				num := 4
 
@@ -585,13 +585,13 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 			// prevented things like migration. This test verifies we can migrate after
 			// resetting virtqemud
 			It("[test_id:4746]should migrate even if virtqemud has restarted at some point.", func() {
-				vmi := libvmifact.NewAlpineWithTestTooling(libnet.WithMasqueradeNetworking())
+				vmi := libvmifact.NewFedora(libnet.WithMasqueradeNetworking())
 
 				By("Starting the VirtualMachineInstance")
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 				By("Checking that the VirtualMachineInstance console has expected output")
-				Expect(console.LoginToAlpine(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 				pods, err := virtClient.CoreV1().Pods(vmi.Namespace).List(context.Background(), metav1.ListOptions{
 					LabelSelector: v1.CreatedByLabel + "=" + string(vmi.GetUID()),
@@ -630,13 +630,13 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 			})
 
 			It("[test_id:6972]should migrate to a persistent (non-transient) libvirt domain.", func() {
-				vmi := libvmifact.NewAlpineWithTestTooling(libnet.WithMasqueradeNetworking())
+				vmi := libvmifact.NewFedora(libnet.WithMasqueradeNetworking())
 
 				By("Starting the VirtualMachineInstance")
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 				By("Checking that the VirtualMachineInstance console has expected output")
-				Expect(console.LoginToAlpine(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 				// execute a migration, wait for finalized state
 				By(fmt.Sprintf("Starting the Migration"))
@@ -653,13 +653,13 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				libmigration.EnsureNoMigrationMetadataInPersistentXML(vmi)
 			})
 			It("[test_id:6973]should be able to successfully migrate with a paused vmi", func() {
-				vmi := libvmifact.NewAlpineWithTestTooling(libnet.WithMasqueradeNetworking())
+				vmi := libvmifact.NewFedora(libnet.WithMasqueradeNetworking())
 
 				By("Starting the VirtualMachineInstance")
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 				By("Checking that the VirtualMachineInstance console has expected output")
-				Expect(console.LoginToAlpine(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 				By("Pausing the VirtualMachineInstance")
 				Expect(virtClient.VirtualMachineInstance(vmi.Namespace).Pause(context.Background(), vmi.Name, &v1.PauseOptions{})).To(Succeed())
@@ -855,6 +855,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				dataVolume := libdv.NewDataVolume(
 					libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine), cdiv1.RegistryPullNode),
 					libdv.WithStorage(libdv.StorageWithStorageClass(sc)),
+					libdv.StorageWithAccessMode(k8sv1.ReadWriteOnce)),
 				)
 
 				vmi := libvmifact.NewAlpine(
@@ -998,7 +999,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 180)
 
 				By("Checking that the VirtualMachineInstance console has expected output")
-				Expect(console.LoginToFedora(vmi)).To(Succeed())
+				Expect(console.LoginToAlpine(vmi)).To(Succeed())
 
 				By("Checking that MigrationMethod is set to BlockMigration")
 				Expect(vmi.Status.MigrationMethod).To(Equal(v1.BlockMigration))
@@ -1295,13 +1296,13 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 					cfg.MigrationConfiguration.DisableTLS = pointer.P(true)
 					kvconfig.UpdateKubeVirtConfigValueAndWait(cfg)
 
-					vmi := libvmifact.NewAlpineWithTestTooling(libnet.WithMasqueradeNetworking())
+					vmi := libvmifact.NewFedora(libnet.WithMasqueradeNetworking())
 
 					By("Starting the VirtualMachineInstance")
 					vmi = libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 					By("Checking that the VirtualMachineInstance console has expected output")
-					Expect(console.LoginToAlpine(vmi)).To(Succeed())
+					Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 					By("starting the migration")
 					migration := libmigration.New(vmi.Name, vmi.Namespace)
@@ -2404,14 +2405,14 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				kvconfig.UpdateKubeVirtConfigValueAndWait(*kvConfigurationCopy)
 			})
 
-			It("should be able to migrate", func() {
-				vmi := libvmifact.NewAlpineWithTestTooling(libnet.WithMasqueradeNetworking())
+			It("[test_id:75327]should be able to migrate", func() {
+				vmi := libvmifact.NewFedora(libnet.WithMasqueradeNetworking())
 
 				By("Starting the VirtualMachineInstance")
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 240)
 
 				By("Checking that the VirtualMachineInstance console has expected output")
-				Expect(console.LoginToAlpine(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 				domSpec, err := tests.GetRunningVMIDomainSpec(vmi)
 				Expect(err).ToNot(HaveOccurred())
@@ -2649,7 +2650,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 			Expect(labelsAfterMigration).To(BeEquivalentTo(labelsBeforeMigration))
 		})
 
-		It("vmi with host-model should be able to migrate to node that support the initial node's host-model even if this model isn't the target's host-model", func() {
+		It("[test_id:42358]vmi with host-model should be able to migrate to node that support the initial node's host-model even if this model isn't the target's host-model", func() {
 			var err error
 			targetNode, err = virtClient.CoreV1().Nodes().Get(context.Background(), targetNode.Name, metav1.GetOptions{})
 			Expect(err).ShouldNot(HaveOccurred())
@@ -2909,7 +2910,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 			nad := libmigration.GenerateMigrationCNINetworkAttachmentDefinition()
 			Expect(virtClient.NetworkClient().K8sCniCncfIoV1().NetworkAttachmentDefinitions(flags.KubeVirtInstallNamespace).Delete(context.TODO(), nad.Name, metav1.DeleteOptions{})).To(Succeed(), "Failed to delete the Network Attachment Definition")
 		})
-		It("Should migrate over that network", func() {
+		It("[test_id:43565]Should migrate over that network", func() {
 			vmi := libvmifact.NewAlpine(
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
@@ -3002,7 +3003,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				}, 90*time.Second, 3*time.Second).Should(BeTrue(), fmt.Sprintf("tsc frequency topology hints are expected to exist for vmi %s", vmi.Name))
 			}
 
-			It("invtsc feature exists", decorators.Invtsc, func() {
+			It("[test_id:63985]invtsc feature exists", decorators.Invtsc, func() {
 				vmi := libvmifact.NewAlpine(
 					libvmi.WithResourceMemory("128Mi"),
 					libvmi.WithCPUFeature("invtsc", "require"),
@@ -3012,7 +3013,7 @@ var _ = SIGMigrationDescribe("VM Live Migration", func() {
 				expectTopologyHintsToBeSet(vmi)
 			})
 
-			It("HyperV reenlightenment is enabled", func() {
+			It("[test_id:51423]HyperV reenlightenment is enabled", func() {
 				vmi := libvmifact.NewWindows()
 				vmi.Spec.Domain.Devices.Disks = []v1.Disk{}
 				vmi.Spec.Volumes = []v1.Volume{}

@@ -494,7 +494,7 @@ var _ = Describe("[sig-compute]Subresource Api", decorators.SigCompute, func() {
 				})
 
 				DescribeTable("[test_id:TODO] should return VirtualMachine with instancetype expanded", func(matcherFn func() *v1.InstancetypeMatcher) {
-					vm := libvmi.NewVirtualMachine(libvmifact.NewAlpine())
+					vm := libvmi.NewVirtualMachine(libvmi.New())
 					vm.Spec.Instancetype = matcherFn()
 
 					vm, err := virtClient.VirtualMachine(testsuite.GetTestNamespace(vm)).Create(context.Background(), vm, metav1.CreateOptions{})
@@ -521,7 +521,7 @@ var _ = Describe("[sig-compute]Subresource Api", decorators.SigCompute, func() {
 				})
 
 				DescribeTable("[test_id:TODO] should return VirtualMachine with instancetype expanded", func(matcherFn func() *v1.InstancetypeMatcher) {
-					vm := libvmi.NewVirtualMachine(libvmifact.NewAlpine())
+					vm := libvmi.NewVirtualMachine(libvmi.New())
 					vm.Spec.Instancetype = matcherFn()
 
 					expandedVm, err := virtClient.ExpandSpec(testsuite.GetTestNamespace(vm)).ForVirtualMachine(vm)

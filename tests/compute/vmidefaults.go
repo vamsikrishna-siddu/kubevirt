@@ -90,7 +90,7 @@ var _ = SIGDescribe("VMIDefaults", func() {
 			newVMI, err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Get(context.Background(), vmi.Name, metav1.GetOptions{})
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(newVMI.Spec.Domain.Devices.Disks).To(HaveLen(1))
+			Expect(newVMI.Spec.Domain.Devices.Disks).To(HaveLen(2))
 			Expect(newVMI.Spec.Domain.Devices.Disks[0].Name).To(Equal(vmi.Spec.Volumes[0].Name))
 			Expect(newVMI.Spec.Domain.Devices.Disks[0].Disk).ToNot(BeNil(), "DiskTarget should not be nil")
 			Expect(newVMI.Spec.Domain.Devices.Disks[0].Disk.Bus).ToNot(BeEmpty(), "DiskTarget's bus should not be empty")
