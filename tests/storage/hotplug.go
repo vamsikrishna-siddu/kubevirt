@@ -1442,7 +1442,7 @@ var _ = SIGDescribe("[test_id:hotplug]Hotplug", func() {
 		createVMWithRatio := func(memRatio, cpuRatio float64) *v1.VirtualMachine {
 			vm := libvmi.NewVirtualMachine(libvmifact.NewFedora(), libvmi.WithRunStrategy(v1.RunStrategyAlways))
 
-			memLimit := int64(1024 * 1024 * 128) //128Mi
+			memLimit := int64(1024 * 1024 * 512) //512Mi
 			memRequest := int64(math.Ceil(float64(memLimit) / memRatio))
 			memRequestQuantity := resource.NewScaledQuantity(memRequest, 0)
 			memLimitQuantity := resource.NewScaledQuantity(memLimit, 0)

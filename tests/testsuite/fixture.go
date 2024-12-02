@@ -380,6 +380,8 @@ func waitForAllPodsReady(timeout time.Duration, listOptions metav1.ListOptions) 
 func WaitExportProxyReady() {
 	Eventually(func() bool {
 		virtClient := kubevirt.Client()
+		fmt.Println("namespace....", flags.KubeVirtInstallNamespace)
+		flags.KubeVirtInstallNamespace = "openshift-cnv"
 		d, err := virtClient.AppsV1().Deployments(flags.KubeVirtInstallNamespace).Get(context.TODO(), "virt-exportproxy", metav1.GetOptions{})
 		if errors.IsNotFound(err) {
 			return false

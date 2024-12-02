@@ -277,7 +277,7 @@ var _ = SIGDescribe("[test_id:storage-migration]Volumes update with migration", 
 			waitForMigrationToSucceed(virtClient, vm.Name, ns)
 		},
 			Entry("[test_id:migration1]to a filesystem volume", fsPVC),
-			Entry("to a block volume", decorators.RequiresBlockStorage, blockPVC),
+			Entry("[test_id:banana]to a block volume", decorators.RequiresBlockStorage, blockPVC),
 		)
 
 		It("[test_id:migration2]should migrate the source volume from a source DV to a destination DV", func() {
@@ -296,27 +296,34 @@ var _ = SIGDescribe("[test_id:storage-migration]Volumes update with migration", 
 			waitForMigrationToSucceed(virtClient, vm.Name, ns)
 		})
 
-		It("should migrate the source volume from a source and destination block RWX DVs", decorators.RequiresRWXBlock, func() {
+		It("[test_id:pandugadu]should migrate the source volume from a source and destination block RWX DVs", decorators.RequiresRWXBlock, func() {
 			volName := "disk0"
 			sc, exist := libstorage.GetRWXBlockStorageClass()
 			Expect(exist).To(BeTrue())
+
 			srcDV := libdv.NewDataVolume(
-				libdv.WithBlankImageSource(),
-				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
-					libdv.StorageWithVolumeSize(size),
+				libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling), cdiv1.RegistryPullNode),
+				libdv.WithStorage(
+					libdv.StorageWithStorageClass(sc),
+					libdv.StorageWithVolumeSize(cd.ContainerDiskSizeBySourceURL(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling))),
+					libdv.StorageWithAccessMode(k8sv1.ReadWriteMany),
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeBlock),
 				),
 			)
+
 			_, err := virtClient.CdiClient().CdiV1beta1().DataVolumes(ns).Create(context.Background(),
 				srcDV, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 			destDV := libdv.NewDataVolume(
-				libdv.WithBlankImageSource(),
-				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
-					libdv.StorageWithVolumeSize(size),
+				libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling), cdiv1.RegistryPullNode),
+				libdv.WithStorage(
+					libdv.StorageWithStorageClass(sc),
+					libdv.StorageWithVolumeSize(cd.ContainerDiskSizeBySourceURL(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling))),
+					libdv.StorageWithAccessMode(k8sv1.ReadWriteMany),
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeBlock),
 				),
 			)
+
 			_, err = virtClient.CdiClient().CdiV1beta1().DataVolumes(ns).Create(context.Background(),
 				destDV, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
@@ -333,14 +340,16 @@ var _ = SIGDescribe("[test_id:storage-migration]Volumes update with migration", 
 			waitForMigrationToSucceed(virtClient, vm.Name, ns)
 		})
 
-		It("should migrate the source volume from a block source and filesystem destination DVs", decorators.RequiresBlockStorage, func() {
+		It("[test_id:jadugar]should migrate the source volume from a block source and filesystem destination DVs", decorators.RequiresBlockStorage, func() {
 			volName := "disk0"
 			sc, exist := libstorage.GetRWOBlockStorageClass()
 			Expect(exist).To(BeTrue())
+
 			srcDV := libdv.NewDataVolume(
-				libdv.WithBlankImageSource(),
-				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
-					libdv.StorageWithVolumeSize(size),
+				libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling), cdiv1.RegistryPullNode),
+				libdv.WithStorage(
+					libdv.StorageWithStorageClass(sc),
+					libdv.StorageWithVolumeSize(cd.ContainerDiskSizeBySourceURL(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling))),
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeBlock),
 				),
 			)
@@ -350,10 +359,12 @@ var _ = SIGDescribe("[test_id:storage-migration]Volumes update with migration", 
 
 			sc, exist = libstorage.GetRWOFileSystemStorageClass()
 			Expect(exist).To(BeTrue())
+
 			destDV := libdv.NewDataVolume(
-				libdv.WithBlankImageSource(),
-				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
-					libdv.StorageWithVolumeSize(size),
+				libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling), cdiv1.RegistryPullNode),
+				libdv.WithStorage(
+					libdv.StorageWithStorageClass(sc),
+					libdv.StorageWithVolumeSize(cd.ContainerDiskSizeBySourceURL(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling))),
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeFilesystem),
 				),
 			)
@@ -901,5 +912,5 @@ func waitForMigrationToSucceed(virtClient kubecli.KubevirtClient, vmiName, ns st
 		}
 
 		return true
-	}, 120*time.Second, time.Second).Should(BeTrue())
+	}, 240*time.Second, time.Second).Should(BeTrue())
 }

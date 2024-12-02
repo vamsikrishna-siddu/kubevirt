@@ -2324,6 +2324,8 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 
 			By("initializing the VM")
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, 60)
+			fmt.Println("I am waitng.....")
+			time.Sleep(5 * time.Minute)
 			runningVMISpec, err := tests.GetRunningVMIDomainSpec(vmi)
 			Expect(err).ToNot(HaveOccurred())
 

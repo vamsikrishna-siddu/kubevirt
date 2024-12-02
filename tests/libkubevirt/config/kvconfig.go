@@ -83,6 +83,7 @@ func PatchWorkloadUpdateMethodAndRolloutStrategy(kvName string, virtClient kubec
 	).GeneratePayload()
 	ExpectWithOffset(1, err).ToNot(HaveOccurred())
 	EventuallyWithOffset(1, func() error {
+		flags.KubeVirtInstallNamespace = "openshift-cnv"
 		_, err := virtClient.KubeVirt(flags.KubeVirtInstallNamespace).Patch(context.Background(), kvName, types.JSONPatchType, patch, metav1.PatchOptions{})
 		return err
 	}, 10*time.Second, 1*time.Second).ShouldNot(HaveOccurred())
