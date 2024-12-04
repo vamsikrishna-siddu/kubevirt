@@ -29,6 +29,7 @@ import (
 
 	expect "github.com/google/goexpect"
 	"github.com/google/uuid"
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -1062,6 +1063,7 @@ var _ = SIGDescribe("[test_id:storage]Storage", func() {
 
 		Context("With both SCSI and SATA devices", func() {
 			It("[test_id:sata]should successfully start with distinct device names", func() {
+				ginkgo.Skip("SATA is not supported on s390x.")
 
 				vmi = libvmifact.NewAlpine(
 					libvmi.WithEmptyDisk("emptydisk1", v1.DiskBusSCSI, resource.MustParse("1Gi")),
@@ -1086,6 +1088,7 @@ var _ = SIGDescribe("[test_id:storage]Storage", func() {
 
 			Context("With a USB device", func() {
 				It("[test_id:9797]should successfully start and have the USB storage device attached", func() {
+					ginkgo.Skip("USB is not supported on s390x...")
 					vmi = libvmifact.NewAlpine(
 						libvmi.WithEmptyDisk("emptydisk1", v1.DiskBusUSB, resource.MustParse("128Mi")),
 					)
