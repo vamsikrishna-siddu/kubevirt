@@ -62,7 +62,7 @@ var _ = Describe("VirtualMachineClone Tests", Serial, func() {
 	})
 
 	createVM := func(options ...libvmi.Option) (vm *virtv1.VirtualMachine) {
-		vmi := libvmifact.NewCirros(options...)
+		vmi := libvmifact.NewAlpine(options...)
 		vmi.Namespace = testsuite.GetTestNamespace(nil)
 		vm = libvmi.NewVirtualMachine(vmi)
 		vm.Annotations = vmi.Annotations
@@ -537,6 +537,7 @@ var _ = Describe("VirtualMachineClone Tests", Serial, func() {
 				dv := libdv.NewDataVolume(
 					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 					libdv.WithNamespace(testsuite.GetTestNamespace(nil)),
+					libdv.WithForceBindAnnotation(),
 					libdv.WithStorage(
 						libdv.StorageWithStorageClass(storageClass),
 						libdv.StorageWithVolumeSize(cd.ContainerDiskSizeBySourceURL(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine))),
@@ -565,7 +566,7 @@ var _ = Describe("VirtualMachineClone Tests", Serial, func() {
 
 				Context("should reject source with non snapshotable volume", func() {
 					BeforeEach(func() {
-						noSnapshotStorageClass = libstorage.GetNoVolumeSnapshotStorageClass("odf-lvs")
+						noSnapshotStorageClass = libstorage.GetNoVolumeSnapshotStorageClass("hostpath-csi")
 						Expect(noSnapshotStorageClass).ToNot(BeEmpty(), "no storage class without snapshot support")
 
 						// create running in case storage is WFFC (local storage)
@@ -578,14 +579,14 @@ var _ = Describe("VirtualMachineClone Tests", Serial, func() {
 						Eventually(ThisVM(sourceVM), 300*time.Second, 1*time.Second).Should(Not(BeReady()))
 					})
 
-					It("[test_id:clonefail1]with VM source", func() {
+					It("[test_id:krishnas][test_id:clonefail1]with VM source", func() {
 						vmClone = generateCloneFromVM()
 						vmClone, err = virtClient.VirtualMachineClone(vmClone.Namespace).Create(context.Background(), vmClone, v1.CreateOptions{})
 						Expect(err).To(HaveOccurred())
 						Expect(err.Error()).Should(ContainSubstring("does not support snapshots"))
 					})
 
-					It("[test_id:clonefail2]with snapshot source", func() {
+					It("[test_id:krishnas][test_id:clonefail2]with snapshot source", func() {
 						By("Snapshotting VM")
 						snapshot := createSnapshot(sourceVM)
 						snapshot = waitSnapshotReady(snapshot)
@@ -792,7 +793,7 @@ var _ = Describe("VirtualMachineClone Tests", Serial, func() {
 						Expect(snapshotStorageClass).ToNot(BeEmpty(), "no storage class with snapshot support and wffc binding mode")
 					})
 
-					It("should not delete the vmsnapshot and vmrestore until all the pvc(s) are bound", func() {
+					It("[test_id:cake]should not delete the vmsnapshot and vmrestore until all the pvc(s) are bound", func() {
 						addCloneAnnotationAndLabelFilters := func(vmClone *clonev1alpha1.VirtualMachineClone) {
 							filters := []string{"somekey/*"}
 							vmClone.Spec.LabelFilters = filters

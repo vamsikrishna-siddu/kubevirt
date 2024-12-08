@@ -1137,6 +1137,7 @@ var _ = SIGDescribe("[test_id:storage]Storage", func() {
 			})
 
 			It("[block_3]should generate the pod with the volumeDevice", func() {
+				ginkgo.Skip("SATA Disk is not supported on s390x.")
 				vmi = libvmifact.NewGuestless(
 					libvmi.WithEphemeralPersistentVolumeClaim("disk0", dataVolume.Name),
 				)

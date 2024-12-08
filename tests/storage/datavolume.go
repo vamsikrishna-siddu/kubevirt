@@ -1104,13 +1104,13 @@ var _ = SIGDescribe("[test_id:datavolume]DataVolume Integration", func() {
 
 				libvmops.StartVirtualMachine(vm)
 			},
-				Entry("[test_id:3193]with explicit role", explicitCloneRole, false, false, nil, false),
-				Entry("[test_id:3194]with implicit role", implicitCloneRole, false, false, nil, false),
-				Entry("[test_id:5253]with explicit role (all namespaces)", explicitCloneRole, true, false, nil, false),
-				Entry("[test_id:5254]with explicit role (one namespace)", explicitCloneRole, false, true, nil, false),
-				Entry("with explicit role snapshot clone", explicitCloneRole, false, false, snapshotCloneMutateFunc, false),
-				Entry("with implicit insufficient role snapshot clone", implicitCloneRole, false, false, snapshotCloneMutateFunc, true),
-				Entry("with implicit sufficient role snapshot clone", implicitSnapshotCloneRole, false, false, snapshotCloneMutateFunc, false),
+				Entry("[test_id:chandus][test_id:3193]with explicit role", explicitCloneRole, false, false, nil, false),
+				Entry("[test_id:chandus][test_id:3194]with implicit role", implicitCloneRole, false, false, nil, false),
+				Entry("[test_id:chandus][test_id:5253]with explicit role (all namespaces)", explicitCloneRole, true, false, nil, false),
+				Entry("[test_id:chandus][test_id:5254]with explicit role (one namespace)", explicitCloneRole, false, true, nil, false),
+				Entry("[test_id:chandus]with explicit role snapshot clone", explicitCloneRole, false, false, snapshotCloneMutateFunc, false),
+				Entry("[test_id:chandus]with implicit insufficient role snapshot clone", implicitCloneRole, false, false, snapshotCloneMutateFunc, true),
+				Entry("[test_id:chandus]with implicit sufficient role snapshot clone", implicitSnapshotCloneRole, false, false, snapshotCloneMutateFunc, false),
 				Entry("with explicit role (all namespaces) snapshot clone", explicitCloneRole, true, false, snapshotCloneMutateFunc, false),
 				Entry("with explicit role (one namespace) snapshot clone", explicitCloneRole, false, true, snapshotCloneMutateFunc, false),
 			)

@@ -95,7 +95,7 @@ var _ = SIGDescribe("[test_id:storage-migration]Volumes update with migration", 
 			fsPVC            = "filesystem"
 			blockPVC         = "block"
 			size             = "6Gi"
-			sizeWithOverhead = "6.2Gi"
+			sizeWithOverhead = "6200Mi"
 		)
 
 		waitMigrationToNotExist := func(vmiName, ns string) {
