@@ -2267,8 +2267,8 @@ var _ = Describe("[sig-compute]Configurations", decorators.SigCompute, func() {
 			)
 
 			By("setting the disk to use custom block sizes")
-			logicalSize := uint(16384)
-			physicalSize := uint(16384)
+			logicalSize := uint(1024)
+			physicalSize := uint(1024)
 			vmi.Spec.Domain.Devices.Disks[0].BlockSize = &v1.BlockSize{
 				Custom: &v1.CustomBlockSize{
 					Logical:  logicalSize,

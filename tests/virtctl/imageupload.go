@@ -26,6 +26,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -61,6 +62,7 @@ var _ = Describe("[sig-storage][virtctl]ImageUpload[test_id:virtctlimgupload]", 
 	)
 
 	BeforeEach(func() {
+		ginkgo.Skip("These tests do not work because of the unavailability of disk-images-provider support.")
 		virtClient = kubevirt.Client()
 		imagePath = copyAlpineDisk()
 

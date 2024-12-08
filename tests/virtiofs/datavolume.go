@@ -27,6 +27,7 @@ import (
 	"time"
 
 	expect "github.com/google/goexpect"
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -70,6 +71,7 @@ var _ = Describe("[sig-storage][test_id:virtiofs] virtiofs", decorators.SigStora
 
 	BeforeEach(func() {
 		virtClient = kubevirt.Client()
+		ginkgo.Skip("virtiofs tests are not supported on s390x.")
 		vmi = nil
 	})
 
