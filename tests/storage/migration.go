@@ -94,8 +94,8 @@ var _ = SIGDescribe("[Serial]Volumes update with migration", Serial, func() {
 		const (
 			fsPVC            = "filesystem"
 			blockPVC         = "block"
-			size             = "1Gi"
-			sizeWithOverhead = "1.2Gi"
+			size             = "6Gi"
+			sizeWithOverhead = "6200Mi"
 		)
 
 		waitMigrationToNotExist := func(vmiName, ns string) {
@@ -128,9 +128,11 @@ var _ = SIGDescribe("[Serial]Volumes update with migration", Serial, func() {
 		createDV := func() *cdiv1.DataVolume {
 			sc, exist := libstorage.GetRWOFileSystemStorageClass()
 			Expect(exist).To(BeTrue())
+			imageUrl := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling)
 			dv := libdv.NewDataVolume(
-				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
-				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
+				libdv.WithRegistryURLSource(imageUrl),
+				libdv.WithStorage(
+					libdv.StorageWithStorageClass(sc),
 					libdv.StorageWithVolumeSize(size),
 					libdv.StorageWithFilesystemVolumeMode(),
 				),
@@ -145,7 +147,7 @@ var _ = SIGDescribe("[Serial]Volumes update with migration", Serial, func() {
 				libvmi.WithNamespace(ns),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(virtv1.DefaultPodNetwork()),
-				libvmi.WithResourceMemory("128Mi"),
+				libvmi.WithResourceMemory("512Mi"),
 				libvmi.WithDataVolume(volName, dv.Name),
 				libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()),
 			)
@@ -298,23 +300,30 @@ var _ = SIGDescribe("[Serial]Volumes update with migration", Serial, func() {
 			volName := "disk0"
 			sc, exist := libstorage.GetRWXBlockStorageClass()
 			Expect(exist).To(BeTrue())
+
 			srcDV := libdv.NewDataVolume(
-				libdv.WithBlankImageSource(),
-				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
-					libdv.StorageWithVolumeSize(size),
+				libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling), cdiv1.RegistryPullNode),
+				libdv.WithStorage(
+					libdv.StorageWithStorageClass(sc),
+					libdv.StorageWithVolumeSize(cd.ContainerDiskSizeBySourceURL(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling))),
+					libdv.StorageWithAccessMode(k8sv1.ReadWriteMany),
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeBlock),
 				),
 			)
+
 			_, err := virtClient.CdiClient().CdiV1beta1().DataVolumes(ns).Create(context.Background(),
 				srcDV, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 			destDV := libdv.NewDataVolume(
-				libdv.WithBlankImageSource(),
-				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
-					libdv.StorageWithVolumeSize(size),
+				libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling), cdiv1.RegistryPullNode),
+				libdv.WithStorage(
+					libdv.StorageWithStorageClass(sc),
+					libdv.StorageWithVolumeSize(cd.ContainerDiskSizeBySourceURL(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling))),
+					libdv.StorageWithAccessMode(k8sv1.ReadWriteMany),
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeBlock),
 				),
 			)
+
 			_, err = virtClient.CdiClient().CdiV1beta1().DataVolumes(ns).Create(context.Background(),
 				destDV, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
@@ -335,10 +344,12 @@ var _ = SIGDescribe("[Serial]Volumes update with migration", Serial, func() {
 			volName := "disk0"
 			sc, exist := libstorage.GetRWOBlockStorageClass()
 			Expect(exist).To(BeTrue())
+
 			srcDV := libdv.NewDataVolume(
-				libdv.WithBlankImageSource(),
-				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
-					libdv.StorageWithVolumeSize(size),
+				libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling), cdiv1.RegistryPullNode),
+				libdv.WithStorage(
+					libdv.StorageWithStorageClass(sc),
+					libdv.StorageWithVolumeSize(cd.ContainerDiskSizeBySourceURL(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling))),
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeBlock),
 				),
 			)
@@ -348,10 +359,12 @@ var _ = SIGDescribe("[Serial]Volumes update with migration", Serial, func() {
 
 			sc, exist = libstorage.GetRWOFileSystemStorageClass()
 			Expect(exist).To(BeTrue())
+
 			destDV := libdv.NewDataVolume(
-				libdv.WithBlankImageSource(),
-				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
-					libdv.StorageWithVolumeSize(size),
+				libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling), cdiv1.RegistryPullNode),
+				libdv.WithStorage(
+					libdv.StorageWithStorageClass(sc),
+					libdv.StorageWithVolumeSize(cd.ContainerDiskSizeBySourceURL(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling))),
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeFilesystem),
 				),
 			)
@@ -371,12 +384,12 @@ var _ = SIGDescribe("[Serial]Volumes update with migration", Serial, func() {
 			waitForMigrationToSucceed(virtClient, vm.Name, ns)
 		})
 
-		It("should migrate a PVC with a VM using a containerdisk", func() {
+		It("[test_id:migration3]should migrate a PVC with a VM using a containerdisk", func() {
 			volName := "volume"
 			srcPVC := "src-" + rand.String(5)
 			libstorage.CreateFSPVC(srcPVC, ns, size, nil)
 			libstorage.CreateFSPVC(destPVC, ns, size, nil)
-			vmi := libvmifact.NewCirros(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(ns),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(virtv1.DefaultPodNetwork()),
@@ -409,7 +422,7 @@ var _ = SIGDescribe("[Serial]Volumes update with migration", Serial, func() {
 			waitForMigrationToSucceed(virtClient, vm.Name, ns)
 		})
 
-		It("should cancel the migration by the reverting to the source volume", func() {
+		It("[test_id:migration4]should cancel the migration by the reverting to the source volume", func() {
 			volName := "volume"
 			dv := createDV()
 			vm := createVMWithDV(dv, volName)
@@ -442,7 +455,7 @@ var _ = SIGDescribe("[Serial]Volumes update with migration", Serial, func() {
 			waitMigrationToNotExist(vm.Name, ns)
 		})
 
-		It("should fail to migrate when the destination image is smaller", func() {
+		It("[test_id:migration5]should fail to migrate when the destination image is smaller", func() {
 			const volName = "disk0"
 			vm := createVMWithDV(createDV(), volName)
 			createSmallImageForDestinationMigration(vm, destPVC, size)
@@ -460,7 +473,7 @@ var _ = SIGDescribe("[Serial]Volumes update with migration", Serial, func() {
 			Expect(len(migList.Items)).Should(BeNumerically("<", 56))
 		})
 
-		It("should set the restart condition since the second volume is RWO and not part of the migration", func() {
+		It("[test_id:migration6]should set the restart condition since the second volume is RWO and not part of the migration", func() {
 			const volName = "vol0"
 			dv1 := createDV()
 			dv2 := createBlankDV(virtClient, ns, size)
@@ -469,7 +482,7 @@ var _ = SIGDescribe("[Serial]Volumes update with migration", Serial, func() {
 				libvmi.WithNamespace(ns),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(virtv1.DefaultPodNetwork()),
-				libvmi.WithResourceMemory("128Mi"),
+				libvmi.WithResourceMemory("512Mi"),
 				libvmi.WithDataVolume(volName, dv1.Name),
 				libvmi.WithDataVolume("vol1", dv2.Name),
 				libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()),
@@ -497,7 +510,7 @@ var _ = SIGDescribe("[Serial]Volumes update with migration", Serial, func() {
 			)
 		})
 
-		It("should refuse to restart the VM and set the ManualRecoveryRequired at VM shutdown", func() {
+		It("[test_id:migration7]should refuse to restart the VM and set the ManualRecoveryRequired at VM shutdown", func() {
 			volName := "volume"
 			dv := createDV()
 			vm := createVMWithDV(dv, volName)
@@ -548,7 +561,7 @@ var _ = SIGDescribe("[Serial]Volumes update with migration", Serial, func() {
 			Eventually(matcher.ThisVMIWith(vm.Namespace, vm.Name), 120*time.Second, 1*time.Second).Should(matcher.BeRunning())
 		})
 
-		It("should cancel the migration and clear the volume migration state", func() {
+		It("[test_id:migration8]should cancel the migration and clear the volume migration state", func() {
 			volName := "volume"
 			dv := createDV()
 			vm := createVMWithDV(dv, volName)
@@ -626,7 +639,7 @@ var _ = SIGDescribe("[Serial]Volumes update with migration", Serial, func() {
 			const volName = "vol0"
 			ns := testsuite.GetTestNamespace(nil)
 			dv := createBlankDV(virtClient, ns, "1Gi")
-			vmi := libvmifact.NewCirros(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(ns),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(virtv1.DefaultPodNetwork()),
@@ -899,5 +912,5 @@ func waitForMigrationToSucceed(virtClient kubecli.KubevirtClient, vmiName, ns st
 		}
 
 		return true
-	}, 120*time.Second, time.Second).Should(BeTrue())
+	}, 240*time.Second, time.Second).Should(BeTrue())
 }
