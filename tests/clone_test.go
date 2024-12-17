@@ -62,7 +62,7 @@ var _ = Describe("[Serial]VirtualMachineClone Tests", Serial, func() {
 	})
 
 	createVM := func(options ...libvmi.Option) (vm *virtv1.VirtualMachine) {
-		vmi := libvmifact.NewCirros(options...)
+		vmi := libvmifact.NewAlpine(options...)
 		vmi.Namespace = testsuite.GetTestNamespace(nil)
 		vm = libvmi.NewVirtualMachine(vmi)
 		vm.Annotations = vmi.Annotations
@@ -537,6 +537,7 @@ var _ = Describe("[Serial]VirtualMachineClone Tests", Serial, func() {
 				dv := libdv.NewDataVolume(
 					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 					libdv.WithNamespace(testsuite.GetTestNamespace(nil)),
+					libdv.WithForceBindAnnotation(),
 					libdv.WithStorage(
 						libdv.StorageWithStorageClass(storageClass),
 						libdv.StorageWithVolumeSize(cd.ContainerDiskSizeBySourceURL(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine))),
@@ -565,7 +566,7 @@ var _ = Describe("[Serial]VirtualMachineClone Tests", Serial, func() {
 
 				Context("should reject source with non snapshotable volume", func() {
 					BeforeEach(func() {
-						noSnapshotStorageClass = libstorage.GetNoVolumeSnapshotStorageClass("local")
+						noSnapshotStorageClass = libstorage.GetNoVolumeSnapshotStorageClass("hostpath-csi")
 						Expect(noSnapshotStorageClass).ToNot(BeEmpty(), "no storage class without snapshot support")
 
 						// create running in case storage is WFFC (local storage)

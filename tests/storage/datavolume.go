@@ -168,12 +168,12 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 				Skip("Skip when volume expansion storage class not available")
 			}
 
-			imageUrl := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)
+			imageUrl := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling)
 			dataVolume := libdv.NewDataVolume(
 				libdv.WithRegistryURLSourceAndPullMethod(imageUrl, cdiv1.RegistryPullNode),
 				libdv.WithStorage(
 					libdv.StorageWithStorageClass(sc),
-					libdv.StorageWithVolumeSize(cd.CirrosVolumeSize),
+					libdv.StorageWithVolumeSize(cd.FedoraVolumeSize),
 					libdv.StorageWithAccessMode(k8sv1.ReadWriteOnce),
 					libdv.StorageWithVolumeMode(volumeMode),
 				),
@@ -185,11 +185,11 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, 500)
 
 			By("Expecting the VirtualMachineInstance console")
-			Expect(console.LoginToCirros(vmi)).To(Succeed())
+			Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 			By("Expanding PVC")
 			patchSet := patch.New(
-				patch.WithAdd("/spec/resources/requests/storage", resource.MustParse("2Gi")),
+				patch.WithAdd("/spec/resources/requests/storage", resource.MustParse("8Gi")),
 			)
 			patchData, err := patchSet.GeneratePayload()
 			Expect(err).ToNot(HaveOccurred())
@@ -204,14 +204,14 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 					&expect.BExp{R: console.PromptExpression},
 					&expect.BSnd{S: "dmesg |grep 'new size'\n"},
 					&expect.BExp{R: console.PromptExpression},
-					&expect.BSnd{S: "dmesg |grep -c 'new size: [34]'\n"},
+					&expect.BSnd{S: "dmesg |grep -c 'new size: [1][0-9]*'\n"},
 					&expect.BExp{R: "1"},
 				}, 10)
 				return err
 			}, 360).Should(BeNil())
 
 			Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
-				&expect.BSnd{S: "sudo /sbin/resize-filesystem /dev/root /run/resize.rootfs /dev/console && echo $?\n"},
+				&expect.BSnd{S: "sudo /usr/sbin/resize2fs  /dev/root /run/resize.rootfs /dev/console && echo $?\n"},
 				&expect.BExp{R: "0"},
 			}, 30)).To(Succeed(), "failed to resize root")
 
@@ -239,8 +239,9 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 			if !volumeExpansionAllowed {
 				Skip("Skip when volume expansion storage class not available")
 			}
+			imageUrl := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)
 			dataVolume := libdv.NewDataVolume(
-				libdv.WithBlankImageSource(),
+				libdv.WithRegistryURLSourceAndPullMethod(imageUrl, cdiv1.RegistryPullNode),
 				libdv.WithStorage(
 					libdv.StorageWithStorageClass(sc),
 					libdv.StorageWithVolumeSize("512Mi"),
@@ -268,6 +269,7 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 
 			vmi := libstorage.RenderVMIWithDataVolume(dataVolume.Name, dataVolume.Namespace)
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, 500)
+			Expect(console.LoginToAlpine(vmi)).To(Succeed())
 
 			// Let's wait for VMI to be ready
 			Eventually(func() bool {

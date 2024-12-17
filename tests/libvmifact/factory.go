@@ -76,7 +76,13 @@ func NewAlpine(opts ...libvmi.Option) *kvirtv1.VirtualMachineInstance {
 		libvmi.WithRng(),
 	}
 	alpineOpts = append(alpineOpts, opts...)
-	return libvmi.New(alpineOpts...)
+	vmi := libvmi.New(alpineOpts...)
+
+	if libvmi.GetCloudInitVolume(vmi) == nil {
+		withNonEmptyUserData := libvmi.WithCloudInitNoCloud(WithDummyCloudForFastBoot())
+		withNonEmptyUserData(vmi)
+	}
+	return vmi
 }
 
 func NewAlpineWithTestTooling(opts ...libvmi.Option) *kvirtv1.VirtualMachineInstance {
