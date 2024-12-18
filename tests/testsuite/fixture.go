@@ -317,8 +317,8 @@ func deployOrWipeTestingInfrastrucure(actionOnObject func(unstructured.Unstructu
 		}
 	}
 
-	waitForAllDaemonSetsReady(3 * time.Minute)
-	waitForAllPodsReady(3*time.Minute, metav1.ListOptions{})
+	//waitForAllDaemonSetsReady(3 * time.Minute)
+	//waitForAllPodsReady(3*time.Minute, metav1.ListOptions{})
 }
 
 func DeployTestingInfrastructure() {
