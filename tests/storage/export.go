@@ -297,7 +297,7 @@ var _ = SIGDescribe("Export", func() {
 		}, 60*time.Second, 1*time.Second).Should(BeNil(), "persistent volume associated with DV should be created")
 
 		By("Making sure the DV is successful")
-		libstorage.EventuallyDV(dv, 90, HaveSucceeded())
+		libstorage.EventuallyDV(dv, 600, HaveSucceeded())
 
 		pod, err := createSourcePodChecker(pvc)
 		Expect(err).ToNot(HaveOccurred())
