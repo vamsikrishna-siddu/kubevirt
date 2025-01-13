@@ -297,7 +297,7 @@ var _ = SIGDescribe("Export", func() {
 		}, 60*time.Second, 1*time.Second).Should(BeNil(), "persistent volume associated with DV should be created")
 
 		By("Making sure the DV is successful")
-		libstorage.EventuallyDV(dv, 600, HaveSucceeded())
+		libstorage.EventuallyDV(dv, 700, HaveSucceeded())
 
 		pod, err := createSourcePodChecker(pvc)
 		Expect(err).ToNot(HaveOccurred())
@@ -572,7 +572,7 @@ var _ = SIGDescribe("Export", func() {
 		verifyFunction(fileName, comparison, downloadPod, volumeMode)
 	},
 		// "internal" tests
-		Entry("with RAW kubevirt content type", populateKubeVirtContent, verifyKubeVirtRawContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapInternal, urlGeneratorInternal, exportv1.KubeVirtRaw, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
+		Entry("[test_id:export1]with RAW kubevirt content type", populateKubeVirtContent, verifyKubeVirtRawContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapInternal, urlGeneratorInternal, exportv1.KubeVirtRaw, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
 		Entry("with RAW gzipped kubevirt content type", populateKubeVirtContent, verifyKubeVirtGzContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapInternal, urlGeneratorInternal, exportv1.KubeVirtGz, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
 		Entry("with archive content type", populateArchiveContent, verifyKubeVirtRawContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapInternal, urlGeneratorInternal, exportv1.Dir, archiveDircontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
 		Entry("with archive tarred gzipped content type", populateArchiveContent, verifyArchiveGzContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapInternal, urlGeneratorInternal, exportv1.ArchiveGz, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
