@@ -892,7 +892,7 @@ var _ = SIGDescribe("Hotplug", func() {
 					vmi, err = virtClient.VirtualMachineInstance(vm.Namespace).Get(context.Background(), vm.Name, metav1.GetOptions{})
 					Expect(err).ToNot(HaveOccurred())
 					return vmi.Status.VolumeStatus[4].Target
-				}, 40*time.Second, 2*time.Second).Should(Equal("sdc"))
+				}, 40*time.Second, 2*time.Second).Should(Equal("sdd"))
 				// Eventually(func() string {
 				// 	vmi, err = virtClient.VirtualMachineInstance(vm.Namespace).Get(context.Background(), vm.Name, metav1.GetOptions{})
 				// 	Expect(err).ToNot(HaveOccurred())
