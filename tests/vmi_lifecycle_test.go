@@ -44,6 +44,7 @@ import (
 
 	v1 "kubevirt.io/api/core/v1"
 	"kubevirt.io/client-go/kubecli"
+	cdiv1 "kubevirt.io/containerized-data-importer-api/pkg/apis/core/v1beta1"
 
 	"kubevirt.io/kubevirt/pkg/apimachinery/patch"
 	"kubevirt.io/kubevirt/pkg/controller"
@@ -60,11 +61,13 @@ import (
 	"kubevirt.io/kubevirt/tests/framework/checks"
 	"kubevirt.io/kubevirt/tests/framework/kubevirt"
 	"kubevirt.io/kubevirt/tests/framework/matcher"
+	"kubevirt.io/kubevirt/tests/libdv"
 	"kubevirt.io/kubevirt/tests/libkubevirt"
 	kvconfig "kubevirt.io/kubevirt/tests/libkubevirt/config"
 	"kubevirt.io/kubevirt/tests/libnode"
 	"kubevirt.io/kubevirt/tests/libpod"
 	"kubevirt.io/kubevirt/tests/libsecret"
+	"kubevirt.io/kubevirt/tests/libstorage"
 	"kubevirt.io/kubevirt/tests/libvmifact"
 	"kubevirt.io/kubevirt/tests/libvmops"
 	"kubevirt.io/kubevirt/tests/libwait"
@@ -82,6 +85,10 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][vendor:cnv-qe@redhat.com][level
 
 	const fakeLibvirtLogFilters = "3:remote 4:event 3:util.json 3:util.object 3:util.dbus 3:util.netlink 3:node_device 3:rpc 3:access 1:*"
 	const startupTimeout = 45
+	var virtClient kubecli.KubevirtClient
+	BeforeEach(func() {
+		virtClient = kubevirt.Client()
+	})
 
 	AfterEach(func() {
 		// Not every test causes virt-handler to restart, but a few different contexts do.
@@ -655,11 +662,42 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][vendor:cnv-qe@redhat.com][level
 			var nodeName string
 			var virtHandler *k8sv1.Pod
 			var virtHandlerAvailablePods int32
+			newVirtualMachineInstanceWithDV := func(imgUrl, sc string, volumeMode k8sv1.PersistentVolumeMode) (*v1.VirtualMachineInstance, *cdiv1.DataVolume) {
+				Expect(libstorage.HasCDI()).To(BeTrue(), "Skip DataVolume tests when CDI is not present")
+
+				dataVolume := libdv.NewDataVolume(
+					libdv.WithRegistryURLSourceAndPullMethod(imgUrl, cdiv1.RegistryPullNode),
+					libdv.WithStorage(
+						libdv.StorageWithStorageClass(sc),
+						libdv.StorageWithVolumeSize(cd.ContainerDiskSizeBySourceURL(imgUrl)),
+						libdv.StorageWithAccessMode(k8sv1.ReadWriteOnce),
+						libdv.StorageWithVolumeMode(volumeMode),
+					),
+				)
+
+				dataVolume, err := virtClient.CdiClient().CdiV1beta1().DataVolumes(testsuite.GetTestNamespace(nil)).Create(context.Background(), dataVolume, metav1.CreateOptions{})
+				Expect(err).ToNot(HaveOccurred())
+
+				return libvmi.New(
+					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
+					libvmi.WithNetwork(v1.DefaultPodNetwork()),
+					libvmi.WithDataVolume("disk0", dataVolume.Name),
+					libvmi.WithResourceMemory("256Mi"),
+					libvmi.WithNamespace(testsuite.GetTestNamespace(nil)),
+					libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()),
+					libvmi.WithTerminationGracePeriod(30),
+					libvmi.WithLogSerialConsole(false),
+				), dataVolume
+			}
 
 			BeforeEach(func() {
+
 				// Schedule a vmi and make sure that virt-handler gets evicted from the node where the vmi was started
 				// Note: we want VMI without any container
-				vmi = libvmifact.NewAlpine(libvmi.WithLogSerialConsole(false))
+				sc, foundSC := libstorage.GetRWOFileSystemStorageClass()
+				Expect(foundSC).To(BeTrue(), "Filesystem storage is not present")
+				vmi, _ = newVirtualMachineInstanceWithDV(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine), sc, k8sv1.PersistentVolumeFilesystem)
+
 				vmi, err = kubevirt.Client().VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred(), "Should create VMI successfully")
 
@@ -1060,7 +1098,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][vendor:cnv-qe@redhat.com][level
 
 				By("adding a node-feature-discovery CPU model label to a node")
 				vmi := libvmifact.NewAlpine()
-				const featureToDisable = "fpu"
+				const featureToDisable = "ldisp"
 
 				featureToRequire := supportedFeatures[0]
 
@@ -1077,7 +1115,7 @@ var _ = Describe("[rfe_id:273][crit:high][arm64][vendor:cnv-qe@redhat.com][level
 							Policy: "require",
 						},
 						{
-							Name:   "fpu",
+							Name:   "ldisp",
 							Policy: "disable",
 						},
 					},
