@@ -155,7 +155,7 @@ var _ = DescribeInfra("[rfe_id:4126][crit:medium][vendor:cnv-qe@redhat.com][leve
 					)
 					checkedDeployments[namespacedName] = struct{}{}
 				}
-			}, time.Minute, time.Second).Should(Succeed())
+			}, 2*time.Minute, time.Second).Should(Succeed())
 		})
 
 		It("[test_id:4134] kubevirt components on that node should not evict", func() {

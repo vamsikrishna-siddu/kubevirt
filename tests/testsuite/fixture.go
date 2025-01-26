@@ -192,6 +192,7 @@ func EnsureKVMPresent() {
 
 	if !ShouldAllowEmulation(virtClient) {
 		listOptions := metav1.ListOptions{LabelSelector: v1.AppLabel + "=virt-handler"}
+		flags.KubeVirtInstallNamespace = "openshift-cnv"
 		virtHandlerPods, err := virtClient.CoreV1().Pods(flags.KubeVirtInstallNamespace).List(context.Background(), listOptions)
 		ExpectWithOffset(1, err).ToNot(HaveOccurred())
 
