@@ -72,7 +72,7 @@ var _ = Describe("[rfe_id:609][crit:medium][vendor:cnv-qe@redhat.com][level:comp
 		vmi = libvmifact.NewAlpine(libvmi.WithLabel(flavorKey, memoryFlavor))
 
 		selector := k8smetav1.LabelSelector{MatchLabels: map[string]string{flavorKey: memoryFlavor}}
-		memory = resource.MustParse("128M")
+		memory = resource.MustParse("128Mi")
 		memoryPreset = &v1.VirtualMachineInstancePreset{
 			ObjectMeta: k8smetav1.ObjectMeta{GenerateName: memoryPrefix},
 			Spec: v1.VirtualMachineInstancePresetSpec{

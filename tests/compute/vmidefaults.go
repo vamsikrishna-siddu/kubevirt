@@ -125,16 +125,16 @@ var _ = SIGDescribe("VMIDefaults", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			expected := api.MemBalloon{
-				Model: "virtio-non-transitional",
+				Model: "virtio",
 				Stats: &api.Stats{
 					Period: 10,
 				},
 				Address: &api.Address{
-					Type:     api.AddressPCI,
-					Domain:   "0x0000",
-					Bus:      "0x07",
-					Slot:     "0x00",
-					Function: "0x0",
+					Type:     api.AddressCCW,
+					Domain:   "",
+					Bus:      "",
+					Slot:     "",
+					Function: "",
 				},
 			}
 			if kvConfiguration.VirtualMachineOptions != nil && kvConfiguration.VirtualMachineOptions.DisableFreePageReporting != nil {
@@ -172,26 +172,26 @@ var _ = SIGDescribe("VMIDefaults", func() {
 			Expect(*domain.Devices.Ballooning).To(Equal(expected))
 		},
 			Entry("[test_id:4557]with period 12", uint32(12), api.MemBalloon{
-				Model: "virtio-non-transitional",
+				Model: "virtio",
 				Stats: &api.Stats{
 					Period: 12,
 				},
 				Address: &api.Address{
-					Type:     api.AddressPCI,
-					Domain:   "0x0000",
-					Bus:      "0x07",
-					Slot:     "0x00",
-					Function: "0x0",
+					Type:     api.AddressCCW,
+					Domain:   "",
+					Bus:      "",
+					Slot:     "",
+					Function: "",
 				},
 			}),
 			Entry("[test_id:4558]with period 0", uint32(0), api.MemBalloon{
-				Model: "virtio-non-transitional",
+				Model: "virtio",
 				Address: &api.Address{
-					Type:     api.AddressPCI,
-					Domain:   "0x0000",
-					Bus:      "0x07",
-					Slot:     "0x00",
-					Function: "0x0",
+					Type:     api.AddressCCW,
+					Domain:   "",
+					Bus:      "",
+					Slot:     "",
+					Function: "",
 				},
 			}),
 		)
