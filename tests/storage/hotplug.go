@@ -470,10 +470,10 @@ var _ = SIGDescribe("Hotplug", func() {
 
 		By("Creating DataVolume")
 		dvBlock := libdv.NewDataVolume(
-			libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling)),
+			libdv.WithBlankImageSource(),
 			libdv.WithStorage(
 				libdv.StorageWithStorageClass(sc),
-				libdv.StorageWithVolumeSize(cd.FedoraVolumeSize),
+				libdv.StorageWithVolumeSize(cd.BlankVolumeSize),
 				libdv.StorageWithAccessMode(accessMode),
 				libdv.StorageWithVolumeMode(volumeMode),
 			),
