@@ -510,8 +510,8 @@ chpasswd: { expire: False }`
 	})
 
 	It("Complex example with generated cloud-init config", func() {
-		const user = "alpine"
-		cdSource := cd.ContainerDiskFor(cd.ContainerDiskAlpineTestTooling)
+		const user = "fedora"
+		cdSource := cd.ContainerDiskFor(cd.ContainerDiskFedoraTestTooling)
 		tmpDir := GinkgoT().TempDir()
 		password := rand.String(12)
 
@@ -568,7 +568,8 @@ chpasswd: { expire: False }`
 		Eventually(ThisVM(vm), 360*time.Second, 1*time.Second).Should(BeReady())
 		vmi, err := virtClient.VirtualMachineInstance(vm.Namespace).Get(context.Background(), vm.Name, metav1.GetOptions{})
 		Expect(err).ToNot(HaveOccurred())
-		vmi = libwait.WaitUntilVMIReady(vmi, console.LoginToAlpine)
+		vmi = libwait.WaitForSuccessfulVMIStart(vmi, libwait.WithTimeout(180))
+		console.LoginToFedoraWithCustomPassword(vmi, password)
 
 		runSSHCommand(vm.Namespace, vm.Name, user, keyFile)
 	})
