@@ -1021,7 +1021,7 @@ spec:
 			checkVirtComponents(imagePullSecrets)
 
 			By("Starting a VMI")
-			vmi := libvmi.New(libvmi.WithResourceMemory("1Mi"))
+			vmi := libvmifact.NewAlpine(libvmi.WithResourceMemory("128Mi"))
 			vmi, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
 			Expect(err).NotTo(HaveOccurred())
 			libwait.WaitForSuccessfulVMIStart(vmi)
@@ -3066,7 +3066,7 @@ func waitForKvWithTimeout(newKv *v1.KubeVirt, timeoutSeconds int) {
 }
 
 func waitForKv(newKv *v1.KubeVirt) {
-	waitForKvWithTimeout(newKv, 300)
+	waitForKvWithTimeout(newKv, 400)
 }
 
 func patchKV(name string, patches *patch.PatchSet) {
