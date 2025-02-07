@@ -972,7 +972,7 @@ spec:
 			checkVirtComponents(nil)
 
 			By("Starting a VMI")
-			vmi := libvmi.New(libvmi.WithResourceMemory("1Mi"))
+			vmi := libvmifact.NewAlpine(libvmi.WithResourceMemory("128Mi"))
 			vmi, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
 			Expect(err).NotTo(HaveOccurred())
 			libwait.WaitForSuccessfulVMIStart(vmi)
