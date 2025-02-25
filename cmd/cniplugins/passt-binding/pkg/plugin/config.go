@@ -27,6 +27,7 @@ import (
 )
 
 // A NetConf structure represents a Multus network attachment definition configuration
+// dummy comment
 type NetConf struct {
 	types.NetConf
 
