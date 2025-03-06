@@ -187,10 +187,10 @@ var _ = SIGDescribe("[ref_id:1182]Probes", func() {
 				Expect(err).ToNot(HaveOccurred(), "should attach the backend pod with liveness probe")
 
 				By(specifyingVMLivenessProbe)
-				vmi = createReadyAlpineVMIWithLivenessProbe(livenessProbe)
+				vmi = createReadyFedoraVMIWithLivenessProbe(livenessProbe)
 			} else if !isExecProbe(livenessProbe) {
 				By(specifyingVMLivenessProbe)
-				vmi = createReadyAlpineVMIWithLivenessProbe(livenessProbe)
+				vmi = createReadyFedoraVMIWithLivenessProbe(livenessProbe)
 
 				By("Starting the server inside the VMI")
 				serverStarter(vmi, livenessProbe, 1500)
@@ -283,7 +283,7 @@ func createReadyFedoraVMIWithReadinessProbe(probe *v1.Probe) *v1.VirtualMachineI
 	return libvmops.RunVMIAndExpectLaunchIgnoreWarnings(vmi, 180)
 }
 
-func createReadyAlpineVMIWithLivenessProbe(probe *v1.Probe) *v1.VirtualMachineInstance {
+func createReadyFedoraVMIWithLivenessProbe(probe *v1.Probe) *v1.VirtualMachineInstance {
 	vmi := libvmifact.NewFedora(libnet.WithMasqueradeNetworking(), withLivelinessProbe(probe))
 
 	return libvmops.RunVMIAndExpectLaunchIgnoreWarnings(vmi, 180)
