@@ -289,7 +289,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 
 		BeforeEach(func() {
 			vm = libvmi.NewVirtualMachine(
-				libvmifact.NewCirros(
+				libvmifact.NewAlpine(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 				))
@@ -460,7 +460,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 
 			It("should fail restoring to a different VM that already exists", func() {
 				By("Creating a new VM")
-				newVM := libvmi.NewVirtualMachine(libvmifact.NewCirros())
+				newVM := libvmi.NewVirtualMachine(libvmifact.NewAlpine())
 				newVM, err = virtClient.VirtualMachine(testsuite.GetTestNamespace(nil)).Create(context.Background(), newVM, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred())
 				defer deleteVM(newVM)
@@ -1141,7 +1141,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 			}
 
 			It("[test_id:5259]should restore a vm multiple from the same snapshot", func() {
-				vm, vmi = createAndStartVM(renderVMWithRegistryImportDataVolume(cd.ContainerDiskCirros, snapshotStorageClass))
+				vm, vmi = createAndStartVM(renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, snapshotStorageClass))
 
 				By(stoppingVM)
 				vm = libvmops.StopVirtualMachine(vm)
@@ -1163,7 +1163,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 			})
 
 			It("restore should allow grace period for the target to be ready", func() {
-				vm, vmi = createAndStartVM(renderVMWithRegistryImportDataVolume(cd.ContainerDiskCirros, snapshotStorageClass))
+				vm, vmi = createAndStartVM(renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, snapshotStorageClass))
 
 				By(creatingSnapshot)
 				snapshot = createSnapshot(vm)
@@ -1180,7 +1180,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 			})
 
 			It("restore should stop target if targetReadinessPolicy is StopTarget", func() {
-				vm, vmi = createAndStartVM(renderVMWithRegistryImportDataVolume(cd.ContainerDiskCirros, snapshotStorageClass))
+				vm, vmi = createAndStartVM(renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, snapshotStorageClass))
 
 				By(creatingSnapshot)
 				snapshot = createSnapshot(vm)
@@ -1204,18 +1204,18 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 			// behavior. In case of running this test with other provisioner or if ceph
 			// will change this behavior it will fail.
 			DescribeTable("should restore a vm with restore size bigger then PVC size", decorators.RequiresSizeRoundUp, func(restoreToNewVM bool) {
-				vm = createVMWithCloudInit(cd.ContainerDiskCirros, snapshotStorageClass)
-				quantity, err := resource.ParseQuantity("1528Mi")
+				vm = createVMWithCloudInit(cd.ContainerDiskFedoraTestTooling, snapshotStorageClass)
+				quantity, err := resource.ParseQuantity("5320Mi")
 				Expect(err).ToNot(HaveOccurred())
 				vm.Spec.DataVolumeTemplates[0].Spec.Storage.Resources.Requests["storage"] = quantity
 				vm, vmi = createAndStartVM(vm)
-				expectedCapacity, err := resource.ParseQuantity("2Gi")
+				expectedCapacity, err := resource.ParseQuantity("6Gi")
 				Expect(err).ToNot(HaveOccurred())
 				pvc, err := virtClient.CoreV1().PersistentVolumeClaims(vm.Namespace).Get(context.Background(), vm.Spec.DataVolumeTemplates[0].Name, metav1.GetOptions{})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(pvc.Status.Capacity["storage"]).To(Equal(expectedCapacity))
 
-				doRestore("", console.LoginToCirros, offlineSnaphot, getTargetVMName(restoreToNewVM, newVmName))
+				doRestore("", console.LoginToFedora, offlineSnaphot, getTargetVMName(restoreToNewVM, newVmName))
 				Expect(restore.Status.Restores).To(HaveLen(1))
 
 				content, err := virtClient.VirtualMachineSnapshotContent(vm.Namespace).Get(context.Background(), *snapshot.Status.VirtualMachineSnapshotContentName, metav1.GetOptions{})
@@ -1237,10 +1237,10 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 			)
 
 			DescribeTable("should restore a vm that boots from a datavolumetemplate", decorators.StorageCritical, func(restoreToNewVM bool) {
-				vm, vmi = createAndStartVM(createVMWithCloudInit(cd.ContainerDiskCirros, snapshotStorageClass))
+				vm, vmi = createAndStartVM(createVMWithCloudInit(cd.ContainerDiskFedoraTestTooling, snapshotStorageClass))
 
 				originalDVName := vm.Spec.DataVolumeTemplates[0].Name
-				doRestore("", console.LoginToCirros, offlineSnaphot, getTargetVMName(restoreToNewVM, newVmName))
+				doRestore("", console.LoginToFedora, offlineSnaphot, getTargetVMName(restoreToNewVM, newVmName))
 				verifyRestore(restoreToNewVM, originalDVName)
 			},
 				Entry("[test_id:5260] to the same VM", false),
@@ -1248,7 +1248,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 			)
 
 			DescribeTable("should restore a vm that boots from a datavolume (not template)", func(restoreToNewVM bool) {
-				vm = createVMWithCloudInit(cd.ContainerDiskCirros, snapshotStorageClass)
+				vm = createVMWithCloudInit(cd.ContainerDiskFedoraTestTooling, snapshotStorageClass)
 				dv := orphanDataVolumeTemplate(vm, 0)
 				originalPVCName := dv.Name
 
@@ -1257,7 +1257,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 
 				vm, vmi = createAndStartVM(vm)
 				dv = waitDVReady(dv)
-				doRestore("", console.LoginToCirros, offlineSnaphot, getTargetVMName(restoreToNewVM, newVmName))
+				doRestore("", console.LoginToFedora, offlineSnaphot, getTargetVMName(restoreToNewVM, newVmName))
 				Expect(restore.Status.Restores).To(HaveLen(1))
 				if restoreToNewVM {
 					checkNewVMEquality()
@@ -1285,8 +1285,8 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 			DescribeTable("should restore a vm that boots from a PVC", func(restoreToNewVM bool) {
 				dv := libdv.NewDataVolume(
 					libdv.WithName("restore-pvc-"+rand.String(12)),
-					libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros), cdiv1.RegistryPullNode),
-					libdv.WithStorage(libdv.StorageWithStorageClass(snapshotStorageClass)),
+					libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling), cdiv1.RegistryPullNode),
+					libdv.WithStorage(libdv.StorageWithStorageClass(snapshotStorageClass), libdv.StorageWithVolumeSize(cd.FedoraVolumeSize)),
 				)
 
 				_, err = virtClient.CdiClient().CdiV1beta1().DataVolumes(testsuite.GetTestNamespace(nil)).Create(context.Background(), dv, metav1.CreateOptions{})
@@ -1302,7 +1302,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 					libvmi.WithResourceMemory(memory), libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()))
 				vm, vmi = createAndStartVM(libvmi.NewVirtualMachine(vmi))
 
-				doRestore("", console.LoginToCirros, offlineSnaphot, getTargetVMName(restoreToNewVM, newVmName))
+				doRestore("", console.LoginToFedora, offlineSnaphot, getTargetVMName(restoreToNewVM, newVmName))
 				Expect(restore.Status.Restores).To(HaveLen(1))
 				if restoreToNewVM {
 					checkNewVMEquality()
@@ -1338,7 +1338,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 			DescribeTable("should restore a vm with containerdisk and blank datavolume", func(restoreToNewVM bool) {
 				quantity, err := resource.ParseQuantity("1Gi")
 				Expect(err).ToNot(HaveOccurred())
-				vmi = libvmifact.NewCirros(
+				vmi = libvmifact.NewFedora(
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(v1.DefaultPodNetwork()),
 				)
@@ -1386,7 +1386,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 
 				vm, vmi = createAndStartVM(vm)
 
-				doRestore("/dev/vdc", console.LoginToCirros, offlineSnaphot, getTargetVMName(restoreToNewVM, newVmName))
+				doRestore("/dev/vdb", console.LoginToFedora, offlineSnaphot, getTargetVMName(restoreToNewVM, newVmName))
 				Expect(restore.Status.Restores).To(HaveLen(1))
 
 				if restoreToNewVM {
@@ -1438,7 +1438,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 			)
 
 			DescribeTable("should reject vm start if restore in progress", func(deleteFunc string) {
-				vm, vmi = createAndStartVM(renderVMWithRegistryImportDataVolume(cd.ContainerDiskCirros, snapshotStorageClass))
+				vm, vmi = createAndStartVM(renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, snapshotStorageClass))
 
 				By(stoppingVM)
 				vm = libvmops.StopVirtualMachine(vm)
@@ -1538,11 +1538,11 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 			)
 
 			DescribeTable("should restore a vm from an online snapshot", decorators.StorageCritical, func(restoreToNewVM bool) {
-				vm = createVMWithCloudInit(cd.ContainerDiskCirros, snapshotStorageClass)
+				vm = createVMWithCloudInit(cd.ContainerDiskAlpine, snapshotStorageClass)
 				vm.Spec.Template.Spec.Domain.Firmware = &v1.Firmware{}
 				vm, vmi = createAndStartVM(vm)
 				targetVMName := getTargetVMName(restoreToNewVM, newVmName)
-				login := console.LoginToCirros
+				login := console.LoginToAlpine
 
 				if !restoreToNewVM {
 					// Expect to get event in case we stop
@@ -1866,7 +1866,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 					forcedHostAssistedScName = sc.Name
 
 					source := libdv.NewDataVolume(
-						libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros), cdiv1.RegistryPullNode),
+						libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling), cdiv1.RegistryPullNode),
 						libdv.WithStorage(libdv.StorageWithStorageClass(forcedHostAssistedScName)),
 						libdv.WithForceBindAnnotation(),
 					)
@@ -1958,7 +1958,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 						Expect(err).ToNot(HaveOccurred())
 					}
 
-					doRestore("", console.LoginToCirros, offlineSnaphot, getTargetVMName(restoreToNewVM, newVmName))
+					doRestore("", console.LoginToFedora, offlineSnaphot, getTargetVMName(restoreToNewVM, newVmName))
 					checkCloneAnnotations(getTargetVM(restoreToNewVM), false)
 				},
 					Entry("to the same VM", false, false, false),
@@ -1984,7 +1984,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 						err := virtClient.CdiClient().CdiV1beta1().DataVolumes(sourceDV.Namespace).Delete(context.Background(), sourceDV.Name, metav1.DeleteOptions{})
 						Expect(err).ToNot(HaveOccurred())
 					}
-					doRestore("", console.LoginToCirros, offlineSnaphot, getTargetVMName(restoreToNewVM, newVmName))
+					doRestore("", console.LoginToFedora, offlineSnaphot, getTargetVMName(restoreToNewVM, newVmName))
 					checkCloneAnnotations(getTargetVM(restoreToNewVM), false)
 				},
 					Entry("to the same VM", false, false),

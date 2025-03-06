@@ -149,7 +149,7 @@ var _ = SIGDescribe("Volumes update with migration", decorators.RequiresTwoSched
 			fsPVC            = "filesystem"
 			blockPVC         = "block"
 			size             = "1Gi"
-			sizeWithOverhead = "1.2Gi"
+			sizeWithOverhead = "1200Mi"
 		)
 
 		waitMigrationToNotExist := func(vmiName, ns string) {
@@ -184,7 +184,7 @@ var _ = SIGDescribe("Volumes update with migration", decorators.RequiresTwoSched
 			sc, exist := libstorage.GetRWOFileSystemStorageClass()
 			Expect(exist).To(BeTrue())
 			dv := libdv.NewDataVolume(
-				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
 					libdv.StorageWithVolumeSize(size),
 					libdv.StorageWithFilesystemVolumeMode(),
@@ -506,7 +506,7 @@ var _ = SIGDescribe("Volumes update with migration", decorators.RequiresTwoSched
 			srcPVC := "src-" + rand.String(5)
 			libstorage.CreateFSPVC(srcPVC, ns, size, nil)
 			libstorage.CreateFSPVC(destPVC, ns, size, nil)
-			vmi := libvmifact.NewCirros(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(ns),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(virtv1.DefaultPodNetwork()),
@@ -864,7 +864,7 @@ var _ = SIGDescribe("Volumes update with migration", decorators.RequiresTwoSched
 			const volName = "vol0"
 			ns := testsuite.GetTestNamespace(nil)
 			dv := createBlankDV(virtClient, ns, "1Gi")
-			vmi := libvmifact.NewCirros(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(ns),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(virtv1.DefaultPodNetwork()),

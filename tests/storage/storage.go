@@ -295,13 +295,13 @@ var _ = SIGDescribe("Storage", func() {
 			It("[test_id:3134]should create a writeable emptyDisk with the right capacity", func() {
 
 				// Start the VirtualMachineInstance with the empty disk attached
-				vmi = libvmifact.NewCirros(
+				vmi = libvmifact.NewFedora(
 					libvmi.WithResourceMemory("512M"),
 					libvmi.WithEmptyDisk("emptydisk1", v1.DiskBusVirtio, resource.MustParse("1G")),
 				)
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 90)
 
-				Expect(console.LoginToCirros(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 				var emptyDiskDevice string
 				Eventually(func() string {
@@ -332,7 +332,7 @@ var _ = SIGDescribe("Storage", func() {
 			It("[test_id:3135]should create a writeable emptyDisk with the specified serial number", func() {
 
 				// Start the VirtualMachineInstance with the empty disk attached
-				vmi = libvmifact.NewAlpineWithTestTooling(libnet.WithMasqueradeNetworking())
+				vmi = libvmifact.NewFedora(libnet.WithMasqueradeNetworking())
 				vmi.Spec.Domain.Devices.Disks = append(vmi.Spec.Domain.Devices.Disks, v1.Disk{
 					Name:   "emptydisk1",
 					Serial: diskSerial,
@@ -352,7 +352,7 @@ var _ = SIGDescribe("Storage", func() {
 				})
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 90)
 
-				Expect(console.LoginToAlpine(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 				By("Checking for the specified serial number")
 				Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
@@ -431,7 +431,7 @@ var _ = SIGDescribe("Storage", func() {
 
 				Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
 					// Because "/" is mounted on tmpfs, we need something that normally persists writes - /dev/sda2 is the EFI partition formatted as vFAT.
-					&expect.BSnd{S: "mount /dev/sda2 /mnt\n"},
+					&expect.BSnd{S: "mount /dev/vdb /mnt\n"},
 					&expect.BExp{R: console.PromptExpression},
 					&expect.BSnd{S: console.EchoLastReturnValue},
 					&expect.BExp{R: console.RetValue("0")},
@@ -459,7 +459,7 @@ var _ = SIGDescribe("Storage", func() {
 
 				Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
 					// Same story as when first starting the VirtualMachineInstance - the checkpoint, if persisted, is located at /dev/sda2.
-					&expect.BSnd{S: "mount /dev/sda2 /mnt\n"},
+					&expect.BSnd{S: "mount /dev/vdb /mnt\n"},
 					&expect.BExp{R: console.PromptExpression},
 					&expect.BSnd{S: console.EchoLastReturnValue},
 					&expect.BExp{R: console.RetValue("0")},
@@ -896,7 +896,7 @@ var _ = SIGDescribe("Storage", func() {
 				}
 
 				dataVolume = libdv.NewDataVolume(
-					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 					libdv.WithStorage(libdv.StorageWithStorageClass(sc), libdv.StorageWithBlockVolumeMode()),
 				)
 				dataVolume, err = virtClient.CdiClient().CdiV1beta1().DataVolumes(testsuite.GetTestNamespace(nil)).Create(context.Background(), dataVolume, metav1.CreateOptions{})
@@ -916,7 +916,7 @@ var _ = SIGDescribe("Storage", func() {
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 90)
 
 				By(checkingVMInstanceConsoleOut)
-				Expect(console.LoginToCirros(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 			})
 		})
 
@@ -1056,7 +1056,7 @@ var _ = SIGDescribe("Storage", func() {
 				}
 
 				dataVolume = libdv.NewDataVolume(
-					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 					libdv.WithStorage(libdv.StorageWithStorageClass(sc), libdv.StorageWithBlockVolumeMode()),
 				)
 				dataVolume, err = virtClient.CdiClient().CdiV1beta1().DataVolumes(testsuite.GetTestNamespace(nil)).Create(context.Background(), dataVolume, metav1.CreateOptions{})
@@ -1094,7 +1094,7 @@ var _ = SIGDescribe("Storage", func() {
 				}
 
 				dv = libdv.NewDataVolume(
-					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 					libdv.WithStorage(libdv.StorageWithStorageClass(sc)),
 				)
 
@@ -1316,7 +1316,7 @@ var _ = SIGDescribe("Storage", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				By("Creating VMI with LUN disk")
-				vmi := libvmifact.NewCirros(libvmi.WithResourceMemory("512M"))
+				vmi := libvmifact.NewFedora(libvmi.WithResourceMemory("512M"))
 				addDataVolumeLunDisk(vmi, "lun0", dv.Name)
 				vmi, err = virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
 				Expect(err).ToNot(HaveOccurred(), failedCreateVMI)
@@ -1325,7 +1325,7 @@ var _ = SIGDescribe("Storage", func() {
 					libwait.WithFailOnWarnings(false),
 					libwait.WithTimeout(240),
 				)
-				Expect(console.LoginToCirros(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 
 				var lunDisk string
 				Eventually(func() string {
