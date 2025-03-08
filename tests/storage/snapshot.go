@@ -455,7 +455,7 @@ var _ = SIGDescribe("VirtualMachineSnapshot Tests", func() {
 			})
 
 			It("[test_id:6769]without volumes with guest agent available", func() {
-				vmi := libvmifact.NewAlpineWithTestTooling(libnet.WithMasqueradeNetworking())
+				vmi := libvmifact.NewFedora(libnet.WithMasqueradeNetworking())
 				vmi.Namespace = testsuite.GetTestNamespace(nil)
 				vm = libvmi.NewVirtualMachine(vmi)
 

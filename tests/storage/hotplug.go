@@ -1267,7 +1267,7 @@ var _ = SIGDescribe("Hotplug", func() {
 				}
 
 				var err error
-				url := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling)
+				url := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)
 
 				storageClass, foundSC := libstorage.GetRWOFileSystemStorageClass()
 				if !foundSC {
@@ -1279,7 +1279,7 @@ var _ = SIGDescribe("Hotplug", func() {
 					libdv.WithRegistryURLSource(url),
 					libdv.WithStorage(
 						libdv.StorageWithStorageClass(storageClass),
-						libdv.StorageWithVolumeSize("500Mi"),
+						libdv.StorageWithVolumeSize(cd.AlpineVolumeSize),
 						libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeFilesystem),
 					),
 					libdv.WithForceBindAnnotation(),

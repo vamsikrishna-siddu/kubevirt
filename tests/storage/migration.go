@@ -439,7 +439,7 @@ var _ = SIGDescribe("Volumes update with migration", decorators.RequiresTwoSched
 			sc, exist := libstorage.GetRWXBlockStorageClass()
 			Expect(exist).To(BeTrue())
 			srcDV := libdv.NewDataVolume(
-				libdv.WithBlankImageSource(),
+				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
 					libdv.StorageWithVolumeSize(size),
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeBlock),
@@ -449,7 +449,7 @@ var _ = SIGDescribe("Volumes update with migration", decorators.RequiresTwoSched
 				srcDV, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 			destDV := libdv.NewDataVolume(
-				libdv.WithBlankImageSource(),
+				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
 					libdv.StorageWithVolumeSize(size),
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeBlock),
@@ -476,7 +476,7 @@ var _ = SIGDescribe("Volumes update with migration", decorators.RequiresTwoSched
 			sc, exist := libstorage.GetRWOBlockStorageClass()
 			Expect(exist).To(BeTrue())
 			srcDV := libdv.NewDataVolume(
-				libdv.WithBlankImageSource(),
+				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
 					libdv.StorageWithVolumeSize(size),
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeBlock),
@@ -487,7 +487,13 @@ var _ = SIGDescribe("Volumes update with migration", decorators.RequiresTwoSched
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(err).ToNot(HaveOccurred())
-			destDV := createBlankDV(virtClient, ns, size)
+			destDV := libdv.NewDataVolume(
+				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
+				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
+					libdv.StorageWithVolumeSize(size),
+					libdv.StorageWithFilesystemVolumeMode(),
+				),
+			)
 			vm := createVMWithDV(srcDV, volName)
 			By("Update volumes")
 			updateVMWithDV(vm, volName, destDV.Name)

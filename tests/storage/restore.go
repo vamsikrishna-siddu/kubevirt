@@ -1294,7 +1294,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 
 				originalPVCName := dv.Name
 
-				memory := "128Mi"
+				memory := "512Mi"
 				if checks.IsARM64(testsuite.Arch) {
 					memory = "256Mi"
 				}
@@ -1538,11 +1538,11 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 			)
 
 			DescribeTable("should restore a vm from an online snapshot", decorators.StorageCritical, func(restoreToNewVM bool) {
-				vm = createVMWithCloudInit(cd.ContainerDiskAlpine, snapshotStorageClass)
+				vm = createVMWithCloudInit(cd.ContainerDiskFedoraTestTooling, snapshotStorageClass)
 				vm.Spec.Template.Spec.Domain.Firmware = &v1.Firmware{}
 				vm, vmi = createAndStartVM(vm)
 				targetVMName := getTargetVMName(restoreToNewVM, newVmName)
-				login := console.LoginToAlpine
+				login := console.LoginToFedora
 
 				if !restoreToNewVM {
 					// Expect to get event in case we stop
@@ -1867,7 +1867,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 
 					source := libdv.NewDataVolume(
 						libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling), cdiv1.RegistryPullNode),
-						libdv.WithStorage(libdv.StorageWithStorageClass(forcedHostAssistedScName)),
+						libdv.WithStorage(libdv.StorageWithStorageClass(forcedHostAssistedScName), libdv.StorageWithVolumeSize(cd.FedoraVolumeSize)),
 						libdv.WithForceBindAnnotation(),
 					)
 					source, err = virtClient.CdiClient().CdiV1beta1().DataVolumes(testsuite.NamespaceTestAlternative).Create(context.Background(), source, metav1.CreateOptions{})
@@ -1929,7 +1929,7 @@ var _ = SIGDescribe("VirtualMachineRestore Tests", func() {
 					// TODO: consider ensuring network clone gets done here using StorageProfile CloneStrategy
 					dataVolume := libdv.NewDataVolume(
 						libdv.WithPVCSource(sourceDV.Namespace, sourceDV.Name),
-						libdv.WithStorage(libdv.StorageWithStorageClass(forcedHostAssistedScName), libdv.StorageWithVolumeSize("1Gi")),
+						libdv.WithStorage(libdv.StorageWithStorageClass(forcedHostAssistedScName), libdv.StorageWithVolumeSize(cd.FedoraVolumeSize)),
 					)
 
 					return libvmi.NewVirtualMachine(

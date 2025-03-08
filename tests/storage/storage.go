@@ -916,7 +916,7 @@ var _ = SIGDescribe("Storage", func() {
 				vmi = libvmops.RunVMIAndExpectLaunch(vmi, 90)
 
 				By(checkingVMInstanceConsoleOut)
-				Expect(console.LoginToFedora(vmi)).To(Succeed())
+				Expect(console.LoginToAlpine(vmi)).To(Succeed())
 			})
 		})
 
