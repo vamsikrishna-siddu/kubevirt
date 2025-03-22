@@ -244,7 +244,7 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 				libdv.WithRegistryURLSourceAndPullMethod(imageUrl, cdiv1.RegistryPullNode),
 				libdv.WithStorage(
 					libdv.StorageWithStorageClass(sc),
-					libdv.StorageWithVolumeSize("512Mi"),
+					libdv.StorageWithVolumeSize(cd.AlpineVolumeSize),
 					libdv.StorageWithAccessMode(k8sv1.ReadWriteOnce),
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeFilesystem),
 				),
@@ -283,7 +283,7 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 				return false
 			}, 30*time.Second, time.Second).Should(BeTrue(), "Expected VolumeStatus for 'disk0' to be available")
 
-			Expect(getVirtualSize(vmi, dataVolume)).ToNot(BeNumerically(">", freeSize))
+			Expect(getVirtualSize(vmi, dataVolume)).ToNot(BeNumerically("<", freeSize))
 		})
 	})
 

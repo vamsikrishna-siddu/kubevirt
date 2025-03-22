@@ -407,6 +407,21 @@ var _ = SIGDescribe("VirtualMachineSnapshot Tests", func() {
 				}, 30)).To(Succeed())
 			}
 
+			ensureNoFreezeFedora := func(vmi *v1.VirtualMachineInstance) {
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
+
+				syslogCheck := "cat /var/log/messages"
+				expectedFreezeOutput := "guest-fsfreeze called"
+				Expect(console.SafeExpectBatch(vmi, []expect.Batcher{
+					&expect.BSnd{S: "ls /var/log/messages\n"},
+					&expect.BExp{R: "/var/log/messages"},
+					&expect.BSnd{S: fmt.Sprintf(grepCmd, syslogCheck, expectedFreezeOutput)},
+					&expect.BExp{R: console.PromptExpression},
+					&expect.BSnd{S: console.EchoLastReturnValue},
+					&expect.BExp{R: console.RetValue("1")},
+				}, 30)).To(Succeed())
+			}
+
 			It("[test_id:6767]with volumes and guest agent available", func() {
 				quantity, err := resource.ParseQuantity("1Gi")
 				Expect(err).ToNot(HaveOccurred())
@@ -528,7 +543,7 @@ var _ = SIGDescribe("VirtualMachineSnapshot Tests", func() {
 			})
 
 			It("[test_id:6769]without volumes with guest agent available", func() {
-				vmi := libvmifact.NewAlpineWithTestTooling(libnet.WithMasqueradeNetworking())
+				vmi := libvmifact.NewFedora(libnet.WithMasqueradeNetworking())
 				vmi.Namespace = testsuite.GetTestNamespace(nil)
 				vm = libvmi.NewVirtualMachine(vmi)
 
@@ -544,7 +559,7 @@ var _ = SIGDescribe("VirtualMachineSnapshot Tests", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				waitSnapshotReady()
-				checkVMFreeze(snapshot, vmi, true, ensureNoFreezeAlpine)
+				checkVMFreeze(snapshot, vmi, true, ensureNoFreezeFedora)
 
 				Expect(snapshot.Status.CreationTime).ToNot(BeNil())
 				contentName := *snapshot.Status.VirtualMachineSnapshotContentName
@@ -1475,7 +1490,7 @@ var _ = SIGDescribe("VirtualMachineSnapshot Tests", func() {
 			)
 
 			It("[test_id:9705]Should show included and excluded volumes in the snapshot", func() {
-				noSnapshotSC := libstorage.GetNoVolumeSnapshotStorageClass("local")
+				noSnapshotSC := libstorage.GetNoVolumeSnapshotStorageClass("hostpath-csi")
 				if noSnapshotSC == "" {
 					Skip("Skipping test, no storage class without snapshot support")
 				}
