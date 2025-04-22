@@ -181,7 +181,7 @@ var _ = SIGDescribe("bridge nic-hotplug", func() {
 			Expect(libnet.PingFromVMConsole(hotPluggedVMI, ip2)).To(Succeed())
 		},
 			Entry("In place", decorators.InPlaceHotplugNICs, inPlace),
-			Entry("Migration based", decorators.MigrationBasedHotplugNICs, migrationBased),
+			Entry("test_id:hpm Migration based", decorators.MigrationBasedHotplugNICs, migrationBased),
 		)
 
 		DescribeTable("is able to hotplug multiple network interfaces", func(plugMethod hotplugMethod) {

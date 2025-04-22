@@ -518,7 +518,7 @@ var _ = SIGDescribe("Multus", Serial, decorators.Multus, func() {
 
 				vmiOne := createVMIOnNode(interfaces, networks)
 
-				libwait.WaitUntilVMIReady(vmiOne, console.LoginToAlpine)
+				libwait.WaitUntilVMIReady(vmiOne, console.LoginToFedora)
 
 				updatedVmi, err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmiOne)).Get(context.Background(), vmiOne.Name, metav1.GetOptions{})
 				Expect(err).ToNot(HaveOccurred())
