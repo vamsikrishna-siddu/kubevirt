@@ -908,17 +908,17 @@ var _ = SIGDescribe("Volumes update with migration", decorators.RequiresTwoSched
 					return ""
 				}).WithTimeout(60 * time.Second).WithPolling(2 * time.Second).ShouldNot(BeEmpty())
 
-				Expect(console.LoginToCirros(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 				Expect(console.RunCommand(vmi, "sudo mkfs.ext3 /dev/sda", 30*time.Second)).To(Succeed())
 				Expect(console.RunCommand(vmi, "mkdir test", 30*time.Second)).To(Succeed())
-				Expect(console.RunCommand(vmi, fmt.Sprintf("sudo mount -t ext3 /dev/%s /home/cirros/test", device), 30*time.Second)).To(Succeed())
-				Expect(console.RunCommand(vmi, "sudo chmod 777 /home/cirros/test", 30*time.Second)).To(Succeed())
-				Expect(console.RunCommand(vmi, "sudo chown cirros:cirros /home/cirros/test", 30*time.Second)).To(Succeed())
-				Expect(console.RunCommand(vmi, "printf 'test' &> /home/cirros/test/test", 30*time.Second)).To(Succeed())
+				Expect(console.RunCommand(vmi, fmt.Sprintf("sudo mount -t ext3 /dev/%s /home/fedora/test", device), 30*time.Second)).To(Succeed())
+				Expect(console.RunCommand(vmi, "sudo chmod 777 /home/fedora/test", 30*time.Second)).To(Succeed())
+				Expect(console.RunCommand(vmi, "sudo chown fedora:fedora /home/fedora/test", 30*time.Second)).To(Succeed())
+				Expect(console.RunCommand(vmi, "printf 'test' &> /home/fedora/test/test", 30*time.Second)).To(Succeed())
 			}
 			checkFileOnHotpluggedVol := func(vmi *v1.VirtualMachineInstance) {
-				Expect(console.LoginToCirros(vmi)).To(Succeed())
-				Expect(console.RunCommand(vmi, "cat /home/cirros/test/test |grep test", 60*time.Second)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
+				Expect(console.RunCommand(vmi, "cat /home/fedora/test/test |grep test", 60*time.Second)).To(Succeed())
 			}
 
 			It("with a containerdisk and a hotplugged volume", func() {
@@ -971,9 +971,9 @@ var _ = SIGDescribe("Volumes update with migration", decorators.RequiresTwoSched
 				}
 				Expect(exist).To(BeTrue())
 				rootDV := libdv.NewDataVolume(
-					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling)),
 					libdv.WithStorage(libdv.StorageWithStorageClass(sc),
-						libdv.StorageWithVolumeSize("1Gi"),
+						libdv.StorageWithVolumeSize(cd.FedoraVolumeSize),
 						libdv.StorageWithVolumeMode(volumeMode),
 						libdv.StorageWithAccessMode(k8sv1.ReadWriteOnce),
 					),
@@ -982,7 +982,7 @@ var _ = SIGDescribe("Volumes update with migration", decorators.RequiresTwoSched
 					libvmi.WithNamespace(ns),
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(virtv1.DefaultPodNetwork()),
-					libvmi.WithResourceMemory("128Mi"),
+					libvmi.WithResourceMemory("512Mi"),
 					libvmi.WithDataVolume(rootVolName, rootDV.Name),
 					libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()),
 				)
@@ -1023,7 +1023,7 @@ var _ = SIGDescribe("Volumes update with migration", decorators.RequiresTwoSched
 				dvRootDst := libdv.NewDataVolume(
 					libdv.WithBlankImageSource(),
 					libdv.WithStorage(libdv.StorageWithStorageClass(sc),
-						libdv.StorageWithVolumeSize("2Gi"),
+						libdv.StorageWithVolumeSize("7Gi"),
 						libdv.StorageWithVolumeMode(volumeMode),
 						libdv.StorageWithAccessMode(k8sv1.ReadWriteOnce),
 					),
@@ -1060,7 +1060,7 @@ var _ = SIGDescribe("Volumes update with migration", decorators.RequiresTwoSched
 				Entry("from filesystem to filesystem", false, false),
 				Entry("from filesystem to block", false, true),
 				Entry("from block to filesystem", true, false),
-				Entry("from block to block", true, true),
+				Entry("[test_id:fnf]from block to block", true, true),
 			)
 		})
 	})
