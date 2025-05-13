@@ -248,11 +248,25 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeFilesystem),
 				),
 			)
+			imageUrl := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)
+			dataVolume2 := libdv.NewDataVolume(
+				libdv.WithRegistryURLSourceAndPullMethod(imageUrl, cdiv1.RegistryPullNode),
+				libdv.WithStorage(
+					libdv.StorageWithStorageClass(sc),
+					libdv.StorageWithVolumeSize("512Mi"),
+					libdv.StorageWithAccessMode(k8sv1.ReadWriteOnce),
+					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeFilesystem),
+				),
+			)
 			dataVolume, err := virtClient.CdiClient().CdiV1beta1().DataVolumes(testsuite.GetTestNamespace(nil)).Create(context.Background(), dataVolume, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 			libstorage.EventuallyDV(dataVolume, 100, HaveSucceeded())
 			pvc, err := virtClient.CoreV1().PersistentVolumeClaims(dataVolume.Namespace).Get(context.Background(), dataVolume.Name, metav1.GetOptions{})
 			Expect(err).ToNot(HaveOccurred())
+
+			dataVolume2, err = virtClient.CdiClient().CdiV1beta1().DataVolumes(testsuite.GetTestNamespace(nil)).Create(context.Background(), dataVolume2, metav1.CreateOptions{})
+			Expect(err).ToNot(HaveOccurred())
+			libstorage.EventuallyDV(dataVolume2, 100, HaveSucceeded())
 
 			executorPod := createExecutorPodWithPVC("size-detection", pvc)
 			fstatOutput, err := exec.ExecuteCommandOnPod(
@@ -266,7 +280,7 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 			Expect(err).ToNot(HaveOccurred())
 			freeSize := freeBlocks * ioBlockSize
 
-			vmi := libstorage.RenderVMIWithDataVolume(dataVolume.Name, dataVolume.Namespace)
+			vmi := libstorage.RenderVMIWithDataVolume(dataVolume2.Name, dataVolume2.Namespace)
 			vmi = libvmops.RunVMIAndExpectLaunch(vmi, 500)
 
 			// Let's wait for VMI to be ready
@@ -281,7 +295,7 @@ var _ = SIGDescribe("DataVolume Integration", func() {
 				return false
 			}, 30*time.Second, time.Second).Should(BeTrue(), "Expected VolumeStatus for 'disk0' to be available")
 
-			Expect(getVirtualSize(vmi, dataVolume)).ToNot(BeNumerically(">", freeSize))
+			Expect(getVirtualSize(vmi, dataVolume2)).ToNot(BeNumerically(">", freeSize))
 		})
 	})
 
