@@ -37,6 +37,7 @@ import (
 	"kubevirt.io/kubevirt/tests/decorators"
 	"kubevirt.io/kubevirt/tests/framework/kubevirt"
 	"kubevirt.io/kubevirt/tests/libsecret"
+	"kubevirt.io/kubevirt/tests/libvmifact"
 	"kubevirt.io/kubevirt/tests/testsuite"
 )
 
@@ -143,7 +144,7 @@ var _ = Describe("[sig-storage]ObjectGraph", decorators.SigStorage, func() {
 
 		BeforeEach(func() {
 			By("Creating and starting a VMI")
-			vmi = libvmi.New(
+			vmi = libvmifact.NewAlpine(
 				libvmi.WithResourceMemory("128Mi"),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(v1.DefaultPodNetwork()),
@@ -153,7 +154,7 @@ var _ = Describe("[sig-storage]ObjectGraph", decorators.SigStorage, func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("should return object graph for running VMI with launcher pod", func() {
+		It("[test_id:object]should return object graph for running VMI with launcher pod", func() {
 			By("Waiting for VMI to be running")
 			Eventually(func() bool {
 				updatedVmi, err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(nil)).Get(context.Background(), vmi.Name, metav1.GetOptions{})

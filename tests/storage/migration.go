@@ -151,7 +151,7 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 			fsPVC            = "filesystem"
 			blockPVC         = "block"
 			size             = "1Gi"
-			sizeWithOverhead = "1.2Gi"
+			sizeWithOverhead = "1200Mi"
 		)
 
 		waitMigrationToNotExist := func(vmiName, ns string) {
@@ -186,7 +186,7 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 			sc, exist := libstorage.GetRWOFileSystemStorageClass()
 			Expect(exist).To(BeTrue())
 			dv := libdv.NewDataVolume(
-				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
 					libdv.StorageWithVolumeSize(size),
 					libdv.StorageWithFilesystemVolumeMode(),
@@ -309,6 +309,7 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 		Context(" destination PVC expansion", decorators.StorageReq, decorators.RequiresVolumeExpansion, func() {
 			DescribeTable("should migrate the source volume from a source DV to a destination PVC", func(mode string) {
 				volName := "disk0"
+				var expectedSize string
 				dv := createDV()
 				vmi := libvmi.New(
 					libvmi.WithNamespace(ns),
@@ -333,8 +334,10 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 				case fsPVC:
 					// Add some overhead to the target PVC for filesystem.
 					dstPVC = libstorage.CreateFSPVC(destPVC, ns, sizeWithOverhead, nil)
+					expectedSize = "7591936"
 				case blockPVC:
 					dstPVC = libstorage.CreateBlockPVC(destPVC, ns, size)
+					expectedSize = "8388608"
 				default:
 					Fail("Unrecognized mode")
 				}
@@ -362,20 +365,20 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 				Expect(err).ToNot(HaveOccurred())
 
 				By("Expecting the VirtualMachineInstance console")
-				Expect(console.LoginToCirros(vmi)).To(Succeed())
+				Expect(console.LoginToAlpine(vmi)).To(Succeed())
 
 				By("Waiting for notification about size change")
 				Eventually(func() error {
 					err := console.SafeExpectBatch(vmi, []expect.Batcher{
 						&expect.BSnd{S: "\n"},
 						&expect.BExp{R: console.PromptExpression},
-						&expect.BSnd{S: "[ $(lsblk /dev/vda -o SIZE -n |sed -e \"s/ //g\") == \"4G\" ] && true\n"},
+						&expect.BSnd{S: "[ $(cat /sys/class/block/vda/size) -eq " + expectedSize + " ] && echo 0 || echo 1\n"},
 						&expect.BExp{R: "0"},
 					}, 10)
 					return err
 				}, 120).Should(BeNil())
 			},
-				Entry("to a filesystem volume", fsPVC),
+				Entry("[test_id:migration4][test_id:migrate]to a filesystem volume", fsPVC),
 				Entry("to a block volume", decorators.RequiresBlockStorage, blockPVC),
 			)
 		})
@@ -403,7 +406,7 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 			updateVMWithDV(vm, volName, srcDV.Name)
 			waitForMigrationToSucceed(virtClient, vm.Name, ns)
 		},
-			Entry("with pre-copy", false),
+			Entry("[test_id:migration9][test_id:migrate]with pre-copy", false),
 			Entry("with post-copy", true),
 		)
 
@@ -459,7 +462,7 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 			waitForMigrationToSucceed(virtClient, vm.Name, ns)
 		})
 
-		It("should trigger the migration once the destination PVC exists", func() {
+		It("[test_id:migration5][test_id:migrate]should trigger the migration once the destination PVC exists", func() {
 			volName := "disk0"
 			srcDV := createDV()
 			vm := createVMWithDV(srcDV, volName)
@@ -490,15 +493,15 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 			vmi, err := virtClient.VirtualMachineInstance(ns).Get(context.Background(), vm.Name,
 				metav1.GetOptions{})
 			Expect(err).ToNot(HaveOccurred())
-			Expect(console.LoginToCirros(vmi)).To(Succeed())
+			Expect(console.LoginToAlpine(vmi)).To(Succeed())
 		})
 
-		It("should migrate the source volume from a source and destination block RWX DVs", decorators.StorageCritical, decorators.RequiresRWXBlock, func() {
+		It("[test_id:migration8][test_id:migrate]should migrate the source volume from a source and destination block RWX DVs", decorators.StorageCritical, decorators.RequiresRWXBlock, func() {
 			volName := "disk0"
 			sc, exist := libstorage.GetRWXBlockStorageClass()
 			Expect(exist).To(BeTrue())
 			srcDV := libdv.NewDataVolume(
-				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
 					libdv.StorageWithVolumeSize(size),
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeBlock),
@@ -508,7 +511,7 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 				srcDV, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 			destDV := libdv.NewDataVolume(
-				libdv.WithBlankImageSource(),
+				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
 					libdv.StorageWithVolumeSize(size),
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeBlock),
@@ -532,15 +535,15 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 			vmi, err := virtClient.VirtualMachineInstance(ns).Get(context.Background(), vm.Name,
 				metav1.GetOptions{})
 			Expect(err).ToNot(HaveOccurred())
-			Expect(console.LoginToCirros(vmi)).To(Succeed())
+			Expect(console.LoginToAlpine(vmi)).To(Succeed())
 		})
 
-		It("should migrate the source volume from a block source and filesystem destination DVs", decorators.RequiresBlockStorage, func() {
+		It("[test_id:migration3][test_id:migrate]should migrate the source volume from a block source and filesystem destination DVs", decorators.RequiresBlockStorage, func() {
 			volName := "disk0"
 			sc, exist := libstorage.GetRWOBlockStorageClass()
 			Expect(exist).To(BeTrue())
 			srcDV := libdv.NewDataVolume(
-				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
 					libdv.StorageWithVolumeSize(size),
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeBlock),
@@ -550,7 +553,13 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 				srcDV, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
 
-			destDV := createBlankDV(virtClient, ns, size)
+			destDV := libdv.NewDataVolume(
+				libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
+				libdv.WithStorage(libdv.StorageWithStorageClass(sc),
+					libdv.StorageWithVolumeSize(size),
+					libdv.StorageWithFilesystemVolumeMode(),
+				),
+			)
 			vm := createVMWithDV(srcDV, volName)
 			By("Update volumes")
 			updateVMWithDV(vm, volName, destDV.Name)
@@ -566,15 +575,15 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 			vmi, err := virtClient.VirtualMachineInstance(ns).Get(context.Background(), vm.Name,
 				metav1.GetOptions{})
 			Expect(err).ToNot(HaveOccurred())
-			Expect(console.LoginToCirros(vmi)).To(Succeed())
+			Expect(console.LoginToAlpine(vmi)).To(Succeed())
 		})
 
-		It("should migrate a PVC with a VM using a containerdisk", func() {
+		It("[test_id:migration6][test_id:migrate]should migrate a PVC with a VM using a containerdisk", func() {
 			volName := "volume"
 			srcPVC := "src-" + rand.String(5)
 			libstorage.CreateFSPVC(srcPVC, ns, size, nil)
 			libstorage.CreateFSPVC(destPVC, ns, size, nil)
-			vmi := libvmifact.NewCirros(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(ns),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(virtv1.DefaultPodNetwork()),
@@ -613,7 +622,7 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 			)
 			waitForMigrationToSucceed(virtClient, vm.Name, ns)
 			By("Expecting the VirtualMachineInstance console")
-			Expect(console.LoginToCirros(vmi)).To(Succeed())
+			Expect(console.LoginToAlpine(vmi)).To(Succeed())
 		})
 
 		It("should cancel the migration by the reverting to the source volume", func() {
@@ -755,7 +764,7 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 			Eventually(matcher.ThisVMIWith(vm.Namespace, vm.Name), 120*time.Second, 1*time.Second).Should(matcher.BeRunning())
 		})
 
-		It("should cancel the migration and clear the volume migration state", func() {
+		It("[test_id:migration7][test_id:migrate]should cancel the migration and clear the volume migration state", func() {
 			volName := "volume"
 			dv := createDV()
 			vm := createVMWithDV(dv, volName)
@@ -940,7 +949,7 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 
 			ns := testsuite.GetTestNamespace(nil)
 			dv := createBlankDV(virtClient, ns, "1Gi")
-			vmi := libvmifact.NewCirros(
+			vmi := libvmifact.NewAlpine(
 				libvmi.WithNamespace(ns),
 				libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 				libvmi.WithNetwork(virtv1.DefaultPodNetwork()),
@@ -1003,7 +1012,7 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 				ContainElement(HaveField("Name", Equal(volName))),
 			)
 		},
-			Entry("with a persistent volume", true),
+			Entry("[test_id:a3]with a persistent volume", true),
 			Entry("with an ephemeral volume", Serial, false),
 		)
 
@@ -1061,24 +1070,24 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 					return ""
 				}).WithTimeout(60 * time.Second).WithPolling(2 * time.Second).ShouldNot(BeEmpty())
 
-				Expect(console.LoginToCirros(vmi)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
 				Expect(console.RunCommand(vmi, "sudo mkfs.ext3 /dev/sda", 30*time.Second)).To(Succeed())
 				Expect(console.RunCommand(vmi, "mkdir test", 30*time.Second)).To(Succeed())
-				Expect(console.RunCommand(vmi, fmt.Sprintf("sudo mount -t ext3 /dev/%s /home/cirros/test", device), 30*time.Second)).To(Succeed())
-				Expect(console.RunCommand(vmi, "sudo chmod 777 /home/cirros/test", 30*time.Second)).To(Succeed())
-				Expect(console.RunCommand(vmi, "sudo chown cirros:cirros /home/cirros/test", 30*time.Second)).To(Succeed())
-				Expect(console.RunCommand(vmi, "printf 'test' &> /home/cirros/test/test", 30*time.Second)).To(Succeed())
+				Expect(console.RunCommand(vmi, fmt.Sprintf("sudo mount -t ext3 /dev/%s /home/fedora/test", device), 30*time.Second)).To(Succeed())
+				Expect(console.RunCommand(vmi, "sudo chmod 777 /home/fedora/test", 30*time.Second)).To(Succeed())
+				Expect(console.RunCommand(vmi, "sudo chown fedora:fedora /home/fedora/test", 30*time.Second)).To(Succeed())
+				Expect(console.RunCommand(vmi, "printf 'test' &> /home/fedora/test/test", 30*time.Second)).To(Succeed())
 			}
 			checkFileOnHotpluggedVol := func(vmi *v1.VirtualMachineInstance) {
-				Expect(console.LoginToCirros(vmi)).To(Succeed())
-				Expect(console.RunCommand(vmi, "cat /home/cirros/test/test |grep test", 60*time.Second)).To(Succeed())
+				Expect(console.LoginToFedora(vmi)).To(Succeed())
+				Expect(console.RunCommand(vmi, "cat /home/fedora/test/test |grep test", 60*time.Second)).To(Succeed())
 			}
 
-			It("with a containerdisk and a hotplugged volume", func() {
+			It("[test_id:migration1][test_id:migrate]with a containerdisk and a hotplugged volume", func() {
 				const volName = "vol0"
 				ns := testsuite.GetTestNamespace(nil)
 				dv := createBlankDV(virtClient, ns, "2G")
-				vmi := libvmifact.NewCirros(
+				vmi := libvmifact.NewFedora(
 					libvmi.WithNamespace(ns),
 					libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 					libvmi.WithNetwork(virtv1.DefaultPodNetwork()),
@@ -1124,9 +1133,9 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 				}
 				Expect(exist).To(BeTrue())
 				rootDV := libdv.NewDataVolume(
-					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling)),
 					libdv.WithStorage(libdv.StorageWithStorageClass(sc),
-						libdv.StorageWithVolumeSize("1Gi"),
+						libdv.StorageWithVolumeSize(cd.FedoraVolumeSize),
 						libdv.StorageWithVolumeMode(volumeMode),
 						libdv.StorageWithAccessMode(k8sv1.ReadWriteOnce),
 					),
@@ -1139,8 +1148,8 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 					// For testing purposes, we're okay with using guaranteed QoS, which ensures CPU set gets set on boot
 					// But really this is a bug in the way that our allowed device list could get overriden
 					// https://github.com/kubevirt/kubevirt/issues/14825
-					libvmi.WithResourceCPU("1"), libvmi.WithResourceMemory("128Mi"),
-					libvmi.WithLimitCPU("1"), libvmi.WithLimitMemory("128Mi"),
+					libvmi.WithResourceCPU("1"), libvmi.WithResourceMemory("512Mi"),
+					libvmi.WithLimitCPU("1"), libvmi.WithLimitMemory("512Mi"),
 					libvmi.WithDataVolume(rootVolName, rootDV.Name),
 					libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()),
 				)
@@ -1181,7 +1190,7 @@ var _ = Describe(SIG("Volumes update with migration", decorators.RequiresTwoSche
 				dvRootDst := libdv.NewDataVolume(
 					libdv.WithBlankImageSource(),
 					libdv.WithStorage(libdv.StorageWithStorageClass(sc),
-						libdv.StorageWithVolumeSize("2Gi"),
+						libdv.StorageWithVolumeSize("7Gi"),
 						libdv.StorageWithVolumeMode(volumeMode),
 						libdv.StorageWithAccessMode(k8sv1.ReadWriteOnce),
 					),

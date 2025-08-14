@@ -115,7 +115,7 @@ var (
 	})
 )
 
-var _ = Describe(SIG("Export", func() {
+var _ = Describe(SIG("Export [test_id:export]", func() {
 	var err error
 	var token *k8sv1.Secret
 	var virtClient kubecli.KubevirtClient
@@ -282,8 +282,8 @@ var _ = Describe(SIG("Export", func() {
 	populateKubeVirtContent := func(sc string, volumeMode k8sv1.PersistentVolumeMode) (*k8sv1.PersistentVolumeClaim, string) {
 		By("Creating source volume")
 		dv := libdv.NewDataVolume(
-			libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros), cdiv1.RegistryPullNode),
-			libdv.WithStorage(libdv.StorageWithStorageClass(sc), libdv.StorageWithVolumeMode(volumeMode)),
+			libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine), cdiv1.RegistryPullNode),
+			libdv.WithStorage(libdv.StorageWithStorageClass(sc), libdv.StorageWithVolumeMode(volumeMode), libdv.StorageWithVolumeSize("1024Mi")),
 			libdv.WithForceBindAnnotation(),
 		)
 
@@ -578,17 +578,17 @@ var _ = Describe(SIG("Export", func() {
 		verifyFunction(fileName, comparison, downloadPod, volumeMode)
 	},
 		// "internal" tests
-		Entry("with RAW kubevirt content type", populateKubeVirtContent, verifyKubeVirtRawContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapInternal, urlGeneratorInternal, exportv1.KubeVirtRaw, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
-		Entry("with RAW gzipped kubevirt content type", populateKubeVirtContent, verifyKubeVirtGzContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapInternal, urlGeneratorInternal, exportv1.KubeVirtGz, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
-		Entry("with archive content type", populateArchiveContent, verifyKubeVirtRawContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapInternal, urlGeneratorInternal, exportv1.Dir, archiveDircontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
+		Entry("[test_id:export2]with RAW kubevirt content type", populateKubeVirtContent, verifyKubeVirtRawContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapInternal, urlGeneratorInternal, exportv1.KubeVirtRaw, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
+		Entry("[test_id:export3]with RAW gzipped kubevirt content type", populateKubeVirtContent, verifyKubeVirtGzContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapInternal, urlGeneratorInternal, exportv1.KubeVirtGz, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
+		Entry("[test_id:export6]with archive content type", populateArchiveContent, verifyKubeVirtRawContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapInternal, urlGeneratorInternal, exportv1.Dir, archiveDircontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
 		Entry("with archive tarred gzipped content type", populateArchiveContent, verifyArchiveGzContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapInternal, urlGeneratorInternal, exportv1.ArchiveGz, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
-		Entry("with RAW kubevirt content type block", decorators.RequiresBlockStorage, populateKubeVirtContent, verifyKubeVirtRawContent, libstorage.GetRWOBlockStorageClass, createCaConfigMapInternal, urlGeneratorInternal, exportv1.KubeVirtRaw, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeBlock),
+		Entry("[test_id:export3]with RAW kubevirt content type block", decorators.RequiresBlockStorage, populateKubeVirtContent, verifyKubeVirtRawContent, libstorage.GetRWOBlockStorageClass, createCaConfigMapInternal, urlGeneratorInternal, exportv1.KubeVirtRaw, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeBlock),
 		// "proxy" tests
-		Entry("with RAW kubevirt content type PROXY", populateKubeVirtContent, verifyKubeVirtRawContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapProxy, urlGeneratorProxy, exportv1.KubeVirtRaw, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
-		Entry("with RAW gzipped kubevirt content type PROXY", populateKubeVirtContent, verifyKubeVirtGzContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapProxy, urlGeneratorProxy, exportv1.KubeVirtGz, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
+		Entry("[test_id:export2]with RAW kubevirt content type PROXY", populateKubeVirtContent, verifyKubeVirtRawContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapProxy, urlGeneratorProxy, exportv1.KubeVirtRaw, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
+		Entry("[test_id:export1]with RAW gzipped kubevirt content type PROXY", populateKubeVirtContent, verifyKubeVirtGzContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapProxy, urlGeneratorProxy, exportv1.KubeVirtGz, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
 		Entry("with archive content type PROXY", populateArchiveContent, verifyKubeVirtRawContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapProxy, urlGeneratorProxy, exportv1.Dir, archiveDircontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
 		Entry("with archive tarred gzipped content type PROXY", populateArchiveContent, verifyArchiveGzContent, libstorage.GetRWOFileSystemStorageClass, createCaConfigMapProxy, urlGeneratorProxy, exportv1.ArchiveGz, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeFilesystem),
-		Entry("with RAW kubevirt content type block PROXY", decorators.RequiresBlockStorage, populateKubeVirtContent, verifyKubeVirtRawContent, libstorage.GetRWOBlockStorageClass, createCaConfigMapProxy, urlGeneratorProxy, exportv1.KubeVirtRaw, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeBlock),
+		Entry("[test_id:export4]with RAW kubevirt content type block PROXY", decorators.RequiresBlockStorage, populateKubeVirtContent, verifyKubeVirtRawContent, libstorage.GetRWOBlockStorageClass, createCaConfigMapProxy, urlGeneratorProxy, exportv1.KubeVirtRaw, kubevirtcontentUrlTemplate, k8sv1.PersistentVolumeBlock),
 	)
 
 	It("should make sure PVC export is Ready when source pod is Completed", func() {
@@ -861,7 +861,7 @@ var _ = Describe(SIG("Export", func() {
 		return false
 	}
 
-	It("Should recreate the exporter pod and secret if the pod fails", func() {
+	It("[test_id:export1]Should recreate the exporter pod and secret if the pod fails", func() {
 		sc, exists := libstorage.GetRWOFileSystemStorageClass()
 		if !exists {
 			Fail("Fail test when Filesystem storage is not present")
@@ -906,7 +906,7 @@ var _ = Describe(SIG("Export", func() {
 		Expect(exporterSecretName).ToNot(Equal(secret.Name))
 	})
 
-	It("Should recreate the exporter pod if the pod is deleted", func() {
+	It("[test_id:export5]Should recreate the exporter pod if the pod is deleted", func() {
 		sc, exists := libstorage.GetRWOFileSystemStorageClass()
 		if !exists {
 			Fail("Fail test when Filesystem storage is not present")
@@ -950,7 +950,7 @@ var _ = Describe(SIG("Export", func() {
 			Fail("Fail test when Filesystem storage is not present")
 		}
 		dv := libdv.NewDataVolume(
-			libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros), cdiv1.RegistryPullNode),
+			libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine), cdiv1.RegistryPullNode),
 			libdv.WithStorage(libdv.StorageWithStorageClass(sc)),
 			libdv.WithForceBindAnnotation(),
 		)
@@ -1412,7 +1412,7 @@ var _ = Describe(SIG("Export", func() {
 			Fail("Fail test when storage with snapshot is not present")
 		}
 
-		vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskCirros, sc)
+		vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, sc)
 		if libstorage.IsStorageClassBindingModeWaitForFirstConsumer(sc) {
 			// In WFFC need to start the VM in order for the
 			// dv to get populated
@@ -1487,7 +1487,7 @@ var _ = Describe(SIG("Export", func() {
 			libdv.WithStorage(libdv.StorageWithStorageClass(sc), libdv.StorageWithVolumeSize(cd.BlankVolumeSize)),
 		)
 
-		vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskCirros, sc)
+		vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, sc)
 		libstorage.AddDataVolumeTemplate(vm, blankDv)
 		addDataVolumeDisk(vm, "blankdisk", blankDv.Name)
 		if libstorage.IsStorageClassBindingModeWaitForFirstConsumer(sc) {
@@ -1511,7 +1511,7 @@ var _ = Describe(SIG("Export", func() {
 	})
 
 	It("should mark the status phase skipped on VMSnapshot without volumes", func() {
-		vm := libvmi.NewVirtualMachine(libvmifact.NewCirros())
+		vm := libvmi.NewVirtualMachine(libvmifact.NewAlpine())
 		vm = createVM(vm)
 		snapshot := createAndVerifyVMSnapshot(vm)
 		Expect(snapshot).ToNot(BeNil())
@@ -1555,7 +1555,7 @@ var _ = Describe(SIG("Export", func() {
 		if !exists {
 			Fail("Fail test when Filesystem storage is not present")
 		}
-		vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskCirros, sc)
+		vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, sc)
 		vm.Spec.RunStrategy = virtpointer.P(v1.RunStrategyAlways)
 		vm = createVM(vm)
 		Eventually(func() v1.VirtualMachineInstancePhase {
@@ -1990,7 +1990,7 @@ var _ = Describe(SIG("Export", func() {
 			Expect(err).ToNot(HaveOccurred())
 		}()
 
-		imageUrl := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)
+		imageUrl := cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)
 		dataVolume := libdv.NewDataVolume(
 			libdv.WithRegistryURLSourceAndPullMethod(imageUrl, cdiv1.RegistryPullNode),
 			libdv.WithStorage(
@@ -2140,7 +2140,7 @@ var _ = Describe(SIG("Export", func() {
 		if !exists {
 			Fail("Fail test when Filesystem storage is not present")
 		}
-		vm := libvmi.NewVirtualMachine(libvmifact.NewCirros())
+		vm := libvmi.NewVirtualMachine(libvmifact.NewAlpine())
 		vm = createVM(vm)
 		// For testing the token is the name of the source VM.
 		token := createExportTokenSecret(vm.Name, vm.Namespace)
