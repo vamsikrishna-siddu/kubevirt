@@ -162,6 +162,7 @@ func renderVMI(ns string, opts ...libvmi.Option) *v1.VirtualMachineInstance {
 		libvmi.WithNamespace(ns),
 		libvmi.WithInterface(libvmi.InterfaceDeviceWithMasqueradeBinding()),
 		libvmi.WithNetwork(v1.DefaultPodNetwork()),
+		libvmi.WithRng(),
 	}
 	return libvmi.New(append(defaultOptions, opts...)...)
 }
