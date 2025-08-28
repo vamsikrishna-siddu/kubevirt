@@ -451,11 +451,11 @@ var _ = Describe(SIG("Hotplug", func() {
 			libvmi.WithCloudInitNoCloud(libvmifact.WithDummyCloudForFastBoot()),
 		}
 		dv := libdv.NewDataVolume(
-			libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros)),
+			libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling)),
 			libdv.WithNamespace(testsuite.GetTestNamespace(nil)),
 			libdv.WithStorage(
 				libdv.StorageWithStorageClass(storageClass),
-				libdv.StorageWithVolumeSize(cd.ContainerDiskSizeBySourceURL(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros))),
+				libdv.StorageWithVolumeSize(cd.ContainerDiskSizeBySourceURL(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling))),
 			),
 		)
 		vm := libvmi.NewVirtualMachine(
@@ -502,7 +502,7 @@ var _ = Describe(SIG("Hotplug", func() {
 
 	getVmiConsoleAndLogin := func(vmi *v1.VirtualMachineInstance) {
 		By("Obtaining the serial console")
-		Expect(console.LoginToCirros(vmi)).To(Succeed())
+		Expect(console.LoginToFedora(vmi)).To(Succeed())
 	}
 
 	createDataVolumeAndWaitForImport := func(sc string, volumeMode k8sv1.PersistentVolumeMode) *cdiv1.DataVolume {
@@ -690,10 +690,10 @@ var _ = Describe(SIG("Hotplug", func() {
 			}
 
 			dv := libdv.NewDataVolume(
-				libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros), cdiv1.RegistryPullNode),
+				libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling), cdiv1.RegistryPullNode),
 				libdv.WithStorage(
 					libdv.StorageWithStorageClass(sc),
-					libdv.StorageWithVolumeSize(cd.ContainerDiskSizeBySourceURL(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskCirros))),
+					libdv.StorageWithVolumeSize(cd.ContainerDiskSizeBySourceURL(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskFedoraTestTooling))),
 					libdv.StorageWithAccessMode(k8sv1.ReadWriteMany),
 					libdv.StorageWithVolumeMode(k8sv1.PersistentVolumeBlock),
 				),
@@ -708,7 +708,7 @@ var _ = Describe(SIG("Hotplug", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Should be able to boot from block volume", decorators.StorageCritical, func() {
+		It("[test_id:fail1]Should be able to boot from block volume", decorators.StorageCritical, func() {
 			dvName := "disk0"
 			vm = createBootableHotplugVM(sc)
 			vmi, err := virtClient.VirtualMachineInstance(vm.Namespace).Get(context.Background(), vm.Name, metav1.GetOptions{})
@@ -719,7 +719,7 @@ var _ = Describe(SIG("Hotplug", func() {
 			verifySingleAttachmentPod(vmi)
 		})
 
-		DescribeTable("Should start with a hotplug block", decorators.StorageCritical, func(addVolumeFunc addVolumeFunction) {
+		DescribeTable("[test_id:fail2]Should start with a hotplug block", decorators.StorageCritical, func(addVolumeFunc addVolumeFunction) {
 			dv := createDataVolumeAndWaitForImport(sc, k8sv1.PersistentVolumeBlock)
 
 			By("Adding a hotplug block volume")
@@ -744,7 +744,7 @@ var _ = Describe(SIG("Hotplug", func() {
 			Entry("PersistentVolume", addPVCVolumeVM),
 		)
 
-		It("Should preserve access to block devices if virt-handler crashes", Serial, func() {
+		It("[test_id:fail3]Should preserve access to block devices if virt-handler crashes", Serial, func() {
 			blockDevices := []string{"/dev/disk0"}
 
 			By("Adding a hotplug block volume")
