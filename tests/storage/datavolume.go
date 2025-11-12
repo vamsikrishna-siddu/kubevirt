@@ -284,7 +284,7 @@ var _ = Describe(SIG("DataVolume Integration", func() {
 		})
 	})
 
-	Describe("[rfe_id:3188][crit:high][vendor:cnv-qe@redhat.com][level:system] Starting a VirtualMachineInstance with a DataVolume as a volume source", func() {
+	Describe("[rfe_id:3188][crit:high][vendor:cnv-qe@redhat.com][level:system] Starting a VirtualMachineInstance with a DataVolume as a volume source", decorators.WgS390xStorage, func() {
 		Context("Alpine import", func() {
 			It("[test_id:3189]should be successfully started and stopped multiple times", decorators.Conformance, func() {
 				sc, exists := libstorage.GetRWOFileSystemStorageClass()
@@ -323,7 +323,7 @@ var _ = Describe(SIG("DataVolume Integration", func() {
 				}
 			})
 
-			It("[test_id:6686]should successfully start multiple concurrent VMIs", func() {
+			It("[test_id:6686]should successfully start multiple concurrent VMIs", decorators.WgS390xStorage, func() {
 
 				sc, exists := libstorage.GetRWOFileSystemStorageClass()
 				if !exists {
@@ -367,7 +367,7 @@ var _ = Describe(SIG("DataVolume Integration", func() {
 				}
 			})
 
-			It("[test_id:5252]should be successfully started when using a PVC volume owned by a DataVolume", func() {
+			It("[test_id:5252]should be successfully started when using a PVC volume owned by a DataVolume", decorators.WgS390xStorage, func() {
 				sc, exists := libstorage.GetRWOFileSystemStorageClass()
 				if !exists {
 					Fail("Fail test when Filesystem storage is not present")
@@ -398,7 +398,7 @@ var _ = Describe(SIG("DataVolume Integration", func() {
 				libwait.WaitForVirtualMachineToDisappearWithTimeout(vmi, 120)
 			})
 
-			It("should accurately aggregate DataVolume conditions from many DVs", func() {
+			It("should accurately aggregate DataVolume conditions from many DVs", decorators.WgS390xStorage, func() {
 				dataVolume1 := libdv.NewDataVolume(
 					libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 					libdv.WithStorage(),
@@ -442,7 +442,7 @@ var _ = Describe(SIG("DataVolume Integration", func() {
 			})
 		})
 
-		Context("with a PVC from a Datavolume", func() {
+		Context("with a PVC from a Datavolume", decorators.WgS390xStorage, func() {
 			var storageClass *storagev1.StorageClass
 			var vmi *v1.VirtualMachineInstance
 			var dv *cdiv1.DataVolume
@@ -616,7 +616,7 @@ var _ = Describe(SIG("DataVolume Integration", func() {
 			}
 		})
 
-		It("[test_id:3191]should be successfully started and stopped multiple times", func() {
+		It("[test_id:3191]should be successfully started and stopped multiple times", decorators.WgS390xStorage, func() {
 			vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, sc)
 			vm, err = virtClient.VirtualMachine(testsuite.GetTestNamespace(nil)).Create(context.Background(), vm, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
@@ -637,7 +637,7 @@ var _ = Describe(SIG("DataVolume Integration", func() {
 			}
 		})
 
-		It("[test_id:837]deleting VM with background propagation policy should automatically delete DataVolumes and VMI owned by VM.", func() {
+		It("[test_id:837]deleting VM with background propagation policy should automatically delete DataVolumes and VMI owned by VM.", decorators.WgS390xStorage, func() {
 			vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, sc)
 			vm, err = virtClient.VirtualMachine(testsuite.GetTestNamespace(nil)).Create(context.Background(), vm, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
@@ -670,7 +670,7 @@ var _ = Describe(SIG("DataVolume Integration", func() {
 			Eventually(ThisPVCWith(vm.Namespace, vm.Spec.DataVolumeTemplates[0].Name), 100).Should(BeGone())
 		})
 
-		It("[test_id:3192]should remove owner references on DataVolume if VM is orphan deleted.", func() {
+		It("[test_id:3192]should remove owner references on DataVolume if VM is orphan deleted.", decorators.WgS390xStorage, func() {
 			vm := renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, sc)
 			vm, err = virtClient.VirtualMachine(testsuite.GetTestNamespace(nil)).Create(context.Background(), vm, metav1.CreateOptions{})
 			Expect(err).ToNot(HaveOccurred())
@@ -695,7 +695,7 @@ var _ = Describe(SIG("DataVolume Integration", func() {
 		})
 	})
 
-	Describe("[rfe_id:3188][crit:high][vendor:cnv-qe@redhat.com][level:system] DataVolume clone permission checking", func() {
+	Describe("[rfe_id:3188][crit:high][vendor:cnv-qe@redhat.com][level:system] DataVolume clone permission checking", decorators.WgS390xStorage, func() {
 		Context("using Alpine import/clone", decorators.RequiresSnapshotStorageClass, func() {
 			var sourceDV *cdiv1.DataVolume
 			var cloneRole *rbacv1.Role

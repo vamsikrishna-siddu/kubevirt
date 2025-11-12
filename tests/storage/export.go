@@ -1642,7 +1642,7 @@ var _ = Describe(SIG("Export", func() {
 			removeLimitRangeFromNamespace()
 		})
 
-		It(" should report export pending if PVC is in use because of VMI using it, and start the VM export if the PVC is not in use, then stop again once pvc in use again", Serial, func() {
+		It(" should report export pending if PVC is in use because of VMI using it, and start the VM export if the PVC is not in use, then stop again once pvc in use again", decorators.WgS390xStorage, Serial, func() {
 			sc, exists := libstorage.GetRWOFileSystemStorageClass()
 			if !exists {
 				Fail("Fail test when Filesystem storage is not present")
@@ -1847,7 +1847,7 @@ var _ = Describe(SIG("Export", func() {
 		waitForDisksComplete(resVM)
 	}
 
-	It("should generate updated DataVolumeTemplates on http endpoint when exporting", func() {
+	It("should generate updated DataVolumeTemplates on http endpoint when exporting", decorators.WgS390xStorage, func() {
 		sc, exists := libstorage.GetRWOFileSystemStorageClass()
 		if !exists {
 			Fail("Fail test when Filesystem storage is not present")
@@ -1891,7 +1891,7 @@ var _ = Describe(SIG("Export", func() {
 		checkWithJsonOutput(pod, export, vm)
 	})
 
-	It("should generate updated DataVolumeTemplates on http endpoint when exporting snapshot", decorators.RequiresSnapshotStorageClass, func() {
+	It("should generate updated DataVolumeTemplates on http endpoint when exporting snapshot", decorators.RequiresSnapshotStorageClass, decorators.WgS390xStorage, func() {
 		virtClient, err := kubecli.GetKubevirtClient()
 		Expect(err).ToNot(HaveOccurred())
 		sc, err := libstorage.GetSnapshotStorageClass(virtClient)

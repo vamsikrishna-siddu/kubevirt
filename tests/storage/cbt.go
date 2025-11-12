@@ -70,7 +70,7 @@ var _ = Describe(SIG("CBT", func() {
 		virtClient = kubevirt.Client()
 	})
 
-	It("VM matches cbt label selector, then unmatches", func() {
+	It("VM matches cbt label selector, then unmatches", decorators.WgS390xStorage, func() {
 		vm = libstorage.RenderVMWithDataVolumeTemplate(libdv.NewDataVolume(
 			libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 			libdv.WithNamespace(testsuite.GetTestNamespace(nil)),
@@ -153,7 +153,7 @@ var _ = Describe(SIG("CBT", func() {
 		Expect(cmdOutput).To(BeEmpty())
 	})
 
-	DescribeTable("Patch to match cbt label selector", func(patchFunc func(vm *v1.VirtualMachine)) {
+	DescribeTable("Patch to match cbt label selector", decorators.WgS390x, func(patchFunc func(vm *v1.VirtualMachine)) {
 		vm = libstorage.RenderVMWithDataVolumeTemplate(libdv.NewDataVolume(
 			libdv.WithRegistryURLSource(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine)),
 			libdv.WithNamespace(testsuite.GetTestNamespace(nil)),
@@ -336,7 +336,7 @@ var _ = Describe(SIG("CBT", func() {
 		checkCBTIntegrity(vm, cbtOverlayPath)
 	}
 
-	Context("CBT migration with vmStateStorageClass configuration", func() {
+	Context("CBT migration with vmStateStorageClass configuration", decorators.WgS390xStorage, func() {
 		var originalVMStateStorageClass string
 
 		BeforeEach(func() {

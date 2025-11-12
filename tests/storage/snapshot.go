@@ -378,7 +378,7 @@ var _ = Describe(SIG("VirtualMachineSnapshot Tests", func() {
 				checkContentSourceAndMemory(vm.DeepCopy(), contentName, initialMemory)
 			})
 
-			It("[test_id:6768]with volumes and no guest agent available", decorators.StorageCritical, decorators.WgS390x, func() {
+			It("[test_id:6768]with volumes and no guest agent available", decorators.StorageCritical, decorators.WgS390xStorage, func() {
 				dv := libdv.NewDataVolume(
 					libdv.WithBlankImageSource(),
 					libdv.WithStorage(
@@ -822,7 +822,7 @@ var _ = Describe(SIG("VirtualMachineSnapshot Tests", func() {
 			})
 		})
 
-		Context("With more complicated VM", func() {
+		Context("With more complicated VM", decorators.WgS390xStorage, func() {
 			BeforeEach(func() {
 				vm = renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, snapshotStorageClass)
 				wffcSC := libstorage.IsStorageClassBindingModeWaitForFirstConsumer(snapshotStorageClass)
@@ -1097,7 +1097,7 @@ var _ = Describe(SIG("VirtualMachineSnapshot Tests", func() {
 			})
 		})
 
-		It("vmsnapshot should update error if vmsnapshotcontent is unready to use and error", func() {
+		It("vmsnapshot should update error if vmsnapshotcontent is unready to use and error", decorators.WgS390xStorage, func() {
 			vm = renderVMWithRegistryImportDataVolume(cd.ContainerDiskAlpine, snapshotStorageClass)
 			vm.Spec.RunStrategy = virtpointer.P(v1.RunStrategyAlways)
 			vm, err = virtClient.VirtualMachine(vm.Namespace).Create(context.Background(), vm, metav1.CreateOptions{})
@@ -1149,7 +1149,7 @@ var _ = Describe(SIG("VirtualMachineSnapshot Tests", func() {
 			})))
 		})
 
-		It("snapshot create before source wait for volume bound, then continues and succeeds", func() {
+		It("snapshot create before source wait for volume bound, then continues and succeeds", decorators.WgS390xStorage, func() {
 			wffc := libstorage.IsStorageClassBindingModeWaitForFirstConsumer(snapshotStorageClass)
 			// Stand alone dv
 			dv := libdv.NewDataVolume(
@@ -1282,7 +1282,7 @@ var _ = Describe(SIG("VirtualMachineSnapshot Tests", func() {
 		Context("with independent DataVolume", func() {
 			var dv *cdiv1.DataVolume
 
-			DescribeTable("should accurately report DataVolume provisioning", func(storageOptFun func(string, string, ...libvmi.DiskOption) libvmi.Option, memory string) {
+			DescribeTable("should accurately report DataVolume provisioning", decorators.WgS390xStorage, func(storageOptFun func(string, string, ...libvmi.DiskOption) libvmi.Option, memory string) {
 				dataVolume := libdv.NewDataVolume(
 					libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine), cdiv1.RegistryPullNode),
 					libdv.WithStorage(libdv.StorageWithStorageClass(snapshotStorageClass)),
@@ -1329,7 +1329,7 @@ var _ = Describe(SIG("VirtualMachineSnapshot Tests", func() {
 				Entry("with PVC volume", libvmi.WithPersistentVolumeClaim, "128Mi"),
 			)
 
-			It("[test_id:9705]Should show included and excluded volumes in the snapshot", func() {
+			It("[test_id:9705]Should show included and excluded volumes in the snapshot", decorators.WgS390xStorage, func() {
 				noSnapshotSC := libstorage.GetNoVolumeSnapshotStorageClass("local")
 				if noSnapshotSC == "" {
 					Skip("Skipping test, no storage class without snapshot support")
@@ -1390,7 +1390,7 @@ var _ = Describe(SIG("VirtualMachineSnapshot Tests", func() {
 				Expect(snapshot.Status.SnapshotVolumes.ExcludedVolumes[0]).Should(Equal("notsnapshotablevolume"))
 			})
 
-			It("Should also include backend PVC in the snapshot", func() {
+			It("Should also include backend PVC in the snapshot", decorators.WgS390xStorage, func() {
 				By("Creating DV with snapshot supported storage class")
 				includedDataVolume := libdv.NewDataVolume(
 					libdv.WithRegistryURLSourceAndPullMethod(cd.DataVolumeImportUrlForContainerDisk(cd.ContainerDiskAlpine), cdiv1.RegistryPullNode),
@@ -1486,7 +1486,7 @@ var _ = Describe(SIG("VirtualMachineSnapshot Tests", func() {
 				}
 			})
 
-			DescribeTable("Bug #8435 - should create a snapshot successfully", decorators.StorageCritical, func(toRunSourceVM bool) {
+			DescribeTable("Bug #8435 - should create a snapshot successfully", decorators.StorageCritical, decorators.WgS390xStorage, func(toRunSourceVM bool) {
 				if !toRunSourceVM {
 					By("Stopping the VM")
 					vm = libvmops.StopVirtualMachine(vm)
