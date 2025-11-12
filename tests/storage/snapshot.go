@@ -328,7 +328,7 @@ var _ = Describe(SIG("VirtualMachineSnapshot Tests", func() {
 				}, 30)).To(Succeed())
 			}
 
-			It("[test_id:6767]with volumes and guest agent available", decorators.StorageCritical, func() {
+			It("[test_id:6767]with volumes and guest agent available", decorators.StorageCritical, decorators.WgS390x, func() {
 				dv := libdv.NewDataVolume(
 					libdv.WithBlankImageSource(),
 					libdv.WithStorage(libdv.StorageWithStorageClass(snapshotStorageClass)),
@@ -378,7 +378,7 @@ var _ = Describe(SIG("VirtualMachineSnapshot Tests", func() {
 				checkContentSourceAndMemory(vm.DeepCopy(), contentName, initialMemory)
 			})
 
-			It("[test_id:6768]with volumes and no guest agent available", decorators.StorageCritical, func() {
+			It("[test_id:6768]with volumes and no guest agent available", decorators.StorageCritical, decorators.WgS390x, func() {
 				dv := libdv.NewDataVolume(
 					libdv.WithBlankImageSource(),
 					libdv.WithStorage(
@@ -464,7 +464,7 @@ var _ = Describe(SIG("VirtualMachineSnapshot Tests", func() {
 				}, time.Minute, 2*time.Second).Should(BeEmpty())
 			})
 
-			It("[test_id:6949]should unfreeze vm if snapshot fails when deadline exceeded", func() {
+			It("[test_id:6949]should unfreeze vm if snapshot fails when deadline exceeded", decorators.WgS390x, func() {
 				var vmi *v1.VirtualMachineInstance
 				vm = renderVMWithRegistryImportDataVolume(cd.ContainerDiskFedoraTestTooling, snapshotStorageClass)
 				vm, vmi = createAndStartVM(vm)
@@ -651,7 +651,7 @@ var _ = Describe(SIG("VirtualMachineSnapshot Tests", func() {
 				Entry("without ephemeral hotplug disk", false),
 			)
 
-			It("should report appropriate event when freeze fails", func() {
+			It("should report appropriate event when freeze fails", decorators.WgS390x, func() {
 				// Activate SELinux and reboot machine so we can force fsfreeze failure
 				const userData = "#cloud-config\n" +
 					"password: fedora\n" +

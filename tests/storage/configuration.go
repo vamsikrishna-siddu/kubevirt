@@ -331,7 +331,7 @@ var _ = Describe("[sig-storage] Storage configuration", decorators.SigStorage, d
 	})
 
 	Context("virtio queues", func() {
-		It("[test_id:1664]should map cores to virtio block queues", Serial, func() {
+		It("[test_id:1664]should map cores to virtio block queues", decorators.WgS390x, Serial, func() {
 			vmi := libvmifact.NewAlpine(
 				libvmi.WithMemoryRequest("128Mi"),
 				libvmi.WithCPURequest("3"),
@@ -350,7 +350,7 @@ var _ = Describe("[sig-storage] Storage configuration", decorators.SigStorage, d
 			}, 15)).To(Succeed())
 		})
 
-		It("[test_id:1667]should not enforce explicitly rejected virtio block queues without cores", func() {
+		It("[test_id:1667]should not enforce explicitly rejected virtio block queues without cores", decorators.WgS390x, func() {
 			vmi := libvmifact.NewAlpine(
 				libvmi.WithMemoryRequest("128Mi"),
 			)

@@ -1544,7 +1544,7 @@ var _ = Describe(SIG("VirtualMachineRestore Tests", func() {
 				Entry("to a new VM", true),
 			)
 
-			DescribeTable("should restore a vm from an online snapshot with guest agent", func(restoreToNewVM bool) {
+			DescribeTable("should restore a vm from an online snapshot with guest agent", decorators.WgS390x, func(restoreToNewVM bool) {
 				dv := libdv.NewDataVolume(
 					libdv.WithBlankImageSource(),
 					libdv.WithStorage(libdv.StorageWithStorageClass(snapshotStorageClass)),

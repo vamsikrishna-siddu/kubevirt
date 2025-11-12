@@ -23,6 +23,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/virt-config/featuregate"
 
 	"kubevirt.io/kubevirt/tests/console"
+	"kubevirt.io/kubevirt/tests/decorators"
 	"kubevirt.io/kubevirt/tests/exec"
 	"kubevirt.io/kubevirt/tests/flags"
 	"kubevirt.io/kubevirt/tests/framework/checks"
@@ -232,7 +233,7 @@ var _ = Describe(SIG("SCSI persistent reservation", Serial, func() {
 
 		})
 
-		It("Should successfully start a VM with persistent reservation", func() {
+		It("Should successfully start a VM with persistent reservation", decorators.WgS390x, func() {
 			By("Create VMI with the SCSI disk")
 			vmi := libvmifact.NewFedora(
 				libvmi.WithNamespace(testsuite.NamespaceTestDefault),
@@ -288,7 +289,7 @@ var _ = Describe(SIG("SCSI persistent reservation", Serial, func() {
 			).To(BeTrue())
 		})
 
-		It("Should successfully start 2 VMs with persistent reservation on the same LUN", func() {
+		It("Should successfully start 2 VMs with persistent reservation on the same LUN", decorators.WgS390x, func() {
 			By("Create 2 VMs with the SCSI disk")
 			vmi := libvmifact.NewFedora(
 				libvmi.WithNamespace(testsuite.NamespaceTestDefault),

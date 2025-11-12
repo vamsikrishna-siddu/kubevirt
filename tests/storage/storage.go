@@ -160,7 +160,7 @@ var _ = Describe(SIG("Storage", func() {
 				Expect(virtClient.CoreV1().PersistentVolumes().Delete(context.Background(), pv.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 			})
 
-			It("should pause VMI on IO error", func() {
+			It("should pause VMI on IO error", decorators.WgS390x, func() {
 				By("Creating VMI with faulty disk")
 				vmi := libvmifact.NewAlpine(libvmi.WithPersistentVolumeClaim("pvc-disk", pvc.Name))
 				vmi, err := virtClient.VirtualMachineInstance(testsuite.GetTestNamespace(vmi)).Create(context.Background(), vmi, metav1.CreateOptions{})
@@ -199,7 +199,7 @@ var _ = Describe(SIG("Storage", func() {
 
 			})
 
-			It("should report IO errors in the guest with errorPolicy set to report", func() {
+			It("should report IO errors in the guest with errorPolicy set to report", decorators.WgS390x, func() {
 				const diskName = "disk1"
 				By("Creating VMI with faulty disk")
 				vmi := libvmifact.NewAlpine(libvmi.WithPersistentVolumeClaim(diskName, pvc.Name))
@@ -1162,7 +1162,7 @@ var _ = Describe(SIG("Storage", func() {
 			})
 		})
 		Context("write and read data from a shared disk", func() {
-			It("should successfully write and read data", decorators.RequiresBlockStorage, func() {
+			It("should successfully write and read data", decorators.RequiresBlockStorage, decorators.WgS390x, func() {
 				const diskName = "disk1"
 				const pvcClaim = "pvc-test-disk1"
 				const labelKey = "testshareablekey"
@@ -1287,7 +1287,7 @@ var _ = Describe(SIG("Storage", func() {
 				Expect(virtClient.CoreV1().PersistentVolumes().Delete(context.Background(), pv.Name, metav1.DeleteOptions{})).NotTo(HaveOccurred())
 			})
 
-			DescribeTable("should run the VMI using", func(addLunDisk func(*v1.VirtualMachineInstance, string, string)) {
+			DescribeTable("should run the VMI using", decorators.WgS390x, func(addLunDisk func(*v1.VirtualMachineInstance, string, string)) {
 				pv, pvc, err = CreatePVandPVCwithSCSIDisk(nodeName, device, testsuite.GetTestNamespace(nil), "scsi-disks", "scsipv", "scsipvc")
 				Expect(err).NotTo(HaveOccurred(), "Failed to create PV and PVC for scsi disk")
 
