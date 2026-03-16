@@ -1083,8 +1083,9 @@ func Convert_v1_VirtualMachineInstance_To_api_Domain(vmi *v1.VirtualMachineInsta
 		// See the issue: https://github.com/kubevirt/kubevirt/issues/3781
 		domain.Spec.MemoryBacking.Source = &api.MemoryBackingSource{Type: "memfd"}
 
-		// NUMA is required in order to use memfd
-		if domain.Spec.CPU.NUMA == nil {
+		// NUMA is required in order to use memfd on most architectures,
+		// but s390x does not support NUMA with its s390-ccw-virtio machine type.
+		if domain.Spec.CPU.NUMA == nil && c.Architecture.GetArchitecture() != "s390x" {
 			domain.Spec.CPU.NUMA = &api.NUMA{
 				Cells: []api.NUMACell{
 					{
