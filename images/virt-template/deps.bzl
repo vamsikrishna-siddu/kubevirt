@@ -1,6 +1,6 @@
 """Dependencies for virt-template images."""
 
-load("@rules_oci//oci:pull.bzl", "oci_pull")
+load("@rules_img//img:pull.bzl", "pull")
 
 # Image digests for virt-template-apiserver
 VIRT_TEMPLATE_APISERVER_DIGEST_AMD64 = "sha256:ccaf054ecf4cc35c92960eced366041c59932262665e43b933cf112615f03dfc"
@@ -14,38 +14,44 @@ VIRT_TEMPLATE_CONTROLLER_DIGEST_S390X = "sha256:a42bca5a15e0752ce8aa92daf986f6d1
 
 def virt_template_images():
     """Pull virt-template images for all architectures."""
-    oci_pull(
+    pull(
         name = "virt_template_apiserver",
         digest = VIRT_TEMPLATE_APISERVER_DIGEST_AMD64,
-        image = "quay.io/kubevirt/virt-template-apiserver",
+        registry = "quay.io",
+        repository = "kubevirt/virt-template-apiserver",
     )
 
-    oci_pull(
+    pull(
         name = "virt_template_apiserver_aarch64",
         digest = VIRT_TEMPLATE_APISERVER_DIGEST_ARM64,
-        image = "quay.io/kubevirt/virt-template-apiserver",
+        registry = "quay.io",
+        repository = "kubevirt/virt-template-apiserver",
     )
 
-    oci_pull(
+    pull(
         name = "virt_template_apiserver_s390x",
         digest = VIRT_TEMPLATE_APISERVER_DIGEST_S390X,
-        image = "quay.io/kubevirt/virt-template-apiserver",
+        registry = "quay.io",
+        repository = "kubevirt/virt-template-apiserver",
     )
 
-    oci_pull(
+    pull(
         name = "virt_template_controller",
         digest = VIRT_TEMPLATE_CONTROLLER_DIGEST_AMD64,
-        image = "quay.io/kubevirt/virt-template-controller",
+        registry = "quay.io",
+        repository = "kubevirt/virt-template-controller",
     )
 
-    oci_pull(
+    pull(
         name = "virt_template_controller_aarch64",
         digest = VIRT_TEMPLATE_CONTROLLER_DIGEST_ARM64,
-        image = "quay.io/kubevirt/virt-template-controller",
+        registry = "quay.io",
+        repository = "kubevirt/virt-template-controller",
     )
 
-    oci_pull(
+    pull(
         name = "virt_template_controller_s390x",
         digest = VIRT_TEMPLATE_CONTROLLER_DIGEST_S390X,
-        image = "quay.io/kubevirt/virt-template-controller",
+        registry = "quay.io",
+        repository = "kubevirt/virt-template-controller",
     )
