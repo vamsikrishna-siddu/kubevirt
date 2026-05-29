@@ -4,7 +4,7 @@ ARG ARCH
 ARG SONOBUOY_ARCH
 ARG BAZEL_ARCH
 
-ENV BAZEL_VERSION=6.5.0
+ENV BAZEL_VERSION=7.5.0
 ENV GIMME_GO_VERSION=1.24.9
 ENV OPERATOR_COURIER_VERSION=2.1.11
 ENV SONOBUOY_VERSION=0.56.9
@@ -14,7 +14,7 @@ ENV KUBEVIRT_CREATE_BAZELRCS=false
 
 # Install packages
 # Note: CentOS Stream 10 uses 'crb' repo like CS9
-# Note: CS10 uses Java 21 instead of Java 11
+# Note: CS10 uses Java 21
 RUN dnf install -y dnf-plugins-core && \
     dnf config-manager --enable crb && \
     dnf install -y --setopt=install_weak_deps=False \
