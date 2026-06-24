@@ -59,7 +59,7 @@ import (
 	"kubevirt.io/kubevirt/pkg/vmitrait"
 )
 
-const liveMigrationFailed = "Live migration failed."
+const liveMigrationFailed = "Live migration failed....."
 
 const (
 	monitorSleepPeriodMS = 400
